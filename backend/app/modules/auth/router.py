@@ -16,6 +16,7 @@ from app.modules.users.services import create_user, get_user_by_email
 from app.modules.users.schemas import UserCreate
 from app.modules.salons.services import create_salon_for_owner
 from app.modules.masters.services import create_master_profile
+from app.modules.masters.models import MasterSalon, MasterStatus
 from app.modules.invites.services import consume_invite
 
 router = APIRouter()
@@ -98,7 +99,7 @@ def register_master(data: MasterRegisterRequest, db: Session = Depends(get_db)):
     if data.invite_token:
         salon_id = consume_invite(db, data.invite_token, user)
 
-    create_master_profile(
+    master = create_master_profile(
         db,
         user=user,
         name=data.name,
@@ -106,6 +107,22 @@ def register_master(data: MasterRegisterRequest, db: Session = Depends(get_db)):
         social_links=data.social_links or {},
         salon_id=salon_id,
     )
+
+    # Self-selected salons (without invite) — create PENDING requests
+    for sid in (data.salon_ids or []):
+        if sid == salon_id:
+            continue  # already handled via invite
+        existing = db.query(MasterSalon).filter(
+            MasterSalon.master_id == master.id,
+            MasterSalon.salon_id == sid,
+        ).first()
+        if not existing:
+            db.add(MasterSalon(
+                master_id=master.id,
+                salon_id=sid,
+                status=MasterStatus.PENDING,
+            ))
+    db.commit()
     access_token = create_access_token(user)
     refresh_token = create_refresh_token(db, user)
     return TokenResponse(

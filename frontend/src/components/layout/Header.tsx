@@ -1,27 +1,60 @@
-import { Bell } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { initials } from "@/utils/formatters";
 
-export function Header() {
+const roleLabel: Record<string, string> = {
+  salon_owner: "Salon Owner Dashboard",
+  master: "Master Dashboard",
+  platform_admin: "Platform Administration",
+};
+
+const profileHref: Record<string, string> = {
+  master: "/profile/master",
+  salon_owner: "/profile/salon",
+};
+
+export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { user } = useAuth();
+  const href = user?.role ? profileHref[user.role] : undefined;
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-white px-6">
-      <div className="text-sm text-gray-500">
-        {user?.role === "salon_owner" && "Salon Owner Dashboard"}
-        {user?.role === "master" && "Master Dashboard"}
-        {user?.role === "platform_admin" && "Platform Administration"}
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5 text-gray-500" />
+    <header className="flex h-14 md:h-16 items-center justify-between border-b bg-white px-3 md:px-6 shrink-0">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0">
+        {/* Hamburger — visible only below lg */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden shrink-0"
+          onClick={onMenuClick}
+        >
+          <Menu className="h-5 w-5" />
         </Button>
 
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-100 text-sm font-semibold text-pink-700">
-          {user ? initials(user.email.split("@")[0]) : "?"}
-        </div>
+        <span className="hidden md:block text-sm text-gray-500 truncate">
+          {user?.role ? roleLabel[user.role] ?? "" : ""}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <Link to="/notifications">
+          <Button variant="ghost" size="icon">
+            <Bell className="h-5 w-5 text-gray-500" />
+          </Button>
+        </Link>
+
+        {href ? (
+          <Link to={href}>
+            <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-pink-100 text-xs md:text-sm font-semibold text-pink-700 hover:bg-pink-200 transition-colors cursor-pointer">
+              {user ? initials(user.email.split("@")[0]) : "?"}
+            </div>
+          </Link>
+        ) : (
+          <div className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full bg-pink-100 text-xs md:text-sm font-semibold text-pink-700">
+            {user ? initials(user.email.split("@")[0]) : "?"}
+          </div>
+        )}
       </div>
     </header>
   );

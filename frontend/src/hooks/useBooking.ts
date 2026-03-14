@@ -79,3 +79,12 @@ export function useDeleteWorkSlot() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["work-slots"] }),
   });
 }
+
+export function useCopyPeriod() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Parameters<typeof calendarApi.copyPeriod>[0]) =>
+      calendarApi.copyPeriod(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["work-slots"] }),
+  });
+}

@@ -25,6 +25,10 @@ class Master(Base):
     bio = Column(String(1000), nullable=True)
     avatar_url = Column(String(512), nullable=True)
     social_links = Column(JSON, default=dict)
+    # Extended profile fields
+    nationality = Column(String(100), nullable=True)
+    experience_years = Column(Integer, nullable=True)
+    description = Column(String(2000), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -33,6 +37,8 @@ class Master(Base):
     master_salons = relationship("MasterSalon", back_populates="master")
     sessions = relationship("Session", back_populates="master")
     work_slots = relationship("WorkSlot", back_populates="master")
+    photos = relationship("MasterPhoto", back_populates="master", order_by="MasterPhoto.order")
+    reviews = relationship("Review", back_populates="master")
 
     __table_args__ = (
         Index("ix_masters_user", "user_id"),
@@ -61,4 +67,23 @@ class MasterSalon(Base):
     __table_args__ = (
         Index("ix_master_salons_master_salon", "master_id", "salon_id", unique=True),
         Index("ix_master_salons_status", "status"),
+    )
+
+
+class MasterPhoto(Base):
+    """Gallery photos for a master's public profile."""
+    __tablename__ = "master_photos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    master_id = Column(Integer, ForeignKey("masters.id", ondelete="CASCADE"), nullable=False)
+    image_url = Column(String(512), nullable=False)
+    caption = Column(String(255), nullable=True)
+    order = Column(Integer, default=0, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relations
+    master = relationship("Master", back_populates="photos")
+
+    __table_args__ = (
+        Index("ix_master_photos_master", "master_id"),
     )

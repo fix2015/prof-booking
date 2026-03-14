@@ -1,8 +1,12 @@
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Building2, X } from "lucide-react";
 import { useRegisterMaster } from "@/hooks/useAuth";
+import { salonsApi } from "@/api/salons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,10 +27,50 @@ export function MasterRegisterPage() {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite") || undefined;
   const register_ = useRegisterMaster();
+  const [selectedSalonIds, setSelectedSalonIds] = useState<number[]>([]);
+  const [salonSearch, setSalonSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const comboRef = useRef<HTMLDivElement>(null);
+
+  const { data: salons = [] } = useQuery({
+    queryKey: ["salons", "public"],
+    queryFn: () => salonsApi.listPublic(),
+    enabled: !inviteToken,
+  });
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (comboRef.current && !comboRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const addSalon = (id: number) => {
+    if (!selectedSalonIds.includes(id)) setSelectedSalonIds((prev) => [...prev, id]);
+    setSalonSearch("");
+    setDropdownOpen(false);
+  };
+
+  const removeSalon = (id: number) => {
+    setSelectedSalonIds((prev) => prev.filter((s) => s !== id));
+  };
+
+  const filteredSalons = salonSearch.trim()
+    ? salons.filter(
+        (s) =>
+          !selectedSalonIds.includes(s.id) &&
+          (s.name.toLowerCase().includes(salonSearch.toLowerCase()) ||
+            (s.address ?? "").toLowerCase().includes(salonSearch.toLowerCase()))
+      )
+    : salons.filter((s) => !selectedSalonIds.includes(s.id));
 
   const onSubmit = (data: FormValues) => {
     register_.mutate({
@@ -36,6 +80,7 @@ export function MasterRegisterPage() {
       password: data.password,
       social_links: data.instagram ? { instagram: data.instagram } : undefined,
       invite_token: inviteToken,
+      salon_ids: inviteToken ? undefined : selectedSalonIds,
     });
   };
 
@@ -94,6 +139,75 @@ export function MasterRegisterPage() {
               <Input type="password" {...register("password")} placeholder="At least 8 characters" />
               {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
+
+            {/* Salon selection — only for self-registration (no invite) */}
+            {!inviteToken && salons.length > 0 && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <Building2 className="h-4 w-4" />
+                  Apply to salons (optional)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Type to search and select salons you'd like to work in. Each salon must approve before you appear there.
+                </p>
+
+                {/* Selected salon tags */}
+                {selectedSalonIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedSalonIds.map((id) => {
+                      const s = salons.find((sl) => sl.id === id);
+                      return s ? (
+                        <span
+                          key={id}
+                          className="flex items-center gap-1 bg-pink-100 text-pink-800 text-xs font-medium px-2 py-1 rounded-full"
+                        >
+                          {s.name}
+                          <button
+                            type="button"
+                            onClick={() => removeSalon(id)}
+                            className="hover:text-pink-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+
+                {/* Autocomplete input */}
+                <div className="relative" ref={comboRef}>
+                  <Input
+                    placeholder="Search salon by name or address…"
+                    value={salonSearch}
+                    onChange={(e) => { setSalonSearch(e.target.value); setDropdownOpen(true); }}
+                    onFocus={() => setDropdownOpen(true)}
+                  />
+                  {dropdownOpen && filteredSalons.length > 0 && (
+                    <div className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg max-h-48 overflow-y-auto">
+                      {filteredSalons.map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex flex-col"
+                          onMouseDown={(e) => { e.preventDefault(); addSalon(s.id); }}
+                        >
+                          <span className="font-medium">{s.name}</span>
+                          {s.address && (
+                            <span className="text-xs text-muted-foreground truncate">{s.address}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {dropdownOpen && filteredSalons.length === 0 && salonSearch.trim() && (
+                    <div className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg px-3 py-2 text-sm text-muted-foreground">
+                      No salons found
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
 
           <CardFooter className="flex flex-col gap-3">

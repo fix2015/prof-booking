@@ -17,7 +17,7 @@ interface BookingCalendarProps {
   onAddSlot?: (date: Date, start: string, end: string) => void;
   onRemoveSlot?: (slotId: number) => void;
   onSessionClick?: (session: Session) => void;
-  salonId?: number;
+  onDateChange?: (date: Date) => void;
 }
 
 export function BookingCalendar({
@@ -26,17 +26,23 @@ export function BookingCalendar({
   onAddSlot,
   onRemoveSlot,
   onSessionClick,
+  onDateChange,
 }: BookingCalendarProps) {
   const [view, setView] = useState<CalendarView>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const weekStart = getWeekStart(currentDate);
 
-  const goToday = () => setCurrentDate(new Date());
+  const navigate = (date: Date) => {
+    setCurrentDate(date);
+    onDateChange?.(date);
+  };
+
+  const goToday = () => navigate(new Date());
   const goPrev = () =>
-    setCurrentDate(view === "week" ? subWeeks(currentDate, 1) : addDays(currentDate, -1));
+    navigate(view === "week" ? subWeeks(currentDate, 1) : addDays(currentDate, -1));
   const goNext = () =>
-    setCurrentDate(view === "week" ? addWeeks(currentDate, 1) : addDays(currentDate, 1));
+    navigate(view === "week" ? addWeeks(currentDate, 1) : addDays(currentDate, 1));
 
   const dateLabel =
     view === "week"
@@ -83,7 +89,7 @@ export function BookingCalendar({
           onAddSlot={onAddSlot}
           onRemoveSlot={onRemoveSlot}
           onSessionClick={onSessionClick}
-          onDayClick={(d) => { setCurrentDate(d); setView("day"); }}
+          onDayClick={(d) => { navigate(d); setView("day"); }}
         />
       ) : (
         <DayView

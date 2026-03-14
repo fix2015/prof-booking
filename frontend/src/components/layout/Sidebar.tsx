@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Calendar, Users, Settings, BarChart2,
-  Scissors, LogOut, Shield, Bell,
+  LayoutDashboard, Calendar, Users, Settings, Settings2, BarChart2,
+  Scissors, LogOut, Shield, Bell, Star, FileText, TrendingUp,
+  Search, Sparkles, X, User,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,27 +21,43 @@ const navItems: NavItem[] = [
   { label: "Sessions", href: "/sessions", icon: Scissors },
   { label: "Masters", href: "/masters", icon: Users, roles: ["salon_owner", "platform_admin"] },
   { label: "Services", href: "/services", icon: Settings, roles: ["salon_owner"] },
-  { label: "Reports", href: "/reports", icon: BarChart2 },
+  { label: "Reviews", href: "/reviews", icon: Star, roles: ["salon_owner", "platform_admin"] },
+  { label: "Analytics", href: "/analytics/owner", icon: BarChart2, roles: ["salon_owner", "platform_admin"] },
+  { label: "My Analytics", href: "/analytics/master", icon: TrendingUp, roles: ["master"] },
+  { label: "Invoices", href: "/invoices", icon: FileText, roles: ["salon_owner", "master", "platform_admin"] },
+  { label: "Reports", href: "/reports", icon: BarChart2, roles: ["salon_owner", "platform_admin"] },
   { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Admin", href: "/admin", icon: Shield, roles: ["platform_admin"] },
+  { label: "My Profile", href: "/profile/master", icon: User, roles: ["master"] },
+  { label: "Salon Settings", href: "/profile/salon", icon: Settings2, roles: ["salon_owner"] },
 ];
 
-export function Sidebar() {
+export function Sidebar({ onClose }: { onClose?: () => void }) {
   const { pathname } = useLocation();
   const { role, logout } = useAuth();
 
   const filtered = navItems.filter((item) => !item.roles || item.roles.includes(role || ""));
 
   return (
-    <div className="flex w-64 flex-col border-r bg-white">
+    <div className="flex w-64 flex-col border-r bg-white h-full">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
-        <span className="text-xl font-bold text-pink-600">💅 NailSalon</span>
+      <div className="flex h-14 md:h-16 items-center border-b px-4 md:px-6 gap-2 shrink-0">
+        <Sparkles className="h-5 w-5 text-pink-500 shrink-0" />
+        <span className="text-lg md:text-xl font-bold text-pink-600 truncate">BeautyPlatform</span>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="ml-auto lg:hidden p-1 rounded hover:bg-gray-100"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5 text-gray-500" />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1">
+      <nav className="flex-1 overflow-y-auto px-2 md:px-3 py-3 md:py-4">
+        <ul className="space-y-0.5">
           {filtered.map((item) => {
             const Icon = item.icon;
             const active = pathname.startsWith(item.href);
@@ -48,6 +65,7 @@ export function Sidebar() {
               <li key={item.href}>
                 <Link
                   to={item.href}
+                  onClick={onClose}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
@@ -55,23 +73,37 @@ export function Sidebar() {
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5", active ? "text-pink-600" : "text-gray-400")} />
+                  <Icon className={cn("h-5 w-5 shrink-0", active ? "text-pink-600" : "text-gray-400")} />
                   {item.label}
                 </Link>
               </li>
             );
           })}
         </ul>
+
+        {/* Discovery link — hidden from masters */}
+        {role !== "master" && (
+          <div className="mt-4 border-t pt-4">
+            <Link
+              to="/discover"
+              onClick={onClose}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            >
+              <Search className="h-5 w-5 text-gray-400 shrink-0" />
+              Discover Masters
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Logout */}
-      <div className="border-t p-3">
+      <div className="border-t p-2 md:p-3 shrink-0">
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-gray-600"
-          onClick={() => logout()}
+          onClick={() => { logout(); onClose?.(); }}
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-5 w-5 shrink-0" />
           Sign out
         </Button>
       </div>

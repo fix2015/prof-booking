@@ -49,9 +49,9 @@ export function ServicesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Services</h1>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl md:text-2xl font-bold">Services</h1>
         <Button onClick={() => { setShowForm(true); setForm({ name: "", description: "", duration_minutes: 60, price: 0 }); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Service
@@ -65,7 +65,7 @@ export function ServicesPage() {
             <CardTitle>{editing ? "Edit Service" : "New Service"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div className="space-y-1">
                 <Label>Name *</Label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Manicure" />
@@ -101,7 +101,7 @@ export function ServicesPage() {
       {isLoading ? (
         <Spinner className="mx-auto" />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {services.map((service) => (
             <Card key={service.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">

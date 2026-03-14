@@ -1,6 +1,7 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 from app.config import settings
@@ -17,20 +18,26 @@ from app.modules.reports.router import router as reports_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.invites.router import router as invites_router
 from app.modules.services.router import router as services_router
+from app.modules.reviews.router import router as reviews_router
+from app.modules.loyalty.router import router as loyalty_router
+from app.modules.invoices.router import router as invoices_router
+from app.modules.analytics.router import router as analytics_router
+from app.modules.uploads.router import router as uploads_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     Base.metadata.create_all(bind=engine)
+    os.makedirs("uploads", exist_ok=True)
     yield
     # Shutdown
 
 
 app = FastAPI(
-    title="NailSalon Platform API",
-    description="Multi-tenant SaaS platform for nail salon booking and management",
-    version="1.0.0",
+    title="Beauty Platform API",
+    description="Multi-tenant SaaS platform for beauty salon booking and management",
+    version="2.0.0",
     docs_url="/docs" if settings.APP_DEBUG else None,
     redoc_url="/redoc" if settings.APP_DEBUG else None,
     lifespan=lifespan,
@@ -60,8 +67,16 @@ app.include_router(payments_router, prefix=f"{API_PREFIX}/payments", tags=["paym
 app.include_router(reports_router, prefix=f"{API_PREFIX}/reports", tags=["reports"])
 app.include_router(notifications_router, prefix=f"{API_PREFIX}/notifications", tags=["notifications"])
 app.include_router(invites_router, prefix=f"{API_PREFIX}/invites", tags=["invites"])
+app.include_router(reviews_router, prefix=f"{API_PREFIX}/reviews", tags=["reviews"])
+app.include_router(loyalty_router, prefix=f"{API_PREFIX}/loyalty", tags=["loyalty"])
+app.include_router(invoices_router, prefix=f"{API_PREFIX}/invoices", tags=["invoices"])
+app.include_router(analytics_router, prefix=f"{API_PREFIX}/analytics", tags=["analytics"])
+app.include_router(uploads_router, prefix=f"{API_PREFIX}/upload", tags=["upload"])
+
+# Serve uploaded files
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get(f"{API_PREFIX}/health")
 def health_check():
-    return {"status": "ok", "version": "1.0.0"}
+    return {"status": "ok", "version": "2.0.0"}

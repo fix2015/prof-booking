@@ -4,7 +4,7 @@ from datetime import date, timedelta, datetime, time
 from typing import List, Optional
 
 from app.modules.calendar.models import WorkSlot
-from app.modules.calendar.schemas import WorkSlotCreate, WeeklyScheduleCopy, AvailableSlot
+from app.modules.calendar.schemas import WorkSlotCreate, WeeklyScheduleCopy, AvailableSlot, PeriodCopy
 from app.modules.sessions.models import Session as BookingSession, SessionStatus
 from app.modules.masters.models import Master
 
@@ -86,6 +86,33 @@ def copy_weekly_schedule(db: Session, master_id: int, data: WeeklyScheduleCopy) 
             created += 1
         except HTTPException:
             pass  # Skip overlaps
+    return created
+
+
+def copy_period_schedule(db: Session, master_id: int, data: PeriodCopy) -> int:
+    """Copy all work slots from [source_start, source_end] to the same relative dates starting at target_start."""
+    source_slots = get_master_slots(db, master_id, data.source_start, data.source_end)
+    if not source_slots:
+        raise HTTPException(status_code=404, detail="No slots found in the source period")
+
+    delta = data.target_start - data.source_start
+    created = 0
+    for slot in source_slots:
+        new_date = slot.slot_date + delta
+        try:
+            create_work_slot(
+                db,
+                master_id,
+                WorkSlotCreate(
+                    salon_id=data.salon_id,
+                    slot_date=new_date,
+                    start_time=slot.start_time,
+                    end_time=slot.end_time,
+                ),
+            )
+            created += 1
+        except HTTPException:
+            pass  # Skip overlaps silently
     return created
 
 

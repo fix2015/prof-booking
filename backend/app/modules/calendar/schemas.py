@@ -50,3 +50,11 @@ class AvailabilityQuery(BaseModel):
     service_id: Optional[int] = None
     master_id: Optional[int] = None
     duration_minutes: int = 60
+
+
+class PeriodCopy(BaseModel):
+    """Copy all work slots from [source_start, source_end] to the same relative dates starting at target_start."""
+    source_start: date
+    source_end: date
+    target_start: date
+    salon_id: int

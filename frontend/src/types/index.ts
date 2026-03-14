@@ -27,9 +27,21 @@ export interface Salon {
   description?: string;
   logo_url?: string;
   worker_payment_amount: number;
+  deposit_percentage: number;
+  latitude?: number;
+  longitude?: number;
   is_active: boolean;
   created_at: string;
   settings?: Record<string, unknown>;
+}
+
+export interface MasterPhoto {
+  id: number;
+  master_id: number;
+  image_url: string;
+  caption?: string;
+  order: number;
+  created_at: string;
 }
 
 export interface Master {
@@ -40,6 +52,10 @@ export interface Master {
   bio?: string;
   avatar_url?: string;
   social_links?: Record<string, string>;
+  nationality?: string;
+  experience_years?: number;
+  description?: string;
+  photos?: MasterPhoto[];
   created_at: string;
   master_salons?: MasterSalon[];
 }
@@ -147,6 +163,123 @@ export interface Invite {
   expires_at: string;
   created_at: string;
 }
+
+// ── Reviews ──────────────────────────────────────────
+
+export interface Review {
+  id: number;
+  session_id?: number;
+  master_id: number;
+  salon_id: number;
+  client_name: string;
+  client_phone?: string;
+  rating: number;
+  comment?: string;
+  is_published: boolean;
+  created_at: string;
+}
+
+export interface ReviewStats {
+  master_id: number;
+  total_reviews: number;
+  average_rating: number;
+  rating_distribution: Record<string, number>;
+}
+
+// ── Loyalty ──────────────────────────────────────────
+
+export type DiscountType = "percentage" | "fixed";
+
+export interface DiscountRule {
+  id: number;
+  program_id: number;
+  name: string;
+  discount_type: DiscountType;
+  discount_value: number;
+  conditions?: Record<string, unknown>;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface LoyaltyProgram {
+  id: number;
+  salon_id: number;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  discount_rules: DiscountRule[];
+}
+
+// ── Invoices / Earnings ───────────────────────────────
+
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
+
+export interface Invoice {
+  id: number;
+  salon_id: number;
+  master_id: number;
+  period_start: string;
+  period_end: string;
+  total_sessions: number;
+  total_revenue: number;
+  master_earnings: number;
+  salon_earnings: number;
+  master_percentage: number;
+  status: InvoiceStatus;
+  notes?: string;
+  created_at: string;
+}
+
+export interface EarningsSplit {
+  id: number;
+  salon_id: number;
+  master_id: number;
+  master_percentage: number;
+  effective_from: string;
+  created_at: string;
+}
+
+// ── Analytics ──────────────────────────────────────────
+
+export interface WorkerAnalytics {
+  master_id: number;
+  master_name: string;
+  avatar_url?: string;
+  status: MasterStatus;
+  total_sessions: number;
+  completed_sessions: number;
+  total_hours: number;
+  total_revenue: number;
+  master_earnings: number;
+  salon_earnings: number;
+  master_percentage: number;
+}
+
+export interface MasterAnalytics {
+  master_id: number;
+  master_name: string;
+  period_from: string;
+  period_to: string;
+  total_sessions: number;
+  completed_sessions: number;
+  total_hours: number;
+  total_revenue: number;
+  unique_clients: number;
+  salon_breakdown: Array<{
+    salon_id: number;
+    sessions: number;
+    revenue: number;
+    hours: number;
+  }>;
+  monthly_breakdown: Array<{
+    month: string;
+    sessions: number;
+    revenue: number;
+  }>;
+}
+
+// ── Reports ────────────────────────────────────────────
 
 export interface SalonReport {
   summary: {

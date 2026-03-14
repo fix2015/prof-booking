@@ -28,4 +28,7 @@ export const calendarApi = {
 
   copyWeek: (data: { source_week_start: string; target_week_start: string; salon_id: number }) =>
     apiClient.post<{ created: number }>("/calendar/slots/copy-week", data).then((r) => r.data),
+
+  copyPeriod: (data: { source_start: string; source_end: string; target_start: string; salon_id: number }) =>
+    apiClient.post<{ created: number }>("/calendar/slots/copy-period", data).then((r) => r.data),
 };

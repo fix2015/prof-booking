@@ -25,15 +25,15 @@ export function AdminPanelPage() {
   const masterCount = users.filter((u) => u.role === "master").length;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Platform Administration</h1>
+    <div className="space-y-4 md:space-y-6">
+      <h1 className="text-xl md:text-2xl font-bold">Platform Administration</h1>
 
       {isLoading ? (
         <Spinner className="mx-auto" />
       ) : (
         <>
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
             <StatsCard title="Total Salons" value={salons.length} icon={Building2} color="pink" />
             <StatsCard title="Total Users" value={users.length} icon={Users} color="blue" />
             <StatsCard title="Salon Owners" value={ownerCount} icon={Users} color="purple" />

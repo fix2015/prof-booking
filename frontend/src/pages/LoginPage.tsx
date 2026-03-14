@@ -84,6 +84,12 @@ export function LoginPage() {
                 Book appointment
               </Link>
             </p>
+            <p className="text-sm text-muted-foreground">
+              Are you a master?{" "}
+              <Link to="/register/master" className="text-pink-600 hover:underline font-medium">
+                Join as a Master
+              </Link>
+            </p>
           </CardFooter>
         </form>
       </Card>

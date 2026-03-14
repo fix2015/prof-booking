@@ -22,8 +22,8 @@ export function NotificationsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Notifications</h1>
+    <div className="space-y-4 md:space-y-6">
+      <h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
 
       {isLoading ? (
         <Spinner className="mx-auto" />
@@ -35,17 +35,17 @@ export function NotificationsPage() {
             ) : (
               <div className="divide-y">
                 {notifications.map((n) => (
-                  <div key={n.id} className="flex items-center justify-between p-4">
-                    <div>
+                  <div key={n.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 md:p-4">
+                    <div className="min-w-0">
                       <p className="text-sm font-medium">{n.notification_type.replace(/_/g, " ")}</p>
-                      <p className="text-xs text-muted-foreground">{n.recipient}</p>
-                      {n.subject && <p className="text-xs text-muted-foreground">{n.subject}</p>}
+                      <p className="text-xs text-muted-foreground truncate">{n.recipient}</p>
+                      {n.subject && <p className="text-xs text-muted-foreground truncate">{n.subject}</p>}
                     </div>
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 shrink-0">
                       <Badge variant={n.status === "sent" ? "success" : n.status === "failed" ? "destructive" : "secondary"}>
                         {n.status}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {formatDateTime(n.sent_at || n.created_at)}
                       </span>
                     </div>

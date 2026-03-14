@@ -3,7 +3,8 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { SessionsList } from "@/components/dashboard/SessionsList";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { Spinner } from "@/components/ui/spinner";
-import { useQuery } from "@tanstack/react-query";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { reportsApi } from "@/api/reports";
 import { salonsApi } from "@/api/salons";
 import { sessionsApi } from "@/api/sessions";
@@ -20,7 +21,14 @@ export function OwnerDashboardPage() {
     queryFn: () => salonsApi.listPublic(),
   });
 
-  const salonId = salons?.[0]?.id;
+  const salon = salons?.[0];
+  const salonId = salon?.id;
+
+  const qc = useQueryClient();
+  const updateSalon = useMutation({
+    mutationFn: (logoUrl: string) => salonsApi.update(salonId!, { logo_url: logoUrl || undefined }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["salons"] }),
+  });
 
   const { data: report, isLoading } = useQuery({
     queryKey: ["reports", "salon", salonId, monthAgo, today],
@@ -37,14 +45,23 @@ export function OwnerDashboardPage() {
   if (isLoading && salonId) return <Spinner className="mx-auto mt-20" />;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Salon Dashboard</h1>
-        <p className="text-muted-foreground">Last 30 days performance overview</p>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center gap-3">
+        <ImageUpload
+          currentUrl={salon?.logo_url ?? undefined}
+          onUpload={(url) => salonId && updateSalon.mutate(url)}
+          shape="square"
+          size={64}
+          label="Salon Logo"
+        />
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold truncate">{salon?.name ?? "Salon Dashboard"}</h1>
+          <p className="text-sm text-muted-foreground">Last 30 days performance overview</p>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <StatsCard
           title="Total Revenue"
           value={formatCurrency(report?.summary.total_revenue ?? 0)}
