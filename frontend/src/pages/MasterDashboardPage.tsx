@@ -1,18 +1,42 @@
-import { DollarSign, Scissors, Calendar, Clock } from "lucide-react";
+import { DollarSign, Scissors, Calendar, Clock, Image } from "lucide-react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { SessionsList } from "@/components/dashboard/SessionsList";
 import { Spinner } from "@/components/ui/spinner";
+import { ImageUpload } from "@/components/ui/ImageUpload";
+import { MultiImageUpload } from "@/components/ui/MultiImageUpload";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodaySessions, useSessions } from "@/hooks/useBooking";
-import { useMyMasterProfile } from "@/hooks/useMaster";
+import { useMyMasterProfile, useUpdateMasterProfile } from "@/hooks/useMaster";
+import { mastersApi } from "@/api/masters";
 import { formatCurrency } from "@/utils/formatters";
 import { format, subDays } from "date-fns";
 
 export function MasterDashboardPage() {
+  const qc = useQueryClient();
   const { data: master } = useMyMasterProfile();
+  const updateMaster = useUpdateMasterProfile();
   const { data: todaySessions, isLoading } = useTodaySessions();
   const { data: monthlySessions } = useSessions({
     date_from: format(subDays(new Date(), 30), "yyyy-MM-dd"),
     status: "completed",
+  });
+
+  const { data: photos = [] } = useQuery({
+    queryKey: ["master-photos", "me"],
+    queryFn: () => master ? mastersApi.getPhotos(master.id) : [],
+    enabled: !!master,
+  });
+
+  const addPhotos = useMutation({
+    mutationFn: (urls: string[]) =>
+      Promise.all(urls.map((url, i) => mastersApi.addPhoto({ image_url: url, order: photos.length + i }))),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["master-photos", "me"] }),
+  });
+
+  const removePhoto = useMutation({
+    mutationFn: (id: number) => mastersApi.deletePhoto(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["master-photos", "me"] }),
   });
 
   const totalMonthlyEarnings = monthlySessions?.reduce(
@@ -27,16 +51,25 @@ export function MasterDashboardPage() {
   if (isLoading) return <Spinner className="mx-auto mt-20" />;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">
-          Welcome back, {master?.name || "Master"}!
-        </h1>
-        <p className="text-muted-foreground">Here's your overview for today.</p>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center gap-3">
+        <ImageUpload
+          currentUrl={master?.avatar_url ?? undefined}
+          onUpload={(url) => updateMaster.mutate({ avatar_url: url || undefined })}
+          shape="circle"
+          size={64}
+          label="Avatar"
+        />
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold truncate">
+            Welcome back, {master?.name || "Master"}!
+          </h1>
+          <p className="text-sm text-muted-foreground">Here's your overview for today.</p>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         <StatsCard
           title="Today's Sessions"
           value={todaySessions?.length ?? 0}
@@ -64,8 +97,28 @@ export function MasterDashboardPage() {
         />
       </div>
 
+      {/* Portfolio photos */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            Portfolio Photos
+            <span className="text-xs font-normal text-muted-foreground ml-auto">
+              {photos.length}/10
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MultiImageUpload
+            photos={photos}
+            onAdd={(urls) => addPhotos.mutate(urls)}
+            onRemove={(id) => removePhoto.mutate(id)}
+          />
+        </CardContent>
+      </Card>
+
       {/* Today's sessions */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
         <SessionsList
           sessions={todaySessions ?? []}
           title="Today's Sessions"

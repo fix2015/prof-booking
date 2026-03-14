@@ -52,11 +52,11 @@ export function SessionsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Sessions</h1>
+    <div className="space-y-4 md:space-y-6">
+      <h1 className="text-xl md:text-2xl font-bold">Sessions</h1>
 
       {/* Status filter */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-1.5 md:gap-2 flex-wrap">
         {STATUS_FILTERS.map((f) => (
           <Button
             key={f.value}
@@ -77,8 +77,8 @@ export function SessionsPage() {
         <div className="space-y-3">
           {sessions.map((session) => (
             <Card key={session.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
+              <CardContent className="p-3 md:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div>
                     <p className="font-semibold">{session.client_name}</p>
                     <p className="text-sm text-muted-foreground">{session.client_phone}</p>
@@ -89,7 +89,7 @@ export function SessionsPage() {
                       <p className="text-sm font-medium">{formatCurrency(session.price)}</p>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex sm:flex-col items-center sm:items-end gap-2 flex-wrap">
                     <span
                       className={cn(
                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",

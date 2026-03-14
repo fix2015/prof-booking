@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Optional, List
 
 from app.modules.masters.models import Master, MasterSalon, MasterStatus
-from app.modules.masters.schemas import MasterCreate, MasterUpdate
-from app.modules.users.models import User
+from app.modules.masters.schemas import MasterCreate, MasterUpdate, MasterDirectCreate
+from app.modules.users.models import User, UserRole
 
 
 def create_master_profile(
@@ -36,6 +36,52 @@ def create_master_profile(
     db.commit()
     db.refresh(master)
     return master
+
+
+def create_master_with_user(
+    db: Session,
+    salon_id: int,
+    data: MasterDirectCreate,
+) -> MasterSalon:
+    """Owner creates a new master account + immediately activates them in the salon."""
+    from app.modules.users.services import create_user, get_user_by_email
+    from app.modules.users.schemas import UserCreate
+
+    if get_user_by_email(db, data.email):
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    user = create_user(
+        db,
+        UserCreate(
+            email=data.email,
+            phone=data.phone,
+            password=data.password,
+            role=UserRole.MASTER,
+        ),
+    )
+    master = Master(
+        user_id=user.id,
+        name=data.name,
+        phone=data.phone,
+        bio=data.bio,
+        nationality=data.nationality,
+        experience_years=data.experience_years,
+        social_links={},
+    )
+    db.add(master)
+    db.flush()
+
+    ms = MasterSalon(
+        master_id=master.id,
+        salon_id=salon_id,
+        status=MasterStatus.ACTIVE,
+        payment_amount=data.payment_amount,
+        joined_at=datetime.utcnow(),
+    )
+    db.add(ms)
+    db.commit()
+    db.refresh(ms)
+    return ms
 
 
 def get_master_by_user_id(db: Session, user_id: int) -> Optional[Master]:

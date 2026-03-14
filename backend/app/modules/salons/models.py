@@ -18,6 +18,9 @@ class Salon(Base):
     description = Column(Text, nullable=True)
     logo_url = Column(String(512), nullable=True)
     worker_payment_amount = Column(Float, default=0.0)
+    deposit_percentage = Column(Float, default=5.0, nullable=False)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -29,6 +32,8 @@ class Salon(Base):
     services = relationship("Service", back_populates="salon")
     sessions = relationship("Session", back_populates="salon")
     invites = relationship("Invite", back_populates="salon")
+    reviews = relationship("Review", back_populates="salon")
+    earnings_splits = relationship("EarningsSplit", back_populates="salon")
 
     __table_args__ = (
         Index("ix_salons_name", "name"),

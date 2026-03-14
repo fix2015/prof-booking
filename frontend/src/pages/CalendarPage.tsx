@@ -1,34 +1,55 @@
 import { useState } from "react";
+import { Copy } from "lucide-react";
 import { BookingCalendar } from "@/components/calendar/BookingCalendar";
-import { useMyWorkSlots, useCreateWorkSlot, useDeleteWorkSlot, useSessions } from "@/hooks/useBooking";
+import { useMyWorkSlots, useCreateWorkSlot, useDeleteWorkSlot, useCopyPeriod, useSessions } from "@/hooks/useBooking";
 import { useMyMasterProfile } from "@/hooks/useMaster";
-import { toISODateString, addDays } from "@/utils/dates";
+import { toISODateString, addDays, getWeekStart, addWeeks } from "@/utils/dates";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/useToast";
 import { Session } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+function startOfMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function startOfNextMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 1);
+}
+function endOfMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+}
+function startOfYear(d: Date): Date {
+  return new Date(d.getFullYear(), 0, 1);
+}
+function startOfNextYear(d: Date): Date {
+  return new Date(d.getFullYear() + 1, 0, 1);
+}
+function endOfYear(d: Date): Date {
+  return new Date(d.getFullYear(), 11, 31);
+}
 
 export function CalendarPage() {
   const { data: master, isLoading: masterLoading } = useMyMasterProfile();
-  const today = toISODateString(new Date());
-  const [weekStart] = useState(today);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  const { data: workSlots = [] } = useMyWorkSlots(
-    weekStart,
-    toISODateString(addDays(new Date(weekStart), 13))
-  );
+  // Fetch a 6-week window centred on the current calendar date (±3 weeks)
+  const rangeStart = toISODateString(addDays(getWeekStart(currentDate), -7));
+  const rangeEnd   = toISODateString(addDays(getWeekStart(currentDate), 35));
+
+  const { data: workSlots = [] } = useMyWorkSlots(rangeStart, rangeEnd);
 
   const { data: sessions = [] } = useSessions({
     master_id: master?.id,
-    date_from: weekStart,
-    date_to: toISODateString(addDays(new Date(weekStart), 13)),
+    date_from: rangeStart,
+    date_to: rangeEnd,
   });
 
   const createSlot = useCreateWorkSlot();
   const deleteSlot = useDeleteWorkSlot();
-
+  const copyPeriod = useCopyPeriod();
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [showCopyPanel, setShowCopyPanel] = useState(false);
 
   if (masterLoading) return <Spinner className="mx-auto mt-20" />;
   if (!master) {
@@ -39,21 +60,23 @@ export function CalendarPage() {
     );
   }
 
+  const salonId = master.master_salons?.[0]?.salon_id;
+
   const handleAddSlot = async (date: Date, start: string, end: string) => {
-    if (!master.master_salons?.[0]?.salon_id) {
+    if (!salonId) {
       toast({ title: "Not linked to a salon", variant: "destructive" });
       return;
     }
     try {
       await createSlot.mutateAsync({
-        salon_id: master.master_salons![0].salon_id,
+        salon_id: salonId,
         slot_date: toISODateString(date),
         start_time: start,
         end_time: end,
       });
       toast({ title: "Slot added", variant: "success" });
-    } catch (e) {
-      toast({ title: "Failed to add slot", description: (e as Error)?.message, variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: e?.response?.data?.detail ?? "Failed to add slot", variant: "destructive" });
     }
   };
 
@@ -66,22 +89,95 @@ export function CalendarPage() {
     }
   };
 
+  const handleCopy = async (label: string, sourceStart: Date, sourceEnd: Date, targetStart: Date) => {
+    if (!salonId) { toast({ title: "Not linked to a salon", variant: "destructive" }); return; }
+    try {
+      const result = await copyPeriod.mutateAsync({
+        source_start: toISODateString(sourceStart),
+        source_end: toISODateString(sourceEnd),
+        target_start: toISODateString(targetStart),
+        salon_id: salonId,
+      });
+      toast({ title: `${result.created} slot${result.created !== 1 ? "s" : ""} copied to ${label}`, variant: "success" });
+    } catch (e: any) {
+      const msg = e?.response?.data?.detail ?? "No slots found to copy";
+      toast({ title: msg, variant: "destructive" });
+    }
+  };
+
+  const thisWeekStart = getWeekStart(currentDate);
+  const thisWeekEnd = addDays(thisWeekStart, 6);
+  const nextWeekStart = addWeeks(thisWeekStart, 1);
+
+  const thisMonthStart = startOfMonth(currentDate);
+  const thisMonthEnd = endOfMonth(currentDate);
+  const nextMonthStart = startOfNextMonth(currentDate);
+
+  const thisYearStart = startOfYear(currentDate);
+  const thisYearEnd = endOfYear(currentDate);
+  const nextYearStart = startOfNextYear(currentDate);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold">My Calendar</h1>
+          <h1 className="text-xl md:text-2xl font-bold">My Calendar</h1>
           <p className="text-muted-foreground">Manage your work slots and view bookings</p>
         </div>
+        <Button variant="outline" size="sm" onClick={() => setShowCopyPanel(!showCopyPanel)}>
+          <Copy className="mr-2 h-4 w-4" />
+          Copy Schedule
+        </Button>
       </div>
 
+      {/* Copy schedule panel */}
+      {showCopyPanel && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Copy Schedule</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Duplicate your current slots to the next period. Overlapping slots are skipped.
+            </p>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={copyPeriod.isPending}
+              onClick={() => handleCopy("next week", thisWeekStart, thisWeekEnd, nextWeekStart)}
+            >
+              Copy this week → next week
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={copyPeriod.isPending}
+              onClick={() => handleCopy("next month", thisMonthStart, thisMonthEnd, nextMonthStart)}
+            >
+              Copy this month → next month
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={copyPeriod.isPending}
+              onClick={() => handleCopy("next year", thisYearStart, thisYearEnd, nextYearStart)}
+            >
+              Copy this year → next year
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0">
       <BookingCalendar
         workSlots={workSlots}
         sessions={sessions}
         onAddSlot={handleAddSlot}
         onRemoveSlot={handleRemoveSlot}
         onSessionClick={setSelectedSession}
+        onDateChange={setCurrentDate}
       />
+      </div>
 
       {/* Session detail modal */}
       {selectedSession && (

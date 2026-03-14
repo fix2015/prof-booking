@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from app.modules.users.models import UserRole
 
 
@@ -36,3 +36,4 @@ class MasterRegisterRequest(BaseModel):
     password: str
     social_links: Optional[dict] = {}
     invite_token: Optional[str] = None
+    salon_ids: Optional[List[int]] = []

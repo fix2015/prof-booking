@@ -22,6 +22,7 @@ export interface MasterRegisterPayload {
   password: string;
   social_links?: Record<string, string>;
   invite_token?: string;
+  salon_ids?: number[];
 }
 
 export const authApi = {

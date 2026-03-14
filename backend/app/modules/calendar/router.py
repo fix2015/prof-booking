@@ -6,11 +6,11 @@ from datetime import date, timedelta
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_master_or_owner
 from app.modules.calendar.schemas import (
-    WorkSlotCreate, WorkSlotResponse, WeeklyScheduleCopy, AvailableSlot,
+    WorkSlotCreate, WorkSlotResponse, WeeklyScheduleCopy, AvailableSlot, PeriodCopy,
 )
 from app.modules.calendar.services import (
     create_work_slot, delete_work_slot, get_master_slots,
-    copy_weekly_schedule, get_available_slots,
+    copy_weekly_schedule, copy_period_schedule, get_available_slots,
 )
 from app.modules.masters.services import get_master_by_user_id
 from app.modules.users.models import User
@@ -83,4 +83,19 @@ def copy_week(
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Master profile not found")
     created = copy_weekly_schedule(db, master.id, data)
+    return {"created": created}
+
+
+@router.post("/slots/copy-period", status_code=200)
+def copy_period(
+    data: PeriodCopy,
+    current_user: User = Depends(get_current_master_or_owner),
+    db: Session = Depends(get_db),
+):
+    """Copy slots from any date range to the same relative range starting at target_start."""
+    master = get_master_by_user_id(db, current_user.id)
+    if not master:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Master profile not found")
+    created = copy_period_schedule(db, master.id, data)
     return {"created": created}
