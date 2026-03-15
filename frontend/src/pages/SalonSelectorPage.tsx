@@ -14,8 +14,20 @@ import { cn } from "@/utils/cn";
 import type { Provider, Professional } from "@/types";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
-const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
+const DEFAULT_CENTER = { lat: 51.5074, lng: -0.1278 }; // London, UK
 const DEFAULT_ZOOM = 12;
+
+function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const x =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.lat * Math.PI) / 180) *
+      Math.cos((b.lat * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
 
 const SERVICE_TYPES = [
   "Manicure", "Pedicure", "Gel Nails", "Acrylic",
@@ -46,6 +58,7 @@ export function SalonSelectorPage() {
   const geocoderRef = useRef<google.maps.Geocoder | null>(null);
   const geocodedIdsRef = useRef<Set<number>>(new Set());
   const mapRef = useRef<google.maps.Map | null>(null);
+  const autoFocusedRef = useRef(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -124,9 +137,45 @@ export function SalonSelectorPage() {
     return geocodedCoords[p.id] ?? null;
   };
 
+  // ── Geolocation: ask immediately on mount ────────────────────────────────────
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationLoading(false);
+      },
+      () => setLocationLoading(false),
+      { timeout: 10000 }
+    );
+  }, []);
+
+  // ── Auto-focus: once we have user location + any provider coords ─────────────
+
+  useEffect(() => {
+    if (autoFocusedRef.current) return;
+    if (!userLocation) return;
+    const withCoords = providers
+      .map((p) => ({ p, coords: getCoords(p) }))
+      .filter((x): x is { p: Provider; coords: { lat: number; lng: number } } => x.coords !== null);
+    if (withCoords.length === 0) return;
+    autoFocusedRef.current = true;
+    const closest = withCoords.reduce((best, curr) =>
+      distanceKm(userLocation, curr.coords) < distanceKm(userLocation, best.coords) ? curr : best
+    );
+    setSelectedProvider(closest.p);
+    setMapCenter(closest.coords);
+    setMapZoom(15);
+    mapRef.current?.panTo(closest.coords);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLocation, geocodedCoords, providers]);
+
   // ── Map events ───────────────────────────────────────────────────────────────
 
-  const requestLocation = (map?: google.maps.Map) => {
+  // Manual "Search Nearby" — refresh location and re-focus closest salon
+  const requestLocation = () => {
     if (!navigator.geolocation) return;
     setLocationLoading(true);
     navigator.geolocation.getCurrentPosition(
@@ -135,7 +184,20 @@ export function SalonSelectorPage() {
         setUserLocation(loc);
         setMapCenter(loc);
         setMapZoom(13);
-        (map ?? mapRef.current)?.panTo(loc);
+        mapRef.current?.panTo(loc);
+        // Find closest after manual search
+        const withCoords = providers
+          .map((p) => ({ p, coords: getCoords(p) }))
+          .filter((x): x is { p: Provider; coords: { lat: number; lng: number } } => x.coords !== null);
+        if (withCoords.length > 0) {
+          const closest = withCoords.reduce((best, curr) =>
+            distanceKm(loc, curr.coords) < distanceKm(loc, best.coords) ? curr : best
+          );
+          setSelectedProvider(closest.p);
+          setMapCenter(closest.coords);
+          setMapZoom(15);
+          mapRef.current?.panTo(closest.coords);
+        }
         setLocationLoading(false);
       },
       () => setLocationLoading(false),
@@ -146,7 +208,8 @@ export function SalonSelectorPage() {
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
     geocoderRef.current = new google.maps.Geocoder();
-    requestLocation(map);
+    if (providers.length > 0) geocodeProviders(providers);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasProfessionalFilter = !!committed;
@@ -167,18 +230,29 @@ export function SalonSelectorPage() {
     }
   };
 
-  const filteredProviders = providers.filter((s) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      s.name.toLowerCase().includes(q) ||
-      (s.address ?? "").toLowerCase().includes(q);
-    const matchType =
-      !activeType ||
-      s.name.toLowerCase().includes(activeType.toLowerCase()) ||
-      (s.description ?? "").toLowerCase().includes(activeType.toLowerCase());
-    return matchSearch && matchType;
-  });
+  const referencePoint = userLocation ?? DEFAULT_CENTER;
+
+  const filteredProviders = providers
+    .filter((s) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        !q ||
+        s.name.toLowerCase().includes(q) ||
+        (s.address ?? "").toLowerCase().includes(q);
+      const matchType =
+        !activeType ||
+        s.name.toLowerCase().includes(activeType.toLowerCase()) ||
+        (s.description ?? "").toLowerCase().includes(activeType.toLowerCase());
+      return matchSearch && matchType;
+    })
+    .sort((a, b) => {
+      const ca = getCoords(a);
+      const cb = getCoords(b);
+      if (!ca && !cb) return 0;
+      if (!ca) return 1;
+      if (!cb) return -1;
+      return distanceKm(referencePoint, ca) - distanceKm(referencePoint, cb);
+    });
 
   // Providers that can be shown on the map (real coords OR geocoded)
   const providersOnMap = filteredProviders
