@@ -262,7 +262,7 @@ test.describe("Provider Listing Page (/providers)", () => {
     await page.waitForLoadState("networkidle");
 
     // Click the List button (last of the three view toggles)
-    const listBtn = page.getByRole("button").filter({ hasText: "" }).nth(2);
+    page.getByRole("button").filter({ hasText: "" }).nth(2);
     // Use aria / accessible name approach instead — List icon button
     // The List button is a small icon button; click by position
     await page.getByRole("button", { name: /split/i }).waitFor();

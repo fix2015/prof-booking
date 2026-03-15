@@ -31,7 +31,6 @@ export function MasterRegisterPage() {
   const inviteToken = searchParams.get("invite") || undefined;
   const register_ = useRegisterProfessional();
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   const [selectedProviderIds, setSelectedProviderIds] = useState<number[]>([]);
   const [providerSearch, setProviderSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -76,6 +75,8 @@ export function MasterRegisterPage() {
             (s.address ?? "").toLowerCase().includes(providerSearch.toLowerCase()))
       )
     : providers.filter((s) => !selectedProviderIds.includes(s.id));
+
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const onSubmit = (data: FormValues) => {
     register_.mutate({
