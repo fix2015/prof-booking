@@ -1,10 +1,11 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Flag, Clock } from "lucide-react";
+import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag } from "lucide-react";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
+import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,14 +22,29 @@ const SERVICE_TYPES = [
   "Nail Art", "Extensions", "Shellac", "Spa",
 ];
 
+// Custom pink nail-pin SVG marker
+const NAIL_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">
+  <path d="M15 1C8.93 1 4 5.93 4 12c0 8.78 11 26.5 11 26.5S26 20.78 26 12C26 5.93 21.07 1 15 1z" fill="#db2777" stroke="white" stroke-width="1.5"/>
+  <circle cx="15" cy="12" r="5.5" fill="white"/>
+  <text x="15" y="16" text-anchor="middle" font-size="8" fill="#db2777" font-family="serif">💅</text>
+</svg>`;
+
+const NAIL_PIN_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(NAIL_PIN_SVG)}`;
+
 export function SalonSelectorPage() {
   const { data: providers = [], isLoading } = usePublicProviders();
+
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [view, setView] = useState<"split" | "map" | "list">("split");
   const [locationLoading, setLocationLoading] = useState(false);
+
+  // Geocoded coords for providers without lat/lng
+  const [geocodedCoords, setGeocodedCoords] = useState<Record<number, { lat: number; lng: number }>>({});
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+  const geocodedIdsRef = useRef<Set<number>>(new Set());
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -74,10 +90,41 @@ export function SalonSelectorPage() {
     enabled: !!(committed && (committed.nationality || committed.minExp || committed.type)),
   });
 
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
-    requestLocation(map);
+  // ── Geocoding ────────────────────────────────────────────────────────────────
+
+  const geocodeProviders = useCallback((providerList: Provider[]) => {
+    if (!geocoderRef.current) return;
+    providerList.forEach((p) => {
+      if (geocodedIdsRef.current.has(p.id)) return;
+      if (p.latitude != null && p.longitude != null) return;
+      if (!p.address) return;
+      geocodedIdsRef.current.add(p.id);
+      geocoderRef.current!.geocode({ address: p.address }, (results, status) => {
+        if (status === "OK" && results?.[0]) {
+          const loc = results[0].geometry.location;
+          setGeocodedCoords((prev) => ({
+            ...prev,
+            [p.id]: { lat: loc.lat(), lng: loc.lng() },
+          }));
+        }
+      });
+    });
   }, []);
+
+  useEffect(() => {
+    if (geocoderRef.current && providers.length > 0) {
+      geocodeProviders(providers);
+    }
+  }, [providers, geocodeProviders]);
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+
+  const getCoords = (p: Provider): { lat: number; lng: number } | null => {
+    if (p.latitude != null && p.longitude != null) return { lat: p.latitude, lng: p.longitude };
+    return geocodedCoords[p.id] ?? null;
+  };
+
+  // ── Map events ───────────────────────────────────────────────────────────────
 
   const requestLocation = (map?: google.maps.Map) => {
     if (!navigator.geolocation) return;
@@ -96,6 +143,12 @@ export function SalonSelectorPage() {
     );
   };
 
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+    geocoderRef.current = new google.maps.Geocoder();
+    requestLocation(map);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const hasProfessionalFilter = !!committed;
 
   const handleSearch = () => {
@@ -105,10 +158,11 @@ export function SalonSelectorPage() {
 
   const handleCardClick = (provider: Provider) => {
     setSelectedProvider(provider);
-    if (provider.latitude != null && provider.longitude != null) {
-      setMapCenter({ lat: provider.latitude!, lng: provider.longitude! });
+    const coords = getCoords(provider);
+    if (coords) {
+      setMapCenter(coords);
       setMapZoom(15);
-      mapRef.current?.panTo({ lat: provider.latitude!, lng: provider.longitude! });
+      mapRef.current?.panTo(coords);
       if (view === "list") setView("split");
     }
   };
@@ -126,12 +180,16 @@ export function SalonSelectorPage() {
     return matchSearch && matchType;
   });
 
-  const providersWithCoords = filteredProviders.filter(
-    (s) => s.latitude != null && s.longitude != null
-  );
+  // Providers that can be shown on the map (real coords OR geocoded)
+  const providersOnMap = filteredProviders
+    .map((p) => ({ provider: p, coords: getCoords(p) }))
+    .filter((x): x is { provider: Provider; coords: { lat: number; lng: number } } => x.coords !== null);
 
   const showMap = view !== "list";
   const showList = view !== "map";
+
+  // Coords for the selected provider's InfoWindow
+  const selectedCoords = selectedProvider ? getCoords(selectedProvider) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 flex flex-col">
@@ -204,13 +262,12 @@ export function SalonSelectorPage() {
 
         {/* Row 3: Professional filters */}
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <Flag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Professional nationality (e.g. French)"
+          <div className="flex-1">
+            <NationalitySelect
               value={nationality}
-              onChange={(e) => setParam("nationality", e.target.value)}
-              className="pl-9 bg-white"
+              onChange={(val) => setParam("nationality", val)}
+              placeholder="Professional nationality…"
+              className="bg-white"
             />
           </div>
           <div className="relative sm:w-52">
@@ -253,6 +310,7 @@ export function SalonSelectorPage() {
                       onLoad={onMapLoad}
                       options={{ streetViewControl: false, fullscreenControl: false, mapTypeControl: false }}
                     >
+                      {/* User location dot */}
                       {userLocation && (
                         <Marker
                           position={userLocation}
@@ -267,27 +325,101 @@ export function SalonSelectorPage() {
                           title="Your location"
                         />
                       )}
-                      {providersWithCoords.map((provider) => (
+
+                      {/* Salon markers (real coords + geocoded) */}
+                      {providersOnMap.map(({ provider, coords }) => (
                         <Marker
                           key={provider.id}
-                          position={{ lat: provider.latitude!, lng: provider.longitude! }}
+                          position={coords}
                           title={provider.name}
-                          onClick={() => setSelectedProvider(provider)}
+                          icon={{
+                            url: NAIL_PIN_URL,
+                            scaledSize: new google.maps.Size(30, 40),
+                            anchor: new google.maps.Point(15, 40),
+                          }}
+                          onClick={() => {
+                            setSelectedProvider(provider);
+                            setMapCenter(coords);
+                            setMapZoom(15);
+                          }}
                         />
                       ))}
-                      {selectedProvider?.latitude != null && selectedProvider?.longitude != null && (
+
+                      {/* Rich InfoWindow popup */}
+                      {selectedProvider && selectedCoords && (
                         <InfoWindow
-                          position={{ lat: selectedProvider.latitude!, lng: selectedProvider.longitude! }}
+                          position={selectedCoords}
                           onCloseClick={() => setSelectedProvider(null)}
+                          options={{ pixelOffset: new google.maps.Size(0, -42) }}
                         >
-                          <div className="p-1 min-w-[160px]">
-                            <p className="font-semibold text-sm">{selectedProvider.name}</p>
-                            {selectedProvider.address && (
-                              <p className="text-xs text-gray-500 mt-0.5">{selectedProvider.address}</p>
+                          <div style={{ fontFamily: "'Segoe UI', sans-serif", minWidth: 220, maxWidth: 270 }}>
+                            {/* Logo + name row */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                              {selectedProvider.logo_url ? (
+                                <img
+                                  src={selectedProvider.logo_url}
+                                  alt={selectedProvider.name}
+                                  style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover", border: "2px solid #fce7f3", flexShrink: 0 }}
+                                />
+                              ) : (
+                                <div style={{
+                                  width: 52, height: 52, borderRadius: 10, flexShrink: 0,
+                                  background: "linear-gradient(135deg, #fbcfe8, #f9a8d4)",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  fontSize: 24, fontWeight: 700, color: "#db2777",
+                                }}>
+                                  {selectedProvider.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div style={{ minWidth: 0 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, margin: 0, color: "#111827", lineHeight: 1.3 }}>
+                                  {selectedProvider.name}
+                                </p>
+                                {selectedProvider.address && (
+                                  <p style={{ fontSize: 11, color: "#6b7280", margin: "3px 0 0", lineHeight: 1.4 }}>
+                                    📍 {selectedProvider.address}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            {selectedProvider.description && (
+                              <p style={{
+                                fontSize: 11, color: "#6b7280", margin: "0 0 8px",
+                                display: "-webkit-box", WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: 1.5,
+                              }}>
+                                {selectedProvider.description}
+                              </p>
                             )}
+
+                            {/* Contact */}
+                            {(selectedProvider.phone || selectedProvider.email) && (
+                              <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 10 }}>
+                                {selectedProvider.phone && (
+                                  <p style={{ fontSize: 12, color: "#374151", margin: 0 }}>
+                                    📞 {selectedProvider.phone}
+                                  </p>
+                                )}
+                                {selectedProvider.email && (
+                                  <p style={{ fontSize: 12, color: "#374151", margin: 0 }}>
+                                    ✉️ {selectedProvider.email}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Book button */}
                             <a
                               href={`/book/${selectedProvider.id}`}
-                              className="mt-2 inline-block text-xs font-medium text-pink-600 hover:underline"
+                              style={{
+                                display: "block", textAlign: "center",
+                                background: "#db2777", color: "#fff",
+                                borderRadius: 20, padding: "7px 0",
+                                fontSize: 13, fontWeight: 600,
+                                textDecoration: "none", letterSpacing: "0.01em",
+                              }}
                             >
                               Book Now →
                             </a>
@@ -319,6 +451,7 @@ export function SalonSelectorPage() {
                       key={provider.id}
                       provider={provider}
                       isSelected={selectedProvider?.id === provider.id}
+                      hasMapPin={getCoords(provider) !== null}
                       onClick={() => handleCardClick(provider)}
                     />
                   ))
@@ -329,7 +462,7 @@ export function SalonSelectorPage() {
         )}
       </div>
 
-      {/* Professionals results — shown when any professional filter is active */}
+      {/* Professionals results */}
       {hasProfessionalFilter && (
         <div className="px-4 pb-8 max-w-6xl mx-auto w-full">
           <h2 className="text-xl font-bold text-pink-800 mb-3">Professionals</h2>
@@ -399,38 +532,67 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
   );
 }
 
-function ProviderCard({ provider, isSelected, onClick }: { provider: Provider; isSelected: boolean; onClick: () => void }) {
+function ProviderCard({
+  provider, isSelected, hasMapPin, onClick,
+}: {
+  provider: Provider;
+  isSelected: boolean;
+  hasMapPin: boolean;
+  onClick: () => void;
+}) {
   return (
     <Card
       className={`cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 ${isSelected ? "ring-2 ring-pink-500 shadow-md" : ""}`}
       onClick={onClick}
     >
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3">
+          {/* Logo / initial */}
+          {provider.logo_url ? (
+            <img
+              src={provider.logo_url}
+              alt={provider.name}
+              className="w-12 h-12 rounded-lg object-cover border border-pink-100 shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center text-xl font-bold text-white shrink-0">
+              {provider.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold text-gray-900 truncate">{provider.name}</h2>
+            <div className="flex items-center justify-between gap-1">
+              <h2 className="text-base font-semibold text-gray-900 truncate">{provider.name}</h2>
+              {hasMapPin && (
+                <MapPin className="h-3.5 w-3.5 text-pink-500 shrink-0" />
+              )}
+            </div>
             {provider.description && (
-              <p className="text-gray-600 text-xs mt-0.5 line-clamp-2">{provider.description}</p>
+              <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{provider.description}</p>
             )}
-            <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+            <div className="flex flex-col gap-0.5 mt-1.5 text-xs text-gray-500">
               {provider.address && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-pink-500 shrink-0" />
+                  <MapPin className="h-3 w-3 text-pink-400 shrink-0" />
                   <span className="truncate">{provider.address}</span>
                 </span>
               )}
               {provider.phone && (
                 <span className="flex items-center gap-1">
-                  <Phone className="h-3 w-3 text-pink-500 shrink-0" />
+                  <Phone className="h-3 w-3 text-pink-400 shrink-0" />
                   {provider.phone}
+                </span>
+              )}
+              {provider.email && (
+                <span className="flex items-center gap-1">
+                  <Mail className="h-3 w-3 text-pink-400 shrink-0" />
+                  <span className="truncate">{provider.email}</span>
                 </span>
               )}
             </div>
           </div>
-          {provider.latitude != null && provider.longitude != null && (
-            <MapPin className="h-4 w-4 text-pink-400 shrink-0 mt-0.5" />
-          )}
         </div>
+
         <div className="mt-3">
           <a
             href={`/book/${provider.id}`}
