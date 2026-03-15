@@ -36,6 +36,36 @@ def get_my_professional_profile(
     return professional
 
 
+@router.post("/me/providers/{provider_id}", response_model=ProfessionalProviderResponse, status_code=201)
+def attach_to_provider(
+    provider_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Professional requests to join a provider (creates PENDING relationship)."""
+    from app.modules.salons.models import Provider
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    if not db.query(Provider).filter(Provider.id == provider_id).first():
+        raise HTTPException(status_code=404, detail="Provider not found")
+    existing = db.query(ProfessionalProvider).filter(
+        ProfessionalProvider.professional_id == professional.id,
+        ProfessionalProvider.provider_id == provider_id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Already attached to this provider")
+    pp = ProfessionalProvider(
+        professional_id=professional.id,
+        provider_id=provider_id,
+        status=ProfessionalStatus.PENDING,
+    )
+    db.add(pp)
+    db.commit()
+    db.refresh(pp)
+    return pp
+
+
 @router.patch("/me", response_model=ProfessionalResponse)
 def update_my_professional_profile(
     data: ProfessionalUpdate,

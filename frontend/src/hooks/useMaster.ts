@@ -49,6 +49,14 @@ export function useApproveProfessional(providerId: number) {
   });
 }
 
+export function useAttachToProvider() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (providerId: number) => professionalsApi.attachToProvider(providerId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professional", "me"] }),
+  });
+}
+
 // Backward-compat aliases
 export const useMyMasterProfile = useMyProfessionalProfile;
 export const useUpdateMasterProfile = useUpdateProfessionalProfile;

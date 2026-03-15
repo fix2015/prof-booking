@@ -15,6 +15,22 @@ class ProfessionalPhotoResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ProfessionalBasic(BaseModel):
+    id: int
+    name: str
+    avatar_url: Optional[str] = None
+    phone: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ProviderBasic(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
 class ProfessionalProviderResponse(BaseModel):
     id: int
     professional_id: int
@@ -22,6 +38,8 @@ class ProfessionalProviderResponse(BaseModel):
     status: ProfessionalStatus
     payment_amount: Optional[float]
     joined_at: Optional[datetime]
+    professional: Optional[ProfessionalBasic] = None
+    provider: Optional[ProviderBasic] = None
 
     model_config = {"from_attributes": True}
 

@@ -228,11 +228,24 @@ function ProfessionalCard({
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100 font-semibold text-pink-700">
-            {String(professionalProvider.professional_id).slice(0, 2)}
-          </div>
+          {professionalProvider.professional?.avatar_url ? (
+            <img
+              src={professionalProvider.professional.avatar_url}
+              alt={professionalProvider.professional.name}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100 font-semibold text-pink-700">
+              {(professionalProvider.professional?.name ?? "#").slice(0, 2).toUpperCase()}
+            </div>
+          )}
           <div>
-            <p className="font-medium">Professional #{professionalProvider.professional_id}</p>
+            <p className="font-medium">
+              {professionalProvider.professional?.name ?? `Professional #${professionalProvider.professional_id}`}
+            </p>
+            {professionalProvider.professional?.phone && (
+              <p className="text-xs text-muted-foreground">{professionalProvider.professional.phone}</p>
+            )}
             {professionalProvider.payment_amount && (
               <p className="text-xs text-muted-foreground">${professionalProvider.payment_amount}/session</p>
             )}

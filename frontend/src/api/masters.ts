@@ -47,6 +47,9 @@ export const professionalsApi = {
   deletePhoto: (photoId: number) =>
     apiClient.delete(`/professionals/me/photos/${photoId}`),
 
+  attachToProvider: (providerId: number) =>
+    apiClient.post<ProfessionalProvider>(`/professionals/me/providers/${providerId}`).then((r) => r.data),
+
   createDirect: (
     providerId: number,
     data: {
