@@ -162,8 +162,8 @@ export function BookingForm({
                   onClick={() => setSelectedSlot(slot)}
                   className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
                     selectedSlot === slot
-                      ? "border-pink-600 bg-pink-50 text-pink-700"
-                      : "border-gray-200 hover:border-pink-300 hover:bg-pink-50"
+                      ? "border-gray-700 bg-gray-50 text-gray-700"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
                   {formatTime(`2000-01-01T${slot.start_time}`)}
@@ -202,12 +202,12 @@ export function BookingForm({
 
       {/* Summary */}
       {selectedServiceData && selectedSlot && (
-        <div className="rounded-lg bg-pink-50 border border-pink-100 p-4 text-sm">
-          <p className="font-semibold text-pink-800">Booking Summary</p>
-          <p className="mt-1 text-pink-700">Service: {selectedServiceData.name}</p>
-          <p className="text-pink-700">Time: {formatTime(`2000-01-01T${selectedSlot.start_time}`)}</p>
-          <p className="text-pink-700">Professional: {selectedSlot.professional_name}</p>
-          <p className="font-semibold text-pink-800">Price: {formatCurrency(selectedServiceData.price)}</p>
+        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm">
+          <p className="font-semibold text-gray-800">Booking Summary</p>
+          <p className="mt-1 text-gray-700">Service: {selectedServiceData.name}</p>
+          <p className="text-gray-700">Time: {formatTime(`2000-01-01T${selectedSlot.start_time}`)}</p>
+          <p className="text-gray-700">Professional: {selectedSlot.professional_name}</p>
+          <p className="font-semibold text-gray-800">Price: {formatCurrency(selectedServiceData.price)}</p>
         </div>
       )}
 

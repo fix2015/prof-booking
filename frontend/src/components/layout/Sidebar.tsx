@@ -39,18 +39,18 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   const filtered = navItems.filter((item) => !item.roles || item.roles.includes(role || ""));
 
   return (
-    <div className="flex w-64 flex-col border-r bg-white h-full">
+    <div className="flex w-64 flex-col border-r bg-card h-full">
       {/* Logo */}
       <div className="flex h-14 md:h-16 items-center border-b px-4 md:px-6 gap-2 shrink-0">
-        <Sparkles className="h-5 w-5 text-pink-500 shrink-0" />
-        <span className="text-lg md:text-xl font-bold text-pink-600 truncate">BeautyPlatform</span>
+        <Sparkles className="h-5 w-5 text-foreground shrink-0" />
+        <span className="text-lg md:text-xl font-bold text-foreground truncate">BeautyPlatform</span>
         {onClose && (
           <button
             onClick={onClose}
-            className="ml-auto lg:hidden p-1 rounded hover:bg-gray-100"
+            className="ml-auto lg:hidden p-1 rounded hover:bg-accent"
             aria-label="Close menu"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-muted-foreground" />
           </button>
         )}
       </div>
@@ -69,11 +69,11 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-pink-50 text-pink-700"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5 shrink-0", active ? "text-pink-600" : "text-gray-400")} />
+                  <Icon className={cn("h-5 w-5 shrink-0", active ? "text-primary-foreground" : "text-muted-foreground")} />
                   {item.label}
                 </Link>
               </li>
@@ -87,9 +87,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
             <Link
               to="/discover"
               onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             >
-              <Search className="h-5 w-5 text-gray-400 shrink-0" />
+              <Search className="h-5 w-5 text-muted-foreground shrink-0" />
               Discover Professionals
             </Link>
           </div>
@@ -100,7 +100,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       <div className="border-t p-2 md:p-3 shrink-0">
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-gray-600"
+          className="w-full justify-start gap-3 text-muted-foreground"
           onClick={() => { logout(); onClose?.(); }}
         >
           <LogOut className="h-5 w-5 shrink-0" />

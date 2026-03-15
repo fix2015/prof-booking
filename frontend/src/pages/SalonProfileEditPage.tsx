@@ -187,7 +187,7 @@ export function SalonProfileEditPage() {
 
             <Button
               type="submit"
-              className="w-full md:w-auto bg-pink-600 hover:bg-pink-700"
+              className="w-full md:w-auto bg-gray-900 hover:bg-gray-950"
               disabled={updateProvider.isPending || !providerId}
             >
               {updateProvider.isPending ? "Saving…" : "Save Changes"}

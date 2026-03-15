@@ -18,7 +18,7 @@ export function MasterAnalytics({ report }: MasterAnalyticsProps) {
           title="Sessions Completed"
           value={summary.sessions_completed}
           icon={Scissors}
-          color="pink"
+          color="slate"
         />
         <StatsCard
           title="Total Earnings"

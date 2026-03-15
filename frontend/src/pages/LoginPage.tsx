@@ -28,7 +28,7 @@ export function LoginPage() {
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
@@ -74,19 +74,19 @@ export function LoginPage() {
             </Button>
             <p className="text-sm text-muted-foreground">
               New provider?{" "}
-              <Link to="/register" className="text-pink-600 hover:underline font-medium">
+              <Link to="/register" className="text-gray-700 hover:underline font-medium">
                 Register your business
               </Link>
             </p>
             <p className="text-sm text-muted-foreground">
               Client booking?{" "}
-              <Link to="/providers" className="text-pink-600 hover:underline font-medium">
+              <Link to="/providers" className="text-gray-700 hover:underline font-medium">
                 Book appointment
               </Link>
             </p>
             <p className="text-sm text-muted-foreground">
               Are you a professional?{" "}
-              <Link to="/register/professional" className="text-pink-600 hover:underline font-medium">
+              <Link to="/register/professional" className="text-gray-700 hover:underline font-medium">
                 Join as a Professional
               </Link>
             </p>

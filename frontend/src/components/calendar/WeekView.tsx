@@ -82,7 +82,7 @@ export function WeekView({
                   type="time"
                   value={form.start}
                   onChange={(e) => setForm((f) => f ? { ...f, start: e.target.value } : f)}
-                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 />
               </div>
               <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export function WeekView({
                   type="time"
                   value={form.end}
                   onChange={(e) => setForm((f) => f ? { ...f, end: e.target.value } : f)}
-                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 />
               </div>
               {form.end <= form.start && (
@@ -122,7 +122,7 @@ export function WeekView({
                 key={day.toISOString()}
                 className={cn(
                   "border-r p-2 text-center text-sm font-medium hover:bg-gray-50 transition-colors",
-                  isToday(day) && "bg-pink-50 text-pink-700",
+                  isToday(day) && "bg-gray-50 text-gray-700",
                   isPastDay && "opacity-50"
                 )}
                 onClick={() => onDayClick?.(day)}
@@ -131,7 +131,7 @@ export function WeekView({
                 <div
                   className={cn(
                     "mx-auto mt-1 flex h-7 w-7 items-center justify-center rounded-full text-sm",
-                    isToday(day) && "bg-pink-600 text-white font-bold"
+                    isToday(day) && "bg-gray-900 text-white font-bold"
                   )}
                 >
                   {formatDate(day, "d")}
@@ -169,7 +169,7 @@ export function WeekView({
                         "h-16 border-b transition-colors",
                         past
                           ? "bg-gray-50/70 cursor-not-allowed"
-                          : onAddSlot && "cursor-pointer hover:bg-pink-50/60"
+                          : onAddSlot && "cursor-pointer hover:bg-gray-50/60"
                       )}
                       onClick={() => handleCellClick(day, h)}
                     />
@@ -218,7 +218,7 @@ function WeekSessionBlock({ session, onClick }: { session: Session; onClick: () 
       onClick={onClick}
       className={cn(
         "absolute left-1 right-1 rounded border px-1 py-0.5 text-xs overflow-hidden hover:opacity-90 transition-opacity",
-        statusColors[session.status] || "bg-pink-200 border-pink-400 text-pink-900"
+        statusColors[session.status] || "bg-gray-200 border-gray-400 text-gray-900"
       )}
       style={{ top: `${top}px`, height: `${Math.max(height, 24)}px` }}
     >

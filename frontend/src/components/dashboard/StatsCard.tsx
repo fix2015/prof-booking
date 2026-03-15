@@ -8,17 +8,17 @@ interface StatsCardProps {
   subtitle?: string;
   icon: LucideIcon;
   trend?: { value: number; label: string };
-  color?: "pink" | "blue" | "green" | "purple";
+  color?: "slate" | "blue" | "green" | "purple";
 }
 
 const colorMap = {
-  pink: { bg: "bg-pink-50", icon: "text-pink-600", accent: "text-pink-600" },
-  blue: { bg: "bg-blue-50", icon: "text-blue-600", accent: "text-blue-600" },
-  green: { bg: "bg-green-50", icon: "text-green-600", accent: "text-green-600" },
-  purple: { bg: "bg-purple-50", icon: "text-purple-600", accent: "text-purple-600" },
+  slate: { bg: "bg-secondary", icon: "text-foreground", accent: "text-foreground" },
+  blue: { bg: "bg-blue-50 dark:bg-blue-950", icon: "text-blue-600 dark:text-blue-400", accent: "text-blue-600 dark:text-blue-400" },
+  green: { bg: "bg-green-50 dark:bg-green-950", icon: "text-green-600 dark:text-green-400", accent: "text-green-600 dark:text-green-400" },
+  purple: { bg: "bg-purple-50 dark:bg-purple-950", icon: "text-purple-600 dark:text-purple-400", accent: "text-purple-600 dark:text-purple-400" },
 };
 
-export function StatsCard({ title, value, subtitle, icon: Icon, trend, color = "pink" }: StatsCardProps) {
+export function StatsCard({ title, value, subtitle, icon: Icon, trend, color = "slate" }: StatsCardProps) {
   const colors = colorMap[color];
 
   return (

@@ -62,7 +62,7 @@ export function MultiImageUpload({ photos, onAdd, onRemove }: MultiImageUploadPr
         {remaining > 0 && (
           <button
             type="button"
-            className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-pink-400 hover:text-pink-500 hover:bg-pink-50 transition-colors"
+            className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-gray-400 hover:text-gray-500 hover:bg-gray-50 transition-colors"
             onClick={() => !loading && inputRef.current?.click()}
             disabled={loading}
           >

@@ -34,7 +34,7 @@ export function RegisterPage() {
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
@@ -99,7 +99,7 @@ export function RegisterPage() {
             </Button>
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-pink-600 hover:underline font-medium">
+              <Link to="/login" className="text-gray-700 hover:underline font-medium">
                 Sign in
               </Link>
             </p>

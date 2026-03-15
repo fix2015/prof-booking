@@ -61,7 +61,7 @@ export function MasterProfilePage() {
               className="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border-4 border-white shadow-lg"
             />
           ) : (
-            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-3xl md:text-4xl font-bold text-white shadow-lg">
+            <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-3xl md:text-4xl font-bold text-white shadow-lg">
               {professional.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -98,7 +98,7 @@ export function MasterProfilePage() {
 
           <div className="mt-4">
             <Link to={`/book?professional_id=${professional.id}`}>
-              <Button size="lg" className="bg-pink-600 hover:bg-pink-700">
+              <Button size="lg" className="bg-gray-900 hover:bg-gray-950">
                 Book Appointment
               </Button>
             </Link>

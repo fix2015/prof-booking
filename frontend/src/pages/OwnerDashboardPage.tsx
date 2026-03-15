@@ -72,7 +72,7 @@ export function OwnerDashboardPage() {
           value={report?.summary.total_sessions ?? 0}
           subtitle={`${report?.summary.completed_sessions ?? 0} completed`}
           icon={Scissors}
-          color="pink"
+          color="slate"
         />
         <StatsCard
           title="Completion Rate"

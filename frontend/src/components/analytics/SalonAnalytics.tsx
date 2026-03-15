@@ -27,7 +27,7 @@ export function SalonAnalytics({ report }: SalonAnalyticsProps) {
           value={summary.total_sessions}
           subtitle={`${summary.completed_sessions} completed`}
           icon={Scissors}
-          color="pink"
+          color="slate"
         />
         <StatsCard
           title="Completion Rate"

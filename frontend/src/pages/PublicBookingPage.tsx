@@ -103,9 +103,9 @@ export function PublicBookingPage() {
   // Show provider selector if no provider selected
   if (!activeProviderId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-6">
         <div className="mx-auto max-w-2xl">
-          <h1 className="text-3xl font-bold text-center mb-8 text-pink-800">Choose a Provider</h1>
+          <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Choose a Provider</h1>
           <div className="grid gap-4">
             {providers?.map((p) => (
               <a key={p.id} href={`/book/${p.id}`}>
@@ -129,7 +129,7 @@ export function PublicBookingPage() {
     const professionalName = (confirmation as any).professional_name ?? (confirmation as any).master_name;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex items-center justify-center p-6">
         <Card className="w-full max-w-md shadow-xl">
           <CardContent className="p-8 text-center space-y-4">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
@@ -143,14 +143,14 @@ export function PublicBookingPage() {
               {professionalName && <p><span className="font-medium">Professional:</span> {professionalName}</p>}
               <p><span className="font-medium">Date & Time:</span> {formatDateTime(confirmation.starts_at)}</p>
               {confirmation.price && <p><span className="font-medium">Price:</span> {formatCurrency(confirmation.price)}</p>}
-              <p className="text-lg font-bold text-pink-700">
+              <p className="text-lg font-bold text-gray-700">
                 Confirmation: {confirmation.confirmation_code}
               </p>
             </div>
             <p className="text-xs text-muted-foreground">
               You'll receive an SMS confirmation to {confirmation.client_phone}
             </p>
-            <a href={`/book/${activeProviderId}`} className="text-pink-600 hover:underline text-sm">
+            <a href={`/book/${activeProviderId}`} className="text-gray-700 hover:underline text-sm">
               Book another appointment
             </a>
           </CardContent>
@@ -160,13 +160,13 @@ export function PublicBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <div className="mb-6 text-center">
           <div className="text-5xl mb-2">✨</div>
-          <h1 className="text-3xl font-bold text-pink-800">{provider?.name}</h1>
-          {provider?.address && <p className="text-pink-600 mt-1">{provider.address}</p>}
+          <h1 className="text-3xl font-bold text-gray-800">{provider?.name}</h1>
+          {provider?.address && <p className="text-gray-700 mt-1">{provider.address}</p>}
         </div>
 
         <Card className="shadow-xl">
