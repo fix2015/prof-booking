@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { WorkSlot, Session } from "@/types";
 import { TimeSlot } from "./TimeSlot";
 import { formatDate, isToday, isBefore } from "@/utils/dates";
@@ -133,10 +134,10 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
         </div>
       </div>
 
-      {/* Add slot modal */}
-      {form && (
+      {/* Add slot modal — rendered in document.body to escape overflow clipping */}
+      {form && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50"
           onClick={() => setForm(null)}
         >
           <div
@@ -177,7 +178,8 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { addDays, formatDate, isSameDay, toISODateString, isToday, isBefore } from "@/utils/dates";
 import { WorkSlot, Session } from "@/types";
 import { TimeSlot } from "./TimeSlot";
@@ -61,10 +62,10 @@ export function WeekView({
 
   return (
     <div>
-      {/* Add slot modal */}
-      {form !== null && (
+      {/* Add slot modal — rendered in document.body to escape overflow clipping */}
+      {form !== null && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50"
           onClick={() => setForm(null)}
         >
           <div
@@ -107,7 +108,8 @@ export function WeekView({
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Calendar grid */}
