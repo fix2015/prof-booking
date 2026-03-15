@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, MapPin, Phone, Mail, AlignLeft } from "lucide-react";
 import { providersApi } from "@/api/salons";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { AddressAutocomplete } from "@/components/ui/AddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,8 @@ export function SalonProfileEditPage() {
     phone: "",
     email: "",
     description: "",
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
   });
 
   useEffect(() => {
@@ -43,6 +46,8 @@ export function SalonProfileEditPage() {
         phone: provider.phone ?? "",
         email: provider.email ?? "",
         description: provider.description ?? "",
+        latitude: provider.latitude ?? undefined,
+        longitude: provider.longitude ?? undefined,
       });
     }
   }, [provider]);
@@ -61,6 +66,8 @@ export function SalonProfileEditPage() {
         phone: form.phone || undefined,
         email: form.email || undefined,
         description: form.description || undefined,
+        latitude: form.latitude,
+        longitude: form.longitude,
       });
       toast({ title: "Provider updated", variant: "success" });
     } catch {
@@ -126,11 +133,14 @@ export function SalonProfileEditPage() {
               <Label htmlFor="address" className="flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5" /> Address
               </Label>
-              <Input
+              <AddressAutocomplete
                 id="address"
                 value={form.address}
-                onChange={handleChange("address")}
-                placeholder="123 Main St, City"
+                onChange={(val) => setForm((f) => ({ ...f, address: val }))}
+                onSelect={({ address, lat, lng }) =>
+                  setForm((f) => ({ ...f, address, latitude: lat, longitude: lng }))
+                }
+                placeholder="Start typing address or postcode…"
               />
             </div>
 
