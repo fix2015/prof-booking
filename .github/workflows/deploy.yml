@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -49,11 +53,7 @@ jobs:
         run: |
           scp -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no \
             backend/.env \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/prof-booking/backend/.env
-
-          scp -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no \
-            frontend/.env \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/prof-booking/frontend/.env
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/opt/prof-booking/infra/backend.env
 
           scp -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no \
             infra/.env \
@@ -84,27 +84,34 @@ jobs:
             docker compose version
           EOF
 
-      # ── 7. Build & start containers ──────────────────────────────────
-      # ServerAliveInterval prevents SSH "Broken pipe" during long docker builds
+      # ── 7. Pull images from GHCR & start containers ─────────────────
+      # Uses pre-built images from CI — faster, no disk-intensive build on EC2
       - name: Deploy with Docker Compose
-        timeout-minutes: 20
+        timeout-minutes: 15
         run: |
+          GHCR_TOKEN="${{ secrets.GITHUB_TOKEN }}"
           ssh -i /tmp/deploy_key.pem \
               -o StrictHostKeyChecking=no \
               -o ServerAliveInterval=30 \
               -o ServerAliveCountMax=20 \
-              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
             set -e
             cd /opt/prof-booking/infra
 
-            # Stop old containers
-            sudo docker compose down --remove-orphans || true
+            # Login to GHCR with the workflow token (expanded by runner before SSH)
+            echo "${GHCR_TOKEN}" | sudo docker login ghcr.io -u fix2015 --password-stdin
 
-            # Build & start all services (sudo avoids docker group timing issue)
-            sudo docker compose up -d --build
+            # Stop old containers
+            sudo docker compose -f docker-compose.prod.yml down --remove-orphans || true
+
+            # Pull latest pre-built images (no build on EC2 needed)
+            sudo docker compose -f docker-compose.prod.yml pull
+
+            # Start all services
+            sudo docker compose -f docker-compose.prod.yml up -d
 
             # Show running containers
-            sudo docker compose ps
+            sudo docker compose -f docker-compose.prod.yml ps
           EOF
 
       # ── 8. Cleanup local key ─────────────────────────────────────────
