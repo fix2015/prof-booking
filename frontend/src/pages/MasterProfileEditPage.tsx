@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { User, Globe, Clock, FileText, AlignLeft, Phone } from "lucide-react";
-import { useMyProfessionalProfile, useUpdateProfessionalProfile } from "@/hooks/useMaster";
+import { User, Globe, Clock, FileText, AlignLeft, Phone, Building2, Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useMyProfessionalProfile, useUpdateProfessionalProfile, useAttachToProvider } from "@/hooks/useMaster";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/hooks/useToast";
+import { cn } from "@/utils/cn";
+import { statusColorMap, statusLabel } from "@/utils/formatters";
+import { providersApi } from "@/api/salons";
+import { Provider } from "@/types";
 
 export function MasterProfileEditPage() {
   const { data: professional, isLoading } = useMyProfessionalProfile();
@@ -59,8 +64,36 @@ export function MasterProfileEditPage() {
     }
   };
 
-  // Prevent unused variable warning
   void qc;
+
+  const attachToProvider = useAttachToProvider();
+  const [providerSearch, setProviderSearch] = useState("");
+  const [showProviderPicker, setShowProviderPicker] = useState(false);
+
+  const { data: allProviders = [] } = useQuery<Provider[]>({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
+    enabled: showProviderPicker,
+  });
+
+  const attachedProviderIds = new Set(
+    professional?.professional_providers?.map((pp) => pp.provider_id) ?? []
+  );
+
+  const filteredProviders = allProviders.filter(
+    (p) => !attachedProviderIds.has(p.id) &&
+      p.name.toLowerCase().includes(providerSearch.toLowerCase())
+  );
+
+  const handleAttach = async (providerId: number) => {
+    try {
+      await attachToProvider.mutateAsync(providerId);
+      toast({ title: "Request sent — awaiting owner approval", variant: "success" });
+      setShowProviderPicker(false);
+    } catch {
+      toast({ title: "Failed to send request", variant: "destructive" });
+    }
+  };
 
   if (isLoading) return <Spinner className="mx-auto mt-20" />;
 
@@ -185,6 +218,84 @@ export function MasterProfileEditPage() {
               {updateProfessional.isPending ? "Saving…" : "Save Changes"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Providers */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Building2 className="h-4 w-4" /> My Providers
+            </CardTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowProviderPicker((v) => !v)}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Join Provider
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Provider picker */}
+          {showProviderPicker && (
+            <div className="border rounded-md p-3 space-y-2 bg-muted/30">
+              <Input
+                placeholder="Search providers…"
+                value={providerSearch}
+                onChange={(e) => setProviderSearch(e.target.value)}
+                className="h-8 text-sm"
+              />
+              <div className="max-h-48 overflow-y-auto space-y-1">
+                {filteredProviders.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">No providers found</p>
+                )}
+                {filteredProviders.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-muted">
+                    <span className="text-sm">{p.name}</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 text-xs"
+                      disabled={attachToProvider.isPending}
+                      onClick={() => handleAttach(p.id)}
+                    >
+                      Request
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Attached providers list */}
+          {(professional?.professional_providers ?? []).length === 0 && !showProviderPicker && (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Not attached to any provider yet.
+            </p>
+          )}
+          {(professional?.professional_providers ?? []).map((pp) => (
+            <div key={pp.id} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div>
+                <p className="text-sm font-medium">
+                  {pp.provider?.name ?? `Provider #${pp.provider_id}`}
+                </p>
+                {pp.payment_amount && (
+                  <p className="text-xs text-muted-foreground">${pp.payment_amount}/session</p>
+                )}
+              </div>
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                  statusColorMap[pp.status]
+                )}
+              >
+                {statusLabel[pp.status]}
+              </span>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>

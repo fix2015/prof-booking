@@ -82,6 +82,8 @@ export interface ProfessionalProvider {
   status: ProfessionalStatus;
   payment_amount?: number;
   joined_at?: string;
+  professional?: { id: number; name: string; avatar_url?: string; phone?: string };
+  provider?: { id: number; name: string };
 }
 
 // Backward-compat alias
