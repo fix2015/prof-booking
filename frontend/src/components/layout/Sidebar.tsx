@@ -43,7 +43,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Logo */}
       <div className="flex h-14 md:h-16 items-center border-b px-4 md:px-6 gap-2 shrink-0">
         <Sparkles className="h-5 w-5 text-foreground shrink-0" />
-        <span className="text-lg md:text-xl font-bold text-foreground truncate">BeautyPlatform</span>
+        <span className="text-lg md:text-xl font-bold text-foreground truncate"><span className="font-bold">Pro</span><span className="font-light tracking-wide">Book</span></span>
         {onClose && (
           <button
             onClick={onClose}
