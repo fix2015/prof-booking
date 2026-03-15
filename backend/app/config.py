@@ -46,6 +46,16 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "noreply@nailsalonplatform.com"
     EMAIL_FROM_NAME: str = "NailSalon Platform"
 
+    # AWS S3
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_S3_BUCKET: str = "gport"
+    AWS_S3_REGION: str = "eu-central-1"
+
+    @property
+    def S3_BASE_URL(self) -> str:
+        return f"https://{self.AWS_S3_BUCKET}.s3.{self.AWS_S3_REGION}.amazonaws.com"
+
     # Seed
     FIRST_ADMIN_EMAIL: str = "admin@nailsalonplatform.com"
     FIRST_ADMIN_PASSWORD: str = "admin"
