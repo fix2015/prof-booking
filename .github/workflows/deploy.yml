@@ -109,11 +109,12 @@ jobs:
             # Stop old containers
             sudo docker compose -f docker-compose.prod.yml down --remove-orphans || true
 
-            # Free disk space before pulling new images
-            sudo docker image prune -af || true
-
-            # Pull latest pre-built images (no build on EC2 needed)
+            # Pull latest pre-built images first
             sudo docker compose -f docker-compose.prod.yml pull
+
+            # Remove only dangling (untagged) image layers to free disk space
+            # -f without -a keeps tagged images (postgres, redis) intact
+            sudo docker image prune -f || true
 
             # Start all services
             sudo docker compose -f docker-compose.prod.yml up -d
