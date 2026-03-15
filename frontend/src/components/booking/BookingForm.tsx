@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Service, Master, AvailableSlot } from "@/types";
 import { formatCurrency } from "@/utils/formatters";
 import { formatTime } from "@/utils/dates";
+import { NATIONALITIES } from "@/components/ui/NationalitySelect";
 
 const schema = z.object({
   client_name: z.string().min(2, "Name is required"),
@@ -119,11 +120,16 @@ export function BookingForm({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="any">Any available professional</SelectItem>
-            {masters.map((m) => (
-              <SelectItem key={m.id} value={String(m.id)}>
-                {m.name}
-              </SelectItem>
-            ))}
+            {masters.map((m) => {
+              const flag = m.nationality
+                ? (NATIONALITIES.find((n) => n.label === m.nationality)?.flag ?? "")
+                : "";
+              return (
+                <SelectItem key={m.id} value={String(m.id)}>
+                  {flag ? `${flag} ${m.name}` : m.name}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
