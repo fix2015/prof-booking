@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileText, Plus, Calendar } from "lucide-react";
 import { invoicesApi } from "@/api/invoices";
-import { salonsApi } from "@/api/salons";
-import { mastersApi } from "@/api/masters";
+import { providersApi } from "@/api/salons";
+import { professionalsApi } from "@/api/masters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -22,10 +22,10 @@ const STATUS_COLORS: Record<InvoiceStatus, string> = {
 export function InvoicesPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const isOwner = user?.role === "salon_owner" || user?.role === "platform_admin";
+  const isOwner = user?.role === "provider_owner" || user?.role === "platform_admin";
 
   const [showGenerate, setShowGenerate] = useState(false);
-  const [selectedMasterId, setSelectedMasterId] = useState<number | "">("");
+  const [selectedProfessionalId, setSelectedProfessionalId] = useState<number | "">("");
   const [periodStart, setPeriodStart] = useState(() => {
     const d = new Date();
     d.setDate(1);
@@ -33,39 +33,40 @@ export function InvoicesPage() {
   });
   const [periodEnd, setPeriodEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const { data: salons = [] } = useQuery({
-    queryKey: ["salons", "public"],
-    queryFn: () => salonsApi.listPublic(),
+  const { data: providers = [] } = useQuery({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
     enabled: isOwner,
   });
-  const salonId = salons[0]?.id;
+  const providerId = providers[0]?.id;
 
-  const { data: masterSalons = [] } = useQuery({
-    queryKey: ["masters", "salon", salonId],
-    queryFn: () => mastersApi.getSalonMasters(salonId!),
-    enabled: !!salonId && isOwner,
+  const { data: professionalProviders = [] } = useQuery({
+    queryKey: ["professionals", "provider", providerId],
+    queryFn: () => professionalsApi.getProviderProfessionals(providerId!),
+    enabled: !!providerId && isOwner,
   });
 
   const { data: invoices = [], isLoading } = useQuery<Invoice[]>({
-    queryKey: isOwner ? ["invoices", "salon", salonId] : ["invoices", "me"],
+    queryKey: isOwner ? ["invoices", "provider", providerId] : ["invoices", "me"],
     queryFn: async () => {
       if (isOwner) {
-        const res = await invoicesApi.salonInvoices(salonId!);
+        const res = await invoicesApi.salonInvoices(providerId!);
         return res.data;
       }
       const res = await invoicesApi.myInvoices();
       return res.data;
     },
-    enabled: isOwner ? !!salonId : true,
+    enabled: isOwner ? !!providerId : true,
   });
 
   const generateMutation = useMutation({
     mutationFn: () =>
-      invoicesApi.generate(salonId!, {
-        master_id: Number(selectedMasterId),
+      invoicesApi.generate(providerId!, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        professional_id: Number(selectedProfessionalId),
         period_start: periodStart,
         period_end: periodEnd,
-      }),
+      } as any),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
       setShowGenerate(false);
@@ -106,14 +107,14 @@ export function InvoicesPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <select
-                value={selectedMasterId}
-                onChange={(e) => setSelectedMasterId(e.target.value === "" ? "" : Number(e.target.value))}
+                value={selectedProfessionalId}
+                onChange={(e) => setSelectedProfessionalId(e.target.value === "" ? "" : Number(e.target.value))}
                 className="border rounded px-3 py-2 text-sm w-full"
               >
-                <option value="">Select master…</option>
-                {masterSalons.map((ms) => (
-                  <option key={ms.master_id} value={ms.master_id}>
-                    Master #{ms.master_id}
+                <option value="">Select professional…</option>
+                {professionalProviders.map((pp: any) => (
+                  <option key={pp.professional_id} value={pp.professional_id}>
+                    Professional #{pp.professional_id}
                   </option>
                 ))}
               </select>
@@ -136,7 +137,7 @@ export function InvoicesPage() {
             <div className="flex gap-2">
               <Button
                 onClick={() => generateMutation.mutate()}
-                disabled={!selectedMasterId || generateMutation.isPending}
+                disabled={!selectedProfessionalId || generateMutation.isPending}
               >
                 {generateMutation.isPending && <Spinner size="sm" className="mr-2" />}
                 Generate
@@ -183,6 +184,10 @@ function InvoiceRow({
   onStatusChange: (status: InvoiceStatus) => void;
   isLoading: boolean;
 }) {
+  const professionalEarnings = (invoice as any).professional_earnings ?? (invoice as any).master_earnings ?? 0;
+  const providerEarnings = (invoice as any).provider_earnings ?? (invoice as any).salon_earnings ?? 0;
+  const professionalPct = (invoice as any).professional_percentage ?? (invoice as any).master_percentage ?? 0;
+
   return (
     <Card>
       <CardContent className="p-3 md:p-4">
@@ -199,9 +204,9 @@ function InvoiceRow({
             <div className="flex flex-wrap gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground">
               <span>{invoice.total_sessions} sessions</span>
               <span>Revenue: {formatCurrency(invoice.total_revenue)}</span>
-              <span className="text-green-600">Master: {formatCurrency(invoice.master_earnings)}</span>
-              <span className="text-blue-600">Salon: {formatCurrency(invoice.salon_earnings)}</span>
-              <span>{invoice.master_percentage}% split</span>
+              <span className="text-green-600">Professional: {formatCurrency(professionalEarnings)}</span>
+              <span className="text-blue-600">Provider: {formatCurrency(providerEarnings)}</span>
+              <span>{professionalPct}% split</span>
             </div>
           </div>
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { servicesApi } from "@/api/services";
-import { salonsApi } from "@/api/salons";
+import { providersApi } from "@/api/salons";
 import { Service } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,17 +18,17 @@ export function ServicesPage() {
   const [editing, setEditing] = useState<Service | null>(null);
   const [form, setForm] = useState({ name: "", description: "", duration_minutes: 60, price: 0 });
 
-  const { data: salons } = useQuery({ queryKey: ["salons", "public"], queryFn: () => salonsApi.listPublic() });
-  const salonId = salons?.[0]?.id;
+  const { data: providers } = useQuery({ queryKey: ["providers", "public"], queryFn: () => providersApi.listPublic() });
+  const providerId = providers?.[0]?.id;
 
   const { data: services = [], isLoading } = useQuery({
-    queryKey: ["services", salonId],
-    queryFn: () => servicesApi.listBySalon(salonId!),
-    enabled: !!salonId,
+    queryKey: ["services", providerId],
+    queryFn: () => servicesApi.listByProvider(providerId!),
+    enabled: !!providerId,
   });
 
   const createMutation = useMutation({
-    mutationFn: () => servicesApi.create(salonId!, form),
+    mutationFn: () => servicesApi.create(providerId!, form),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["services"] }); setShowForm(false); toast({ title: "Service created", variant: "success" }); },
     onError: () => toast({ title: "Failed to create service", variant: "destructive" }),
   });
@@ -68,7 +68,7 @@ export function ServicesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div className="space-y-1">
                 <Label>Name *</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Manicure" />
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Service name" />
               </div>
               <div className="space-y-1">
                 <Label>Price ($) *</Label>

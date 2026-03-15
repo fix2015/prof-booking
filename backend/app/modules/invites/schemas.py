@@ -10,7 +10,7 @@ class InviteCreate(BaseModel):
 
 class InviteResponse(BaseModel):
     id: int
-    salon_id: int
+    provider_id: int
     invited_email: str
     token: str
     status: InviteStatus
@@ -23,5 +23,5 @@ class InviteResponse(BaseModel):
 class InviteValidation(BaseModel):
     token: str
     is_valid: bool
-    salon_id: Optional[int]
+    provider_id: Optional[int]
     invited_email: Optional[str]

@@ -1,4 +1,4 @@
-export type UserRole = "platform_admin" | "salon_owner" | "master" | "client";
+export type UserRole = "platform_admin" | "provider_owner" | "professional" | "client";
 
 export interface User {
   id: number;
@@ -18,7 +18,7 @@ export interface AuthTokens {
   role: UserRole;
 }
 
-export interface Salon {
+export interface Provider {
   id: number;
   name: string;
   address?: string;
@@ -26,6 +26,7 @@ export interface Salon {
   email?: string;
   description?: string;
   logo_url?: string;
+  category?: string;
   worker_payment_amount: number;
   deposit_percentage: number;
   latitude?: number;
@@ -35,16 +36,22 @@ export interface Salon {
   settings?: Record<string, unknown>;
 }
 
-export interface MasterPhoto {
+// Backward-compat alias
+export type Salon = Provider;
+
+export interface ProfessionalPhoto {
   id: number;
-  master_id: number;
+  professional_id: number;
   image_url: string;
   caption?: string;
   order: number;
   created_at: string;
 }
 
-export interface Master {
+// Backward-compat alias
+export type MasterPhoto = ProfessionalPhoto;
+
+export interface Professional {
   id: number;
   user_id: number;
   name: string;
@@ -55,25 +62,34 @@ export interface Master {
   nationality?: string;
   experience_years?: number;
   description?: string;
-  photos?: MasterPhoto[];
+  photos?: ProfessionalPhoto[];
   created_at: string;
-  master_salons?: MasterSalon[];
+  professional_providers?: ProfessionalProvider[];
 }
 
-export type MasterStatus = "pending" | "active" | "inactive" | "rejected";
+// Backward-compat alias
+export type Master = Professional;
 
-export interface MasterSalon {
+export type ProfessionalStatus = "pending" | "active" | "inactive" | "rejected";
+
+// Backward-compat alias
+export type MasterStatus = ProfessionalStatus;
+
+export interface ProfessionalProvider {
   id: number;
-  master_id: number;
-  salon_id: number;
-  status: MasterStatus;
+  professional_id: number;
+  provider_id: number;
+  status: ProfessionalStatus;
   payment_amount?: number;
   joined_at?: string;
 }
 
+// Backward-compat alias
+export type MasterSalon = ProfessionalProvider;
+
 export interface Service {
   id: number;
-  salon_id: number;
+  provider_id: number;
   name: string;
   description?: string;
   duration_minutes: number;
@@ -92,8 +108,8 @@ export type SessionStatus =
 
 export interface Session {
   id: number;
-  salon_id: number;
-  master_id?: number;
+  provider_id: number;
+  professional_id?: number;
   service_id?: number;
   client_name: string;
   client_phone: string;
@@ -113,8 +129,8 @@ export interface Session {
 
 export interface WorkSlot {
   id: number;
-  master_id: number;
-  salon_id: number;
+  professional_id: number;
+  provider_id: number;
   slot_date: string;
   start_time: string;
   end_time: string;
@@ -122,8 +138,8 @@ export interface WorkSlot {
 }
 
 export interface AvailableSlot {
-  master_id: number;
-  master_name: string;
+  professional_id: number;
+  professional_name: string;
   slot_date: string;
   start_time: string;
   end_time: string;
@@ -134,9 +150,9 @@ export interface BookingConfirmation {
   session_id: number;
   client_name: string;
   client_phone: string;
-  salon_name: string;
+  provider_name: string;
   service_name?: string;
-  master_name?: string;
+  professional_name?: string;
   starts_at: string;
   ends_at: string;
   price?: number;
@@ -156,7 +172,7 @@ export interface Payment {
 
 export interface Invite {
   id: number;
-  salon_id: number;
+  provider_id: number;
   invited_email: string;
   token: string;
   status: "pending" | "accepted" | "expired" | "revoked";
@@ -169,8 +185,8 @@ export interface Invite {
 export interface Review {
   id: number;
   session_id?: number;
-  master_id: number;
-  salon_id: number;
+  professional_id: number;
+  provider_id: number;
   client_name: string;
   client_phone?: string;
   rating: number;
@@ -180,7 +196,7 @@ export interface Review {
 }
 
 export interface ReviewStats {
-  master_id: number;
+  professional_id: number;
   total_reviews: number;
   average_rating: number;
   rating_distribution: Record<string, number>;
@@ -203,7 +219,7 @@ export interface DiscountRule {
 
 export interface LoyaltyProgram {
   id: number;
-  salon_id: number;
+  provider_id: number;
   name: string;
   description?: string;
   is_active: boolean;
@@ -217,15 +233,15 @@ export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 
 export interface Invoice {
   id: number;
-  salon_id: number;
-  master_id: number;
+  provider_id: number;
+  professional_id: number;
   period_start: string;
   period_end: string;
   total_sessions: number;
   total_revenue: number;
-  master_earnings: number;
-  salon_earnings: number;
-  master_percentage: number;
+  professional_earnings: number;
+  provider_earnings: number;
+  professional_percentage: number;
   status: InvoiceStatus;
   notes?: string;
   created_at: string;
@@ -233,9 +249,9 @@ export interface Invoice {
 
 export interface EarningsSplit {
   id: number;
-  salon_id: number;
-  master_id: number;
-  master_percentage: number;
+  provider_id: number;
+  professional_id: number;
+  professional_percentage: number;
   effective_from: string;
   created_at: string;
 }
@@ -243,22 +259,22 @@ export interface EarningsSplit {
 // ── Analytics ──────────────────────────────────────────
 
 export interface WorkerAnalytics {
-  master_id: number;
-  master_name: string;
+  professional_id: number;
+  professional_name: string;
   avatar_url?: string;
-  status: MasterStatus;
+  status: ProfessionalStatus;
   total_sessions: number;
   completed_sessions: number;
   total_hours: number;
   total_revenue: number;
-  master_earnings: number;
-  salon_earnings: number;
-  master_percentage: number;
+  professional_earnings: number;
+  provider_earnings: number;
+  professional_percentage: number;
 }
 
-export interface MasterAnalytics {
-  master_id: number;
-  master_name: string;
+export interface ProfessionalAnalytics {
+  professional_id: number;
+  professional_name: string;
   period_from: string;
   period_to: string;
   total_sessions: number;
@@ -266,8 +282,8 @@ export interface MasterAnalytics {
   total_hours: number;
   total_revenue: number;
   unique_clients: number;
-  salon_breakdown: Array<{
-    salon_id: number;
+  provider_breakdown: Array<{
+    provider_id: number;
     sessions: number;
     revenue: number;
     hours: number;
@@ -279,12 +295,15 @@ export interface MasterAnalytics {
   }>;
 }
 
+// Backward-compat alias
+export type MasterAnalytics = ProfessionalAnalytics;
+
 // ── Reports ────────────────────────────────────────────
 
-export interface SalonReport {
+export interface ProviderReport {
   summary: {
-    salon_id: number;
-    salon_name: string;
+    provider_id: number;
+    provider_name: string;
     period_start: string;
     period_end: string;
     total_sessions: number;
@@ -299,9 +318,9 @@ export interface SalonReport {
     booking_count: number;
     total_revenue: number;
   }>;
-  master_performance: Array<{
-    master_id: number;
-    master_name: string;
+  professional_performance: Array<{
+    professional_id: number;
+    professional_name: string;
     sessions_completed: number;
     sessions_cancelled: number;
     completion_rate: number;
@@ -314,10 +333,13 @@ export interface SalonReport {
   }>;
 }
 
-export interface MasterReport {
+// Backward-compat alias
+export type SalonReport = ProviderReport;
+
+export interface ProfessionalReport {
   summary: {
-    master_id: number;
-    master_name: string;
+    professional_id: number;
+    professional_name: string;
     sessions_completed: number;
     total_earnings: number;
     period_start: string;
@@ -329,6 +351,9 @@ export interface MasterReport {
     session_count: number;
   }>;
 }
+
+// Backward-compat alias
+export type MasterReport = ProfessionalReport;
 
 export interface PaginationParams {
   skip?: number;

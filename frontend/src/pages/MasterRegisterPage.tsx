@@ -5,8 +5,8 @@ import { z } from "zod";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, X } from "lucide-react";
-import { useRegisterMaster } from "@/hooks/useAuth";
-import { salonsApi } from "@/api/salons";
+import { useRegisterProfessional } from "@/hooks/useAuth";
+import { providersApi } from "@/api/salons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,15 +26,15 @@ type FormValues = z.infer<typeof schema>;
 export function MasterRegisterPage() {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite") || undefined;
-  const register_ = useRegisterMaster();
-  const [selectedSalonIds, setSelectedSalonIds] = useState<number[]>([]);
-  const [salonSearch, setSalonSearch] = useState("");
+  const register_ = useRegisterProfessional();
+  const [selectedProviderIds, setSelectedProviderIds] = useState<number[]>([]);
+  const [providerSearch, setProviderSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const comboRef = useRef<HTMLDivElement>(null);
 
-  const { data: salons = [] } = useQuery({
-    queryKey: ["salons", "public"],
-    queryFn: () => salonsApi.listPublic(),
+  const { data: providers = [] } = useQuery({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
     enabled: !inviteToken,
   });
 
@@ -53,24 +53,24 @@ export function MasterRegisterPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const addSalon = (id: number) => {
-    if (!selectedSalonIds.includes(id)) setSelectedSalonIds((prev) => [...prev, id]);
-    setSalonSearch("");
+  const addProvider = (id: number) => {
+    if (!selectedProviderIds.includes(id)) setSelectedProviderIds((prev) => [...prev, id]);
+    setProviderSearch("");
     setDropdownOpen(false);
   };
 
-  const removeSalon = (id: number) => {
-    setSelectedSalonIds((prev) => prev.filter((s) => s !== id));
+  const removeProvider = (id: number) => {
+    setSelectedProviderIds((prev) => prev.filter((s) => s !== id));
   };
 
-  const filteredSalons = salonSearch.trim()
-    ? salons.filter(
+  const filteredProviders = providerSearch.trim()
+    ? providers.filter(
         (s) =>
-          !selectedSalonIds.includes(s.id) &&
-          (s.name.toLowerCase().includes(salonSearch.toLowerCase()) ||
-            (s.address ?? "").toLowerCase().includes(salonSearch.toLowerCase()))
+          !selectedProviderIds.includes(s.id) &&
+          (s.name.toLowerCase().includes(providerSearch.toLowerCase()) ||
+            (s.address ?? "").toLowerCase().includes(providerSearch.toLowerCase()))
       )
-    : salons.filter((s) => !selectedSalonIds.includes(s.id));
+    : providers.filter((s) => !selectedProviderIds.includes(s.id));
 
   const onSubmit = (data: FormValues) => {
     register_.mutate({
@@ -80,7 +80,7 @@ export function MasterRegisterPage() {
       password: data.password,
       social_links: data.instagram ? { instagram: data.instagram } : undefined,
       invite_token: inviteToken,
-      salon_ids: inviteToken ? undefined : selectedSalonIds,
+      provider_ids: inviteToken ? undefined : selectedProviderIds,
     });
   };
 
@@ -89,11 +89,11 @@ export function MasterRegisterPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
-          <CardTitle className="text-2xl">Join as a Master</CardTitle>
+          <CardTitle className="text-2xl">Join as a Professional</CardTitle>
           <CardDescription>
             {inviteToken
-              ? "You've been invited to join a salon"
-              : "Create your master account"}
+              ? "You've been invited to join a provider"
+              : "Create your professional account"}
           </CardDescription>
         </CardHeader>
 
@@ -107,7 +107,7 @@ export function MasterRegisterPage() {
 
             {inviteToken && (
               <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
-                You'll be connected to the salon after registration.
+                You'll be connected to the provider after registration.
               </div>
             )}
 
@@ -140,22 +140,22 @@ export function MasterRegisterPage() {
               {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
 
-            {/* Salon selection — only for self-registration (no invite) */}
-            {!inviteToken && salons.length > 0 && (
+            {/* Provider selection — only for self-registration (no invite) */}
+            {!inviteToken && providers.length > 0 && (
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5">
                   <Building2 className="h-4 w-4" />
-                  Apply to salons (optional)
+                  Apply to providers (optional)
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Type to search and select salons you'd like to work in. Each salon must approve before you appear there.
+                  Type to search and select providers you'd like to work with. Each provider must approve before you appear there.
                 </p>
 
-                {/* Selected salon tags */}
-                {selectedSalonIds.length > 0 && (
+                {/* Selected provider tags */}
+                {selectedProviderIds.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {selectedSalonIds.map((id) => {
-                      const s = salons.find((sl) => sl.id === id);
+                    {selectedProviderIds.map((id) => {
+                      const s = providers.find((sl) => sl.id === id);
                       return s ? (
                         <span
                           key={id}
@@ -164,7 +164,7 @@ export function MasterRegisterPage() {
                           {s.name}
                           <button
                             type="button"
-                            onClick={() => removeSalon(id)}
+                            onClick={() => removeProvider(id)}
                             className="hover:text-pink-600"
                           >
                             <X className="h-3 w-3" />
@@ -178,19 +178,19 @@ export function MasterRegisterPage() {
                 {/* Autocomplete input */}
                 <div className="relative" ref={comboRef}>
                   <Input
-                    placeholder="Search salon by name or address…"
-                    value={salonSearch}
-                    onChange={(e) => { setSalonSearch(e.target.value); setDropdownOpen(true); }}
+                    placeholder="Search provider by name or address…"
+                    value={providerSearch}
+                    onChange={(e) => { setProviderSearch(e.target.value); setDropdownOpen(true); }}
                     onFocus={() => setDropdownOpen(true)}
                   />
-                  {dropdownOpen && filteredSalons.length > 0 && (
+                  {dropdownOpen && filteredProviders.length > 0 && (
                     <div className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg max-h-48 overflow-y-auto">
-                      {filteredSalons.map((s) => (
+                      {filteredProviders.map((s) => (
                         <button
                           key={s.id}
                           type="button"
                           className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex flex-col"
-                          onMouseDown={(e) => { e.preventDefault(); addSalon(s.id); }}
+                          onMouseDown={(e) => { e.preventDefault(); addProvider(s.id); }}
                         >
                           <span className="font-medium">{s.name}</span>
                           {s.address && (
@@ -200,9 +200,9 @@ export function MasterRegisterPage() {
                       ))}
                     </div>
                   )}
-                  {dropdownOpen && filteredSalons.length === 0 && salonSearch.trim() && (
+                  {dropdownOpen && filteredProviders.length === 0 && providerSearch.trim() && (
                     <div className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg px-3 py-2 text-sm text-muted-foreground">
-                      No salons found
+                      No providers found
                     </div>
                   )}
                 </div>

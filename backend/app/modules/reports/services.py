@@ -9,12 +9,12 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
 from app.modules.sessions.models import Session as BookingSession, SessionStatus
-from app.modules.masters.models import Master
+from app.modules.masters.models import Professional
 from app.modules.services.models import Service
-from app.modules.salons.models import Salon
+from app.modules.salons.models import Provider
 from app.modules.reports.schemas import (
-    MasterEarningsSummary, SalonRevenueSummary, ServicePopularity,
-    MasterPerformance, DailyRevenue, SalonReportResponse, MasterReportResponse,
+    ProfessionalEarningsSummary, ProviderRevenueSummary, ServicePopularity,
+    ProfessionalPerformance, DailyRevenue, ProviderReportResponse, ProfessionalReportResponse,
 )
 
 
@@ -22,16 +22,16 @@ def _date_to_dt(d: date) -> datetime:
     return datetime.combine(d, datetime.min.time())
 
 
-def get_master_report(db: Session, master_id: int, date_from: date, date_to: date) -> MasterReportResponse:
-    master = db.query(Master).filter(Master.id == master_id).first()
-    if not master:
+def get_professional_report(db: Session, professional_id: int, date_from: date, date_to: date) -> ProfessionalReportResponse:
+    professional = db.query(Professional).filter(Professional.id == professional_id).first()
+    if not professional:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Master not found")
+        raise HTTPException(status_code=404, detail="Professional not found")
 
     sessions = (
         db.query(BookingSession)
         .filter(
-            BookingSession.master_id == master_id,
+            BookingSession.professional_id == professional_id,
             BookingSession.status == SessionStatus.COMPLETED,
             BookingSession.starts_at >= _date_to_dt(date_from),
             BookingSession.starts_at <= _date_to_dt(date_to) + timedelta(days=1),
@@ -40,9 +40,9 @@ def get_master_report(db: Session, master_id: int, date_from: date, date_to: dat
     )
 
     total_earnings = sum(s.earnings_amount or 0 for s in sessions)
-    summary = MasterEarningsSummary(
-        master_id=master_id,
-        master_name=master.name,
+    summary = ProfessionalEarningsSummary(
+        professional_id=professional_id,
+        professional_name=professional.name,
         sessions_completed=len(sessions),
         total_earnings=total_earnings,
         period_start=date_from,
@@ -58,17 +58,21 @@ def get_master_report(db: Session, master_id: int, date_from: date, date_to: dat
         daily[day].revenue += s.earnings_amount or 0
         daily[day].session_count += 1
 
-    return MasterReportResponse(
+    return ProfessionalReportResponse(
         summary=summary,
         daily_earnings=sorted(daily.values(), key=lambda x: x.date),
     )
 
 
-def get_salon_report(db: Session, salon_id: int, date_from: date, date_to: date) -> SalonReportResponse:
-    salon = db.query(Salon).filter(Salon.id == salon_id).first()
-    if not salon:
+# Backward-compat alias
+get_master_report = get_professional_report
+
+
+def get_provider_report(db: Session, provider_id: int, date_from: date, date_to: date) -> ProviderReportResponse:
+    provider = db.query(Provider).filter(Provider.id == provider_id).first()
+    if not provider:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Salon not found")
+        raise HTTPException(status_code=404, detail="Provider not found")
 
     dt_from = _date_to_dt(date_from)
     dt_to = _date_to_dt(date_to) + timedelta(days=1)
@@ -76,7 +80,7 @@ def get_salon_report(db: Session, salon_id: int, date_from: date, date_to: date)
     all_sessions = (
         db.query(BookingSession)
         .filter(
-            BookingSession.salon_id == salon_id,
+            BookingSession.provider_id == provider_id,
             BookingSession.starts_at >= dt_from,
             BookingSession.starts_at < dt_to,
         )
@@ -88,9 +92,9 @@ def get_salon_report(db: Session, salon_id: int, date_from: date, date_to: date)
     total_revenue = sum(s.total_paid or 0 for s in completed)
     total_deposits = sum(s.deposit_paid or 0 for s in all_sessions)
 
-    summary = SalonRevenueSummary(
-        salon_id=salon_id,
-        salon_name=salon.name,
+    summary = ProviderRevenueSummary(
+        provider_id=provider_id,
+        provider_name=provider.name,
         period_start=date_from,
         period_end=date_to,
         total_sessions=len(all_sessions),
@@ -121,23 +125,23 @@ def get_salon_report(db: Session, salon_id: int, date_from: date, date_to: date)
         for sid, v in sorted(service_counts.items(), key=lambda x: -x[1]["count"])
     ]
 
-    # Master performance
-    master_stats: dict = {}
+    # Professional performance
+    professional_stats: dict = {}
     for s in all_sessions:
-        if s.master_id:
-            if s.master_id not in master_stats:
-                m = db.query(Master).filter(Master.id == s.master_id).first()
-                master_stats[s.master_id] = {"name": m.name if m else "Unknown", "completed": 0, "cancelled": 0, "earnings": 0.0}
+        if s.professional_id:
+            if s.professional_id not in professional_stats:
+                p = db.query(Professional).filter(Professional.id == s.professional_id).first()
+                professional_stats[s.professional_id] = {"name": p.name if p else "Unknown", "completed": 0, "cancelled": 0, "earnings": 0.0}
             if s.status == SessionStatus.COMPLETED:
-                master_stats[s.master_id]["completed"] += 1
-                master_stats[s.master_id]["earnings"] += s.earnings_amount or 0
+                professional_stats[s.professional_id]["completed"] += 1
+                professional_stats[s.professional_id]["earnings"] += s.earnings_amount or 0
             elif s.status == SessionStatus.CANCELLED:
-                master_stats[s.master_id]["cancelled"] += 1
+                professional_stats[s.professional_id]["cancelled"] += 1
 
-    master_performance = [
-        MasterPerformance(
-            master_id=mid,
-            master_name=v["name"],
+    professional_performance = [
+        ProfessionalPerformance(
+            professional_id=pid,
+            professional_name=v["name"],
             sessions_completed=v["completed"],
             sessions_cancelled=v["cancelled"],
             completion_rate=(
@@ -145,7 +149,7 @@ def get_salon_report(db: Session, salon_id: int, date_from: date, date_to: date)
             ),
             total_earnings=v["earnings"],
         )
-        for mid, v in master_stats.items()
+        for pid, v in professional_stats.items()
     ]
 
     # Daily revenue
@@ -157,12 +161,16 @@ def get_salon_report(db: Session, salon_id: int, date_from: date, date_to: date)
         daily[day].revenue += s.total_paid or 0
         daily[day].session_count += 1
 
-    return SalonReportResponse(
+    return ProviderReportResponse(
         summary=summary,
         service_popularity=service_popularity,
-        master_performance=master_performance,
+        professional_performance=professional_performance,
         daily_revenue=sorted(daily.values(), key=lambda x: x.date),
     )
+
+
+# Backward-compat alias
+get_salon_report = get_provider_report
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -190,13 +198,13 @@ def _autofit(ws) -> None:
         ws.column_dimensions[get_column_letter(col[0].column)].width = min(max_len + 4, 40)
 
 
-def export_salon_report_xlsx(report: SalonReportResponse) -> io.BytesIO:
+def export_provider_report_xlsx(report: ProviderReportResponse) -> io.BytesIO:
     wb = openpyxl.Workbook()
 
     # Sheet 1 — Summary
     ws = wb.active
     ws.title = "Summary"
-    ws["A1"] = f"Salon Report: {report.summary.salon_name}"
+    ws["A1"] = f"Provider Report: {report.summary.provider_name}"
     ws["A1"].font = _TITLE_FONT
     ws["A2"] = f"Period: {report.summary.period_start} — {report.summary.period_end}"
 
@@ -231,16 +239,16 @@ def export_salon_report_xlsx(report: SalonReportResponse) -> io.BytesIO:
                 ws2.cell(row=i, column=c).fill = _ALT_FILL
     _autofit(ws2)
 
-    # Sheet 3 — Masters
-    ws3 = wb.create_sheet("Masters")
-    _header_row(ws3, ["Master", "Completed", "Cancelled", "Completion %", "Earnings"])
-    for i, m in enumerate(report.master_performance, 2):
-        ws3.cell(row=i, column=1, value=m.master_name)
-        ws3.cell(row=i, column=2, value=m.sessions_completed)
-        ws3.cell(row=i, column=3, value=m.sessions_cancelled)
-        pct = ws3.cell(row=i, column=4, value=m.completion_rate / 100)
+    # Sheet 3 — Professionals
+    ws3 = wb.create_sheet("Professionals")
+    _header_row(ws3, ["Professional", "Completed", "Cancelled", "Completion %", "Earnings"])
+    for i, p in enumerate(report.professional_performance, 2):
+        ws3.cell(row=i, column=1, value=p.professional_name)
+        ws3.cell(row=i, column=2, value=p.sessions_completed)
+        ws3.cell(row=i, column=3, value=p.sessions_cancelled)
+        pct = ws3.cell(row=i, column=4, value=p.completion_rate / 100)
         pct.number_format = "0.0%"
-        earn = ws3.cell(row=i, column=5, value=m.total_earnings)
+        earn = ws3.cell(row=i, column=5, value=p.total_earnings)
         earn.number_format = _CURRENCY_FMT
         if i % 2 == 0:
             for c in range(1, 6):
@@ -266,13 +274,17 @@ def export_salon_report_xlsx(report: SalonReportResponse) -> io.BytesIO:
     return buf
 
 
-def export_master_report_xlsx(report: MasterReportResponse) -> io.BytesIO:
+# Backward-compat alias
+export_salon_report_xlsx = export_provider_report_xlsx
+
+
+def export_professional_report_xlsx(report: ProfessionalReportResponse) -> io.BytesIO:
     wb = openpyxl.Workbook()
 
     # Sheet 1 — Summary
     ws = wb.active
     ws.title = "Summary"
-    ws["A1"] = f"Master Report: {report.summary.master_name}"
+    ws["A1"] = f"Professional Report: {report.summary.professional_name}"
     ws["A1"].font = _TITLE_FONT
     ws["A2"] = f"Period: {report.summary.period_start} — {report.summary.period_end}"
 
@@ -305,3 +317,7 @@ def export_master_report_xlsx(report: MasterReportResponse) -> io.BytesIO:
     wb.save(buf)
     buf.seek(0)
     return buf
+
+
+# Backward-compat alias
+export_master_report_xlsx = export_professional_report_xlsx

@@ -7,7 +7,7 @@ from app.modules.users.models import UserRole
 class UserBase(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
-    role: UserRole = UserRole.MASTER
+    role: UserRole = UserRole.PROFESSIONAL
 
 
 class UserCreate(UserBase):

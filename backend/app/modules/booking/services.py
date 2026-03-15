@@ -9,9 +9,9 @@ from app.modules.booking.schemas import PublicBookingRequest, BookingConfirmatio
 from app.modules.sessions.models import Session as BookingSession, SessionStatus
 from app.modules.sessions.services import create_session
 from app.modules.sessions.schemas import SessionCreate
-from app.modules.salons.services import get_salon_or_404
+from app.modules.salons.services import get_provider_or_404
 from app.modules.services.services import get_service_or_404
-from app.modules.masters.services import get_master_by_id
+from app.modules.masters.services import get_professional_by_id
 from app.config import settings
 
 
@@ -27,19 +27,19 @@ def _generate_confirmation_code(session_id: int) -> str:
 
 def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingConfirmation:
     # Validate references
-    salon = get_salon_or_404(db, data.salon_id)
-    service = get_service_or_404(db, data.service_id, data.salon_id)
-    master = None
-    if data.master_id:
-        master = get_master_by_id(db, data.master_id)
-        if not master:
-            raise HTTPException(status_code=404, detail="Master not found")
+    provider = get_provider_or_404(db, data.provider_id)
+    service = get_service_or_404(db, data.service_id, data.provider_id)
+    professional = None
+    if data.professional_id:
+        professional = get_professional_by_id(db, data.professional_id)
+        if not professional:
+            raise HTTPException(status_code=404, detail="Professional not found")
 
     session = create_session(
         db,
         SessionCreate(
-            salon_id=data.salon_id,
-            master_id=data.master_id,
+            provider_id=data.provider_id,
+            professional_id=data.professional_id,
             service_id=data.service_id,
             client_name=data.client_name,
             client_phone=data.client_phone,
@@ -64,9 +64,9 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
         session_id=session.id,
         client_name=session.client_name,
         client_phone=session.client_phone,
-        salon_name=salon.name,
+        provider_name=provider.name,
         service_name=service.name,
-        master_name=master.name if master else None,
+        professional_name=professional.name if professional else None,
         starts_at=session.starts_at,
         ends_at=session.ends_at,
         price=session.price,

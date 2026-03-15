@@ -1,12 +1,12 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict
 from datetime import datetime
-from app.modules.masters.models import MasterStatus
+from app.modules.masters.models import ProfessionalStatus
 
 
-class MasterPhotoResponse(BaseModel):
+class ProfessionalPhotoResponse(BaseModel):
     id: int
-    master_id: int
+    professional_id: int
     image_url: str
     caption: Optional[str]
     order: int
@@ -15,18 +15,18 @@ class MasterPhotoResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class MasterSalonResponse(BaseModel):
+class ProfessionalProviderResponse(BaseModel):
     id: int
-    master_id: int
-    salon_id: int
-    status: MasterStatus
+    professional_id: int
+    provider_id: int
+    status: ProfessionalStatus
     payment_amount: Optional[float]
     joined_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
 
 
-class MasterCreate(BaseModel):
+class ProfessionalCreate(BaseModel):
     name: str
     phone: Optional[str] = None
     bio: Optional[str] = None
@@ -36,7 +36,7 @@ class MasterCreate(BaseModel):
     description: Optional[str] = None
 
 
-class MasterUpdate(BaseModel):
+class ProfessionalUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     bio: Optional[str] = None
@@ -47,7 +47,7 @@ class MasterUpdate(BaseModel):
     description: Optional[str] = None
 
 
-class MasterResponse(BaseModel):
+class ProfessionalResponse(BaseModel):
     id: int
     user_id: int
     name: str
@@ -59,19 +59,19 @@ class MasterResponse(BaseModel):
     experience_years: Optional[int]
     description: Optional[str]
     created_at: datetime
-    master_salons: List[MasterSalonResponse] = []
-    photos: List[MasterPhotoResponse] = []
+    professional_providers: List[ProfessionalProviderResponse] = []
+    photos: List[ProfessionalPhotoResponse] = []
 
     model_config = {"from_attributes": True}
 
 
-class MasterApprovalRequest(BaseModel):
-    status: MasterStatus
+class ProfessionalApprovalRequest(BaseModel):
+    status: ProfessionalStatus
     payment_amount: Optional[float] = None
 
 
-class MasterDirectCreate(BaseModel):
-    """Owner creates a brand-new master account directly (no invite needed)."""
+class ProfessionalDirectCreate(BaseModel):
+    """Owner creates a brand-new professional account directly (no invite needed)."""
     email: EmailStr
     name: str
     phone: str
@@ -82,7 +82,7 @@ class MasterDirectCreate(BaseModel):
     payment_amount: Optional[float] = None
 
 
-class MasterPublic(BaseModel):
+class ProfessionalPublic(BaseModel):
     """Full public profile for discovery and profile pages."""
     id: int
     name: str
@@ -91,6 +91,17 @@ class MasterPublic(BaseModel):
     nationality: Optional[str]
     experience_years: Optional[int]
     description: Optional[str]
-    photos: List[MasterPhotoResponse] = []
+    photos: List[ProfessionalPhotoResponse] = []
 
     model_config = {"from_attributes": True}
+
+
+# Backward-compat aliases
+MasterPhotoResponse = ProfessionalPhotoResponse
+MasterSalonResponse = ProfessionalProviderResponse
+MasterCreate = ProfessionalCreate
+MasterUpdate = ProfessionalUpdate
+MasterResponse = ProfessionalResponse
+MasterApprovalRequest = ProfessionalApprovalRequest
+MasterDirectCreate = ProfessionalDirectCreate
+MasterPublic = ProfessionalPublic

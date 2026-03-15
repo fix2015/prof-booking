@@ -26,8 +26,8 @@ def create_review(
 
     review = Review(
         session_id=data.session_id,
-        master_id=data.master_id,
-        salon_id=data.salon_id,
+        professional_id=data.professional_id,
+        provider_id=data.provider_id,
         client_name=data.client_name,
         client_phone=data.client_phone,
         rating=data.rating,
@@ -41,34 +41,34 @@ def create_review(
 
 @router.get("/", response_model=List[ReviewResponse])
 def list_reviews(
-    master_id: Optional[int] = Query(None),
-    salon_id: Optional[int] = Query(None),
+    professional_id: Optional[int] = Query(None),
+    provider_id: Optional[int] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, le=200),
     db: Session = Depends(get_db),
 ):
     """Public endpoint — list published reviews."""
     q = db.query(Review).filter(Review.is_published == True)
-    if master_id:
-        q = q.filter(Review.master_id == master_id)
-    if salon_id:
-        q = q.filter(Review.salon_id == salon_id)
+    if professional_id:
+        q = q.filter(Review.professional_id == professional_id)
+    if provider_id:
+        q = q.filter(Review.provider_id == provider_id)
     return q.order_by(Review.created_at.desc()).offset(skip).limit(limit).all()
 
 
-@router.get("/stats/master/{master_id}", response_model=ReviewStats)
-def master_review_stats(
-    master_id: int,
+@router.get("/stats/professional/{professional_id}", response_model=ReviewStats)
+def professional_review_stats(
+    professional_id: int,
     db: Session = Depends(get_db),
 ):
     reviews = db.query(Review).filter(
-        Review.master_id == master_id,
+        Review.professional_id == professional_id,
         Review.is_published == True,
     ).all()
 
     if not reviews:
         return ReviewStats(
-            master_id=master_id,
+            professional_id=professional_id,
             total_reviews=0,
             average_rating=0.0,
             rating_distribution={str(i): 0 for i in range(1, 6)},
@@ -81,7 +81,7 @@ def master_review_stats(
         dist[str(r.rating)] += 1
 
     return ReviewStats(
-        master_id=master_id,
+        professional_id=professional_id,
         total_reviews=total,
         average_rating=round(avg, 2),
         rating_distribution=dist,

@@ -4,7 +4,7 @@ from datetime import date, time, datetime
 
 
 class WorkSlotCreate(BaseModel):
-    salon_id: int
+    provider_id: int
     slot_date: date
     start_time: time
     end_time: time
@@ -19,8 +19,8 @@ class WorkSlotCreate(BaseModel):
 
 class WorkSlotResponse(BaseModel):
     id: int
-    master_id: int
-    salon_id: int
+    professional_id: int
+    provider_id: int
     slot_date: date
     start_time: time
     end_time: time
@@ -32,12 +32,12 @@ class WorkSlotResponse(BaseModel):
 class WeeklyScheduleCopy(BaseModel):
     source_week_start: date
     target_week_start: date
-    salon_id: int
+    provider_id: int
 
 
 class AvailableSlot(BaseModel):
-    master_id: int
-    master_name: str
+    professional_id: int
+    professional_name: str
     slot_date: date
     start_time: time
     end_time: time
@@ -45,10 +45,10 @@ class AvailableSlot(BaseModel):
 
 
 class AvailabilityQuery(BaseModel):
-    salon_id: int
+    provider_id: int
     date: date
     service_id: Optional[int] = None
-    master_id: Optional[int] = None
+    professional_id: Optional[int] = None
     duration_minutes: int = 60
 
 
@@ -57,4 +57,4 @@ class PeriodCopy(BaseModel):
     source_start: date
     source_end: date
     target_start: date
-    salon_id: int
+    provider_id: int

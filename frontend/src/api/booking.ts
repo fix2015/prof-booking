@@ -2,9 +2,9 @@ import apiClient from "./client";
 import { BookingConfirmation } from "@/types";
 
 export interface PublicBookingPayload {
-  salon_id: number;
+  provider_id: number;
   service_id: number;
-  master_id?: number;
+  professional_id?: number;
   client_name: string;
   client_phone: string;
   client_email?: string;

@@ -8,15 +8,16 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-class MasterStatus(str, enum.Enum):
+class ProfessionalStatus(str, enum.Enum):
     PENDING = "pending"
     ACTIVE = "active"
     INACTIVE = "inactive"
     REJECTED = "rejected"
 
 
-class Master(Base):
-    __tablename__ = "masters"
+class Professional(Base):
+    """A service professional (worker/specialist) working at one or more providers."""
+    __tablename__ = "professionals"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
@@ -33,57 +34,64 @@ class Master(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relations
-    user = relationship("User", back_populates="master_profile")
-    master_salons = relationship("MasterSalon", back_populates="master")
-    sessions = relationship("Session", back_populates="master")
-    work_slots = relationship("WorkSlot", back_populates="master")
-    photos = relationship("MasterPhoto", back_populates="master", order_by="MasterPhoto.order")
-    reviews = relationship("Review", back_populates="master")
+    user = relationship("User", back_populates="professional_profile")
+    professional_providers = relationship("ProfessionalProvider", back_populates="professional")
+    sessions = relationship("Session", back_populates="professional")
+    work_slots = relationship("WorkSlot", back_populates="professional")
+    photos = relationship("ProfessionalPhoto", back_populates="professional", order_by="ProfessionalPhoto.order")
+    reviews = relationship("Review", back_populates="professional")
 
     __table_args__ = (
-        Index("ix_masters_user", "user_id"),
+        Index("ix_professionals_user", "user_id"),
     )
 
     def __repr__(self) -> str:
-        return f"<Master id={self.id} name={self.name}>"
+        return f"<Professional id={self.id} name={self.name}>"
 
 
-class MasterSalon(Base):
-    """Many-to-many between masters and salons with approval status."""
-    __tablename__ = "master_salons"
+class ProfessionalProvider(Base):
+    """Many-to-many between professionals and providers with approval status."""
+    __tablename__ = "professional_providers"
 
     id = Column(Integer, primary_key=True, index=True)
-    master_id = Column(Integer, ForeignKey("masters.id", ondelete="CASCADE"), nullable=False)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
-    status = Column(SAEnum(MasterStatus), default=MasterStatus.PENDING, nullable=False)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="CASCADE"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
+    status = Column(SAEnum(ProfessionalStatus), default=ProfessionalStatus.PENDING, nullable=False)
     payment_amount = Column(Float, nullable=True)
     joined_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relations
-    master = relationship("Master", back_populates="master_salons")
-    salon = relationship("Salon", back_populates="master_salons")
+    professional = relationship("Professional", back_populates="professional_providers")
+    provider = relationship("Provider", back_populates="professional_providers")
 
     __table_args__ = (
-        Index("ix_master_salons_master_salon", "master_id", "salon_id", unique=True),
-        Index("ix_master_salons_status", "status"),
+        Index("ix_professional_providers_prof_prov", "professional_id", "provider_id", unique=True),
+        Index("ix_professional_providers_status", "status"),
     )
 
 
-class MasterPhoto(Base):
-    """Gallery photos for a master's public profile."""
-    __tablename__ = "master_photos"
+class ProfessionalPhoto(Base):
+    """Gallery photos for a professional's public profile."""
+    __tablename__ = "professional_photos"
 
     id = Column(Integer, primary_key=True, index=True)
-    master_id = Column(Integer, ForeignKey("masters.id", ondelete="CASCADE"), nullable=False)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="CASCADE"), nullable=False)
     image_url = Column(String(512), nullable=False)
     caption = Column(String(255), nullable=True)
     order = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relations
-    master = relationship("Master", back_populates="photos")
+    professional = relationship("Professional", back_populates="photos")
 
     __table_args__ = (
-        Index("ix_master_photos_master", "master_id"),
+        Index("ix_professional_photos_professional", "professional_id"),
     )
+
+
+# Backward-compat aliases
+MasterStatus = ProfessionalStatus
+Master = Professional
+MasterSalon = ProfessionalProvider
+MasterPhoto = ProfessionalPhoto

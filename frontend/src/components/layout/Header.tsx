@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { initials } from "@/utils/formatters";
 
 const roleLabel: Record<string, string> = {
-  salon_owner: "Salon Owner Dashboard",
-  master: "Master Dashboard",
+  provider_owner: "Provider Dashboard",
+  professional: "Professional Dashboard",
   platform_admin: "Platform Administration",
 };
 
 const profileHref: Record<string, string> = {
-  master: "/profile/master",
-  salon_owner: "/profile/salon",
+  professional: "/profile/professional",
+  provider_owner: "/profile/provider",
 };
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {

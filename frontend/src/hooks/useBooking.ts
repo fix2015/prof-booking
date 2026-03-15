@@ -4,15 +4,15 @@ import { bookingApi, PublicBookingPayload } from "@/api/booking";
 import { sessionsApi, SessionFilters } from "@/api/sessions";
 
 export function useAvailability(
-  salonId: number,
+  providerId: number,
   date: string,
   durationMinutes: number,
-  masterId?: number
+  professionalId?: number
 ) {
   return useQuery({
-    queryKey: ["availability", salonId, date, durationMinutes, masterId],
-    queryFn: () => calendarApi.getAvailability(salonId, date, durationMinutes, masterId),
-    enabled: !!salonId && !!date,
+    queryKey: ["availability", providerId, date, durationMinutes, professionalId],
+    queryFn: () => calendarApi.getAvailability(providerId, date, durationMinutes, professionalId),
+    enabled: !!providerId && !!date,
   });
 }
 

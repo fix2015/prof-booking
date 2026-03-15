@@ -4,9 +4,9 @@ from datetime import datetime
 
 
 class PublicBookingRequest(BaseModel):
-    salon_id: int
+    provider_id: int
     service_id: int
-    master_id: Optional[int] = None
+    professional_id: Optional[int] = None
     client_name: str
     client_phone: str
     client_email: Optional[EmailStr] = None
@@ -32,9 +32,9 @@ class BookingConfirmation(BaseModel):
     session_id: int
     client_name: str
     client_phone: str
-    salon_name: str
+    provider_name: str
     service_name: Optional[str]
-    master_name: Optional[str]
+    professional_name: Optional[str]
     starts_at: datetime
     ends_at: datetime
     price: Optional[float]

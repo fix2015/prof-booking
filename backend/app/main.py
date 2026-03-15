@@ -8,8 +8,8 @@ from app.config import settings
 from app.database import Base, engine
 from app.modules.auth.router import router as auth_router
 from app.modules.users.router import router as users_router
-from app.modules.salons.router import router as salons_router
-from app.modules.masters.router import router as masters_router
+from app.modules.salons.router import router as providers_router
+from app.modules.masters.router import router as professionals_router
 from app.modules.sessions.router import router as sessions_router
 from app.modules.calendar.router import router as calendar_router
 from app.modules.booking.router import router as booking_router
@@ -35,9 +35,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Beauty Platform API",
-    description="Multi-tenant SaaS platform for beauty salon booking and management",
-    version="2.0.0",
+    title="Global Service Marketplace API",
+    description="Multi-tenant SaaS platform for service provider booking and professional management",
+    version="3.0.0",
     docs_url="/docs" if settings.APP_DEBUG else None,
     redoc_url="/redoc" if settings.APP_DEBUG else None,
     lifespan=lifespan,
@@ -57,8 +57,12 @@ API_PREFIX = "/api/v1"
 
 app.include_router(auth_router, prefix=f"{API_PREFIX}/auth", tags=["auth"])
 app.include_router(users_router, prefix=f"{API_PREFIX}/users", tags=["users"])
-app.include_router(salons_router, prefix=f"{API_PREFIX}/salons", tags=["salons"])
-app.include_router(masters_router, prefix=f"{API_PREFIX}/masters", tags=["masters"])
+# Primary routes (new names)
+app.include_router(providers_router, prefix=f"{API_PREFIX}/providers", tags=["providers"])
+app.include_router(professionals_router, prefix=f"{API_PREFIX}/professionals", tags=["professionals"])
+# Backward-compat aliases so existing frontend calls still work during migration
+app.include_router(providers_router, prefix=f"{API_PREFIX}/salons", tags=["salons-compat"])
+app.include_router(professionals_router, prefix=f"{API_PREFIX}/masters", tags=["masters-compat"])
 app.include_router(services_router, prefix=f"{API_PREFIX}/services", tags=["services"])
 app.include_router(sessions_router, prefix=f"{API_PREFIX}/sessions", tags=["sessions"])
 app.include_router(calendar_router, prefix=f"{API_PREFIX}/calendar", tags=["calendar"])
@@ -79,4 +83,4 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get(f"{API_PREFIX}/health")
 def health_check():
-    return {"status": "ok", "version": "2.0.0"}
+    return {"status": "ok", "version": "3.0.0", "platform": "Global Service Marketplace"}

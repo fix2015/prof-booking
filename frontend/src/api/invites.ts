@@ -2,21 +2,21 @@ import apiClient from "./client";
 import { Invite } from "@/types";
 
 export const invitesApi = {
-  list: (salonId: number) =>
-    apiClient.get<Invite[]>(`/invites/salon/${salonId}`).then((r) => r.data),
+  list: (providerId: number) =>
+    apiClient.get<Invite[]>(`/invites/provider/${providerId}`).then((r) => r.data),
 
-  create: (salonId: number, email: string) =>
+  create: (providerId: number, email: string) =>
     apiClient
-      .post<Invite>(`/invites/salon/${salonId}`, { invited_email: email })
+      .post<Invite>(`/invites/provider/${providerId}`, { invited_email: email })
       .then((r) => r.data),
 
   validate: (token: string) =>
     apiClient
-      .get<{ token: string; is_valid: boolean; salon_id?: number; invited_email?: string }>(
+      .get<{ token: string; is_valid: boolean; provider_id?: number; invited_email?: string }>(
         `/invites/validate/${token}`
       )
       .then((r) => r.data),
 
-  revoke: (inviteId: number, salonId: number) =>
-    apiClient.delete(`/invites/${inviteId}/salon/${salonId}`),
+  revoke: (inviteId: number, providerId: number) =>
+    apiClient.delete(`/invites/${inviteId}/provider/${providerId}`),
 };

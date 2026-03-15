@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, MapPin, Phone, Mail, AlignLeft } from "lucide-react";
-import { salonsApi } from "@/api/salons";
+import { providersApi } from "@/api/salons";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,18 +13,18 @@ import { toast } from "@/hooks/useToast";
 export function SalonProfileEditPage() {
   const qc = useQueryClient();
 
-  const { data: salons, isLoading } = useQuery({
-    queryKey: ["salons", "all"],
-    queryFn: () => salonsApi.listPublic(),
+  const { data: providers, isLoading } = useQuery({
+    queryKey: ["providers", "all"],
+    queryFn: () => providersApi.listPublic(),
   });
 
-  const salon = salons?.[0];
-  const salonId = salon?.id;
+  const provider = providers?.[0];
+  const providerId = provider?.id;
 
-  const updateSalon = useMutation({
-    mutationFn: (data: Parameters<typeof salonsApi.update>[1]) =>
-      salonsApi.update(salonId!, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["salons"] }),
+  const updateProvider = useMutation({
+    mutationFn: (data: Parameters<typeof providersApi.update>[1]) =>
+      providersApi.update(providerId!, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["providers"] }),
   });
 
   const [form, setForm] = useState({
@@ -36,16 +36,16 @@ export function SalonProfileEditPage() {
   });
 
   useEffect(() => {
-    if (salon) {
+    if (provider) {
       setForm({
-        name: salon.name ?? "",
-        address: salon.address ?? "",
-        phone: salon.phone ?? "",
-        email: salon.email ?? "",
-        description: salon.description ?? "",
+        name: provider.name ?? "",
+        address: provider.address ?? "",
+        phone: provider.phone ?? "",
+        email: provider.email ?? "",
+        description: provider.description ?? "",
       });
     }
-  }, [salon]);
+  }, [provider]);
 
   const handleChange = (field: keyof typeof form) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -53,45 +53,45 @@ export function SalonProfileEditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!salonId) return;
+    if (!providerId) return;
     try {
-      await updateSalon.mutateAsync({
+      await updateProvider.mutateAsync({
         name: form.name || undefined,
         address: form.address || undefined,
         phone: form.phone || undefined,
         email: form.email || undefined,
         description: form.description || undefined,
       });
-      toast({ title: "Salon updated", variant: "success" });
+      toast({ title: "Provider updated", variant: "success" });
     } catch {
-      toast({ title: "Failed to update salon", variant: "destructive" });
+      toast({ title: "Failed to update provider", variant: "destructive" });
     }
   };
 
   if (isLoading) return <Spinner className="mx-auto mt-20" />;
 
-  if (!salon) {
+  if (!provider) {
     return (
-      <p className="text-center py-20 text-muted-foreground">No salon found.</p>
+      <p className="text-center py-20 text-muted-foreground">No provider found.</p>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 md:space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">Salon Settings</h1>
+      <h1 className="text-xl md:text-2xl font-bold">Provider Settings</h1>
 
       {/* Logo */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4" /> Salon Logo
+            <Building2 className="h-4 w-4" /> Provider Logo
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ImageUpload
-            currentUrl={salon.logo_url ?? undefined}
+            currentUrl={provider.logo_url ?? undefined}
             onUpload={(url) =>
-              updateSalon.mutate(
+              updateProvider.mutate(
                 { logo_url: url || undefined },
                 { onSuccess: () => toast({ title: "Logo updated", variant: "success" }) }
               )
@@ -103,22 +103,22 @@ export function SalonProfileEditPage() {
         </CardContent>
       </Card>
 
-      {/* Salon info form */}
+      {/* Provider info form */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Salon Information</CardTitle>
+          <CardTitle className="text-base">Provider Information</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="name" className="flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5" /> Salon Name
+                <Building2 className="h-3.5 w-3.5" /> Provider Name
               </Label>
               <Input
                 id="name"
                 value={form.name}
                 onChange={handleChange("name")}
-                placeholder="Salon name"
+                placeholder="Provider name"
               />
             </div>
 
@@ -156,7 +156,7 @@ export function SalonProfileEditPage() {
                   type="email"
                   value={form.email}
                   onChange={handleChange("email")}
-                  placeholder="salon@example.com"
+                  placeholder="provider@example.com"
                 />
               </div>
             </div>
@@ -171,16 +171,16 @@ export function SalonProfileEditPage() {
                 rows={4}
                 value={form.description}
                 onChange={handleChange("description")}
-                placeholder="Describe your salon, services, and specialties"
+                placeholder="Describe your provider, services, and specialties"
               />
             </div>
 
             <Button
               type="submit"
               className="w-full md:w-auto bg-pink-600 hover:bg-pink-700"
-              disabled={updateSalon.isPending || !salonId}
+              disabled={updateProvider.isPending || !providerId}
             >
-              {updateSalon.isPending ? "Saving…" : "Save Changes"}
+              {updateProvider.isPending ? "Saving…" : "Save Changes"}
             </Button>
           </form>
         </CardContent>

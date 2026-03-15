@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart2, Clock, DollarSign, Users } from "lucide-react";
 import { analyticsApi } from "@/api/analytics";
-import { salonsApi } from "@/api/salons";
+import { providersApi } from "@/api/salons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { formatCurrency } from "@/utils/formatters";
@@ -16,30 +16,30 @@ export function OwnerAnalyticsPage() {
   });
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const { data: salons = [] } = useQuery({
-    queryKey: ["salons", "public"],
-    queryFn: () => salonsApi.listPublic(),
+  const { data: providers = [] } = useQuery({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
   });
-  const salonId = salons[0]?.id;
+  const providerId = providers[0]?.id;
 
   const { data: workers = [], isLoading } = useQuery({
-    queryKey: ["analytics", "workers", salonId, dateFrom, dateTo],
+    queryKey: ["analytics", "workers", providerId, dateFrom, dateTo],
     queryFn: () =>
       analyticsApi
-        .ownerWorkers(salonId!, { date_from: dateFrom, date_to: dateTo })
+        .ownerWorkers(providerId!, { date_from: dateFrom, date_to: dateTo })
         .then((r) => r.data),
-    enabled: !!salonId,
+    enabled: !!providerId,
   });
 
   const totals = workers.reduce(
-    (acc: { sessions: number; hours: number; revenue: number; masterEarnings: number; salonEarnings: number }, w: WorkerAnalytics) => ({
+    (acc: { sessions: number; hours: number; revenue: number; professionalEarnings: number; providerEarnings: number }, w: WorkerAnalytics) => ({
       sessions: acc.sessions + w.completed_sessions,
       hours: acc.hours + w.total_hours,
       revenue: acc.revenue + w.total_revenue,
-      masterEarnings: acc.masterEarnings + w.master_earnings,
-      salonEarnings: acc.salonEarnings + w.salon_earnings,
+      professionalEarnings: acc.professionalEarnings + w.professional_earnings,
+      providerEarnings: acc.providerEarnings + w.provider_earnings,
     }),
-    { sessions: 0, hours: 0, revenue: 0, masterEarnings: 0, salonEarnings: 0 }
+    { sessions: 0, hours: 0, revenue: 0, professionalEarnings: 0, providerEarnings: 0 }
   );
 
   return (
@@ -83,12 +83,12 @@ export function OwnerAnalyticsPage() {
         <Card>
           <CardContent className="p-4 flex flex-wrap gap-6">
             <div>
-              <p className="text-sm text-muted-foreground">Masters earned</p>
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(totals.masterEarnings)}</p>
+              <p className="text-sm text-muted-foreground">Professionals earned</p>
+              <p className="text-2xl font-bold text-green-600">{formatCurrency(totals.professionalEarnings)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Salon earned</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(totals.salonEarnings)}</p>
+              <p className="text-sm text-muted-foreground">Provider earned</p>
+              <p className="text-2xl font-bold text-blue-600">{formatCurrency(totals.providerEarnings)}</p>
             </div>
           </CardContent>
         </Card>
@@ -108,36 +108,36 @@ export function OwnerAnalyticsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="px-4 py-3">Master</th>
+                  <th className="px-4 py-3">Professional</th>
                   <th className="px-4 py-3 text-right">Sessions</th>
                   <th className="px-4 py-3 text-right">Hours</th>
                   <th className="px-4 py-3 text-right">Revenue</th>
-                  <th className="px-4 py-3 text-right">Master Earns</th>
-                  <th className="px-4 py-3 text-right">Salon Earns</th>
+                  <th className="px-4 py-3 text-right">Professional Earns</th>
+                  <th className="px-4 py-3 text-right">Provider Earns</th>
                   <th className="px-4 py-3 text-right">Split</th>
                 </tr>
               </thead>
               <tbody>
                 {workers.map((w: WorkerAnalytics) => (
-                  <tr key={w.master_id} className="border-b hover:bg-muted/40">
+                  <tr key={w.professional_id} className="border-b hover:bg-muted/40">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {w.avatar_url ? (
-                          <img src={w.avatar_url} alt={w.master_name} className="h-7 w-7 rounded-full object-cover" />
+                          <img src={w.avatar_url} alt={w.professional_name} className="h-7 w-7 rounded-full object-cover" />
                         ) : (
                           <div className="h-7 w-7 rounded-full bg-pink-100 flex items-center justify-center text-xs font-bold text-pink-700">
-                            {w.master_name.charAt(0)}
+                            {w.professional_name.charAt(0)}
                           </div>
                         )}
-                        {w.master_name}
+                        {w.professional_name}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">{w.completed_sessions}</td>
                     <td className="px-4 py-3 text-right">{w.total_hours}h</td>
                     <td className="px-4 py-3 text-right">{formatCurrency(w.total_revenue)}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{formatCurrency(w.master_earnings)}</td>
-                    <td className="px-4 py-3 text-right text-blue-600">{formatCurrency(w.salon_earnings)}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">{w.master_percentage}%</td>
+                    <td className="px-4 py-3 text-right text-green-600">{formatCurrency(w.professional_earnings)}</td>
+                    <td className="px-4 py-3 text-right text-blue-600">{formatCurrency(w.provider_earnings)}</td>
+                    <td className="px-4 py-3 text-right text-muted-foreground">{w.professional_percentage}%</td>
                   </tr>
                 ))}
               </tbody>

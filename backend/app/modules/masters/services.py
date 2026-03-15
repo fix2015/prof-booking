@@ -3,47 +3,47 @@ from fastapi import HTTPException
 from datetime import datetime
 from typing import Optional, List
 
-from app.modules.masters.models import Master, MasterSalon, MasterStatus
-from app.modules.masters.schemas import MasterCreate, MasterUpdate, MasterDirectCreate
+from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
+from app.modules.masters.schemas import ProfessionalCreate, ProfessionalUpdate, ProfessionalDirectCreate
 from app.modules.users.models import User, UserRole
 
 
-def create_master_profile(
+def create_professional_profile(
     db: Session,
     user: User,
     name: str,
     phone: Optional[str],
     social_links: dict,
-    salon_id: Optional[int] = None,
-) -> Master:
-    master = Master(
+    provider_id: Optional[int] = None,
+) -> Professional:
+    professional = Professional(
         user_id=user.id,
         name=name,
         phone=phone,
         social_links=social_links or {},
     )
-    db.add(master)
+    db.add(professional)
     db.flush()
 
-    if salon_id:
-        ms = MasterSalon(
-            master_id=master.id,
-            salon_id=salon_id,
-            status=MasterStatus.PENDING,
+    if provider_id:
+        pp = ProfessionalProvider(
+            professional_id=professional.id,
+            provider_id=provider_id,
+            status=ProfessionalStatus.PENDING,
         )
-        db.add(ms)
+        db.add(pp)
 
     db.commit()
-    db.refresh(master)
-    return master
+    db.refresh(professional)
+    return professional
 
 
-def create_master_with_user(
+def create_professional_with_user(
     db: Session,
-    salon_id: int,
-    data: MasterDirectCreate,
-) -> MasterSalon:
-    """Owner creates a new master account + immediately activates them in the salon."""
+    provider_id: int,
+    data: ProfessionalDirectCreate,
+) -> ProfessionalProvider:
+    """Owner creates a new professional account + immediately activates them at the provider."""
     from app.modules.users.services import create_user, get_user_by_email
     from app.modules.users.schemas import UserCreate
 
@@ -56,10 +56,10 @@ def create_master_with_user(
             email=data.email,
             phone=data.phone,
             password=data.password,
-            role=UserRole.MASTER,
+            role=UserRole.PROFESSIONAL,
         ),
     )
-    master = Master(
+    professional = Professional(
         user_id=user.id,
         name=data.name,
         phone=data.phone,
@@ -68,72 +68,87 @@ def create_master_with_user(
         experience_years=data.experience_years,
         social_links={},
     )
-    db.add(master)
+    db.add(professional)
     db.flush()
 
-    ms = MasterSalon(
-        master_id=master.id,
-        salon_id=salon_id,
-        status=MasterStatus.ACTIVE,
+    pp = ProfessionalProvider(
+        professional_id=professional.id,
+        provider_id=provider_id,
+        status=ProfessionalStatus.ACTIVE,
         payment_amount=data.payment_amount,
         joined_at=datetime.utcnow(),
     )
-    db.add(ms)
+    db.add(pp)
     db.commit()
-    db.refresh(ms)
-    return ms
+    db.refresh(pp)
+    return pp
 
 
-def get_master_by_user_id(db: Session, user_id: int) -> Optional[Master]:
-    return db.query(Master).filter(Master.user_id == user_id).first()
+def get_professional_by_user_id(db: Session, user_id: int) -> Optional[Professional]:
+    return db.query(Professional).filter(Professional.user_id == user_id).first()
 
 
-def get_master_by_id(db: Session, master_id: int) -> Optional[Master]:
-    return db.query(Master).filter(Master.id == master_id).first()
+def get_professional_by_id(db: Session, professional_id: int) -> Optional[Professional]:
+    return db.query(Professional).filter(Professional.id == professional_id).first()
 
 
-def get_master_or_404(db: Session, master_id: int) -> Master:
-    master = get_master_by_id(db, master_id)
-    if not master:
-        raise HTTPException(status_code=404, detail="Master not found")
-    return master
+def get_professional_or_404(db: Session, professional_id: int) -> Professional:
+    professional = get_professional_by_id(db, professional_id)
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional not found")
+    return professional
 
 
-def list_salon_masters(
-    db: Session, salon_id: int, status: Optional[MasterStatus] = MasterStatus.ACTIVE
-) -> List[MasterSalon]:
-    query = db.query(MasterSalon).filter(MasterSalon.salon_id == salon_id)
+def list_provider_professionals(
+    db: Session, provider_id: int, status: Optional[ProfessionalStatus] = ProfessionalStatus.ACTIVE
+) -> List[ProfessionalProvider]:
+    query = db.query(ProfessionalProvider).filter(ProfessionalProvider.provider_id == provider_id)
     if status:
-        query = query.filter(MasterSalon.status == status)
+        query = query.filter(ProfessionalProvider.status == status)
     return query.all()
 
 
-def approve_master(
-    db: Session, salon_id: int, master_id: int, status: MasterStatus, payment_amount: Optional[float]
-) -> MasterSalon:
-    ms = db.query(MasterSalon).filter(
-        MasterSalon.salon_id == salon_id,
-        MasterSalon.master_id == master_id,
+def approve_professional(
+    db: Session, provider_id: int, professional_id: int,
+    status: ProfessionalStatus, payment_amount: Optional[float]
+) -> ProfessionalProvider:
+    pp = db.query(ProfessionalProvider).filter(
+        ProfessionalProvider.provider_id == provider_id,
+        ProfessionalProvider.professional_id == professional_id,
     ).first()
-    if not ms:
-        raise HTTPException(status_code=404, detail="Master-salon relationship not found")
-    ms.status = status
+    if not pp:
+        raise HTTPException(status_code=404, detail="Professional-provider relationship not found")
+    pp.status = status
     if payment_amount is not None:
-        ms.payment_amount = payment_amount
-    if status == MasterStatus.ACTIVE:
-        ms.joined_at = datetime.utcnow()
+        pp.payment_amount = payment_amount
+    if status == ProfessionalStatus.ACTIVE:
+        pp.joined_at = datetime.utcnow()
     db.commit()
-    db.refresh(ms)
-    return ms
+    db.refresh(pp)
+    return pp
 
 
-def update_master(db: Session, master: Master, data: MasterUpdate) -> Master:
+def update_professional(db: Session, professional: Professional, data: ProfessionalUpdate) -> Professional:
     for field, value in data.model_dump(exclude_none=True).items():
-        setattr(master, field, value)
+        setattr(professional, field, value)
     db.commit()
-    db.refresh(master)
-    return master
+    db.refresh(professional)
+    return professional
 
 
-def get_master_salons(db: Session, master_id: int) -> List[MasterSalon]:
-    return db.query(MasterSalon).filter(MasterSalon.master_id == master_id).all()
+def get_professional_providers(db: Session, professional_id: int) -> List[ProfessionalProvider]:
+    return db.query(ProfessionalProvider).filter(
+        ProfessionalProvider.professional_id == professional_id
+    ).all()
+
+
+# Backward-compat aliases used by other modules
+create_master_profile = create_professional_profile
+create_master_with_user = create_professional_with_user
+get_master_by_user_id = get_professional_by_user_id
+get_master_by_id = get_professional_by_id
+get_master_or_404 = get_professional_or_404
+list_salon_masters = list_provider_professionals
+approve_master = approve_professional
+update_master = update_professional
+get_master_salons = get_professional_providers

@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Enum as SAEnum,
-    ForeignKey, Index, UniqueConstraint, Text,
+    ForeignKey, Index,
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -10,8 +10,8 @@ from app.database import Base
 
 class UserRole(str, enum.Enum):
     PLATFORM_ADMIN = "platform_admin"
-    SALON_OWNER = "salon_owner"
-    MASTER = "master"
+    PROVIDER_OWNER = "provider_owner"
+    PROFESSIONAL = "professional"
     CLIENT = "client"
 
 
@@ -22,15 +22,15 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     phone = Column(String(30), nullable=True, index=True)
     hashed_password = Column(String(255), nullable=False)
-    role = Column(SAEnum(UserRole), nullable=False, default=UserRole.MASTER)
+    role = Column(SAEnum(UserRole), nullable=False, default=UserRole.PROFESSIONAL)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relations
-    salon_owner = relationship("SalonOwner", back_populates="user", uselist=False)
-    master_profile = relationship("Master", back_populates="user", uselist=False)
+    provider_owner = relationship("ProviderOwner", back_populates="user", uselist=False)
+    professional_profile = relationship("Professional", back_populates="user", uselist=False)
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
 
     __table_args__ = (

@@ -9,13 +9,13 @@ from app.modules.users.models import User
 
 
 def create_invite(
-    db: Session, salon_id: int, data: InviteCreate, created_by: User
+    db: Session, provider_id: int, data: InviteCreate, created_by: User
 ) -> Invite:
     # Check for existing pending invite
     existing = (
         db.query(Invite)
         .filter(
-            Invite.salon_id == salon_id,
+            Invite.provider_id == provider_id,
             Invite.invited_email == data.invited_email.lower(),
             Invite.status == InviteStatus.PENDING,
         )
@@ -26,7 +26,7 @@ def create_invite(
 
     token = secrets.token_urlsafe(48)
     invite = Invite(
-        salon_id=salon_id,
+        provider_id=provider_id,
         invited_email=data.invited_email.lower(),
         token=token,
         created_by_user_id=created_by.id,
@@ -59,26 +59,30 @@ def validate_invite_token(db: Session, token: str) -> Invite:
 
 
 def consume_invite(db: Session, token: str, user: User) -> int:
-    """Called during master registration to link them to a salon."""
+    """Called during professional registration to link them to a provider."""
     invite = validate_invite_token(db, token)
     invite.status = InviteStatus.ACCEPTED
     invite.accepted_by_user_id = user.id
     invite.accepted_at = datetime.utcnow()
     db.commit()
-    return invite.salon_id
+    return invite.provider_id
 
 
-def list_salon_invites(db: Session, salon_id: int):
+def list_provider_invites(db: Session, provider_id: int):
     return (
         db.query(Invite)
-        .filter(Invite.salon_id == salon_id)
+        .filter(Invite.provider_id == provider_id)
         .order_by(Invite.created_at.desc())
         .all()
     )
 
 
-def revoke_invite(db: Session, invite_id: int, salon_id: int) -> Invite:
-    invite = db.query(Invite).filter(Invite.id == invite_id, Invite.salon_id == salon_id).first()
+# Backward-compat alias
+list_salon_invites = list_provider_invites
+
+
+def revoke_invite(db: Session, invite_id: int, provider_id: int) -> Invite:
+    invite = db.query(Invite).filter(Invite.id == invite_id, Invite.provider_id == provider_id).first()
     if not invite:
         raise HTTPException(status_code=404, detail="Invite not found")
     invite.status = InviteStatus.REVOKED
@@ -96,15 +100,15 @@ def _send_invite_email(invite: Invite) -> None:
 
     body = f"""
     <h2>You've been invited!</h2>
-    <p>You have been invited to join a salon as a master.</p>
+    <p>You have been invited to join a service provider as a professional.</p>
     <p>Use this link to register:</p>
-    <a href="{settings.APP_ALLOWED_ORIGINS.split(',')[0]}/register/master?invite={invite.token}">
+    <a href="{settings.APP_ALLOWED_ORIGINS.split(',')[0]}/register/professional?invite={invite.token}">
         Accept Invitation
     </a>
     <p>This invitation expires in 7 days.</p>
     """
     msg = MIMEText(body, "html")
-    msg["Subject"] = "You've been invited to NailSalon Platform"
+    msg["Subject"] = "You've been invited to the Global Service Marketplace"
     msg["From"] = settings.EMAIL_FROM
     msg["To"] = invite.invited_email
 

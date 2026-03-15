@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Star, Clock, Flag, Image } from "lucide-react";
-import { mastersApi } from "@/api/masters";
+import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -9,17 +9,18 @@ import { Button } from "@/components/ui/button";
 import type { Review } from "@/types";
 
 export function MasterProfilePage() {
-  const { masterId } = useParams<{ masterId: string }>();
-  const id = Number(masterId);
+  // Support both new (/professionals/:professionalId) and old (/masters/:masterId) routes
+  const { professionalId, masterId } = useParams<{ professionalId?: string; masterId?: string }>();
+  const id = Number(professionalId || masterId);
 
-  const { data: master, isLoading } = useQuery({
-    queryKey: ["master", id],
-    queryFn: () => mastersApi.getById(id),
+  const { data: professional, isLoading } = useQuery({
+    queryKey: ["professional", id],
+    queryFn: () => professionalsApi.getById(id),
     enabled: !!id,
   });
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ["reviews", "master", id],
+    queryKey: ["reviews", "professional", id],
     queryFn: () => reviewsApi.list({ master_id: id }).then((r) => r.data),
     enabled: !!id,
   });
@@ -31,8 +32,8 @@ export function MasterProfilePage() {
   });
 
   const { data: photos = [] } = useQuery({
-    queryKey: ["master-photos", id],
-    queryFn: () => mastersApi.getPhotos(id),
+    queryKey: ["professional-photos", id],
+    queryFn: () => professionalsApi.getPhotos(id),
     enabled: !!id,
   });
 
@@ -44,8 +45,8 @@ export function MasterProfilePage() {
     );
   }
 
-  if (!master) {
-    return <p className="text-center py-20 text-muted-foreground">Master not found.</p>;
+  if (!professional) {
+    return <p className="text-center py-20 text-muted-foreground">Professional not found.</p>;
   }
 
   return (
@@ -53,33 +54,33 @@ export function MasterProfilePage() {
       {/* Hero */}
       <div className="flex flex-col sm:flex-row gap-4 md:gap-6 items-start">
         <div className="flex-shrink-0">
-          {master.avatar_url ? (
+          {professional.avatar_url ? (
             <img
-              src={master.avatar_url}
-              alt={master.name}
+              src={professional.avatar_url}
+              alt={professional.name}
               className="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border-4 border-white shadow-lg"
             />
           ) : (
             <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-3xl md:text-4xl font-bold text-white shadow-lg">
-              {master.name.charAt(0).toUpperCase()}
+              {professional.name.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl md:text-3xl font-bold">{master.name}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{professional.name}</h1>
 
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-            {master.nationality && (
+            {professional.nationality && (
               <span className="flex items-center gap-1">
                 <Flag className="h-4 w-4" />
-                {master.nationality}
+                {professional.nationality}
               </span>
             )}
-            {master.experience_years !== undefined && master.experience_years !== null && (
+            {professional.experience_years !== undefined && professional.experience_years !== null && (
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {master.experience_years} {master.experience_years === 1 ? "year" : "years"} experience
+                {professional.experience_years} {professional.experience_years === 1 ? "year" : "years"} experience
               </span>
             )}
             {stats && stats.total_reviews > 0 && (
@@ -90,13 +91,13 @@ export function MasterProfilePage() {
             )}
           </div>
 
-          {master.bio && <p className="mt-3 text-muted-foreground">{master.bio}</p>}
-          {master.description && (
-            <p className="mt-2 text-sm leading-relaxed">{master.description}</p>
+          {professional.bio && <p className="mt-3 text-muted-foreground">{professional.bio}</p>}
+          {professional.description && (
+            <p className="mt-2 text-sm leading-relaxed">{professional.description}</p>
           )}
 
           <div className="mt-4">
-            <Link to={`/book?master_id=${master.id}`}>
+            <Link to={`/book?professional_id=${professional.id}`}>
               <Button size="lg" className="bg-pink-600 hover:bg-pink-700">
                 Book Appointment
               </Button>

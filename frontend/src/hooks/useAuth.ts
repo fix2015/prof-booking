@@ -1,5 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
-import { authApi, LoginPayload, OwnerRegisterPayload, MasterRegisterPayload } from "@/api/auth";
+import {
+  authApi,
+  LoginPayload,
+  OwnerRegisterPayload,
+  ProfessionalRegisterPayload,
+  MasterRegisterPayload,
+} from "@/api/auth";
 import { useAuthContext } from "@/context/AuthContext";
 
 export function useLogin() {
@@ -18,6 +24,15 @@ export function useRegisterOwner() {
   });
 }
 
+export function useRegisterProfessional() {
+  const { login } = useAuthContext();
+  return useMutation({
+    mutationFn: (data: ProfessionalRegisterPayload) => authApi.registerProfessional(data),
+    onSuccess: (tokens) => login(tokens),
+  });
+}
+
+// Backward-compat alias
 export function useRegisterMaster() {
   const { login } = useAuthContext();
   return useMutation({

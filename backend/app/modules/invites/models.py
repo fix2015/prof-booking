@@ -19,7 +19,7 @@ class Invite(Base):
     __tablename__ = "invites"
 
     id = Column(Integer, primary_key=True, index=True)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
     invited_email = Column(String(255), nullable=False)
     token = Column(String(128), unique=True, nullable=False, index=True)
     status = Column(SAEnum(InviteStatus), default=InviteStatus.PENDING, nullable=False)
@@ -29,9 +29,9 @@ class Invite(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     accepted_at = Column(DateTime, nullable=True)
 
-    salon = relationship("Salon", back_populates="invites")
+    provider = relationship("Provider", back_populates="invites")
 
     __table_args__ = (
-        Index("ix_invites_salon", "salon_id"),
+        Index("ix_invites_provider", "provider_id"),
         Index("ix_invites_email", "invited_email"),
     )

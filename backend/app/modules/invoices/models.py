@@ -16,50 +16,48 @@ class InvoiceStatus(str, enum.Enum):
 
 
 class Invoice(Base):
-    """Monthly invoice for a master in a salon."""
+    """Monthly invoice for a professional at a service provider."""
     __tablename__ = "invoices"
 
     id = Column(Integer, primary_key=True, index=True)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
-    master_id = Column(Integer, ForeignKey("masters.id", ondelete="CASCADE"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="CASCADE"), nullable=False)
     period_start = Column(Date, nullable=False)
     period_end = Column(Date, nullable=False)
     total_sessions = Column(Integer, default=0, nullable=False)
-    total_revenue = Column(Float, default=0.0, nullable=False)   # combined session prices
-    master_earnings = Column(Float, default=0.0, nullable=False)
-    salon_earnings = Column(Float, default=0.0, nullable=False)
-    master_percentage = Column(Float, default=70.0, nullable=False)
+    total_revenue = Column(Float, default=0.0, nullable=False)
+    professional_earnings = Column(Float, default=0.0, nullable=False)
+    provider_earnings = Column(Float, default=0.0, nullable=False)
+    professional_percentage = Column(Float, default=70.0, nullable=False)
     status = Column(SAEnum(InvoiceStatus), default=InvoiceStatus.DRAFT, nullable=False)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relations
-    salon = relationship("Salon")
-    master = relationship("Master")
+    provider = relationship("Provider")
+    professional = relationship("Professional")
 
     __table_args__ = (
-        Index("ix_invoices_salon", "salon_id"),
-        Index("ix_invoices_master", "master_id"),
+        Index("ix_invoices_provider", "provider_id"),
+        Index("ix_invoices_professional", "professional_id"),
         Index("ix_invoices_period", "period_start", "period_end"),
     )
 
 
 class EarningsSplit(Base):
-    """Configurable revenue split between master and salon."""
+    """Configurable revenue split between professional and provider."""
     __tablename__ = "earnings_splits"
 
     id = Column(Integer, primary_key=True, index=True)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
-    master_id = Column(Integer, ForeignKey("masters.id", ondelete="CASCADE"), nullable=False)
-    master_percentage = Column(Float, default=70.0, nullable=False)   # e.g. 70 → master gets 70%
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="CASCADE"), nullable=False)
+    professional_percentage = Column(Float, default=70.0, nullable=False)
     effective_from = Column(Date, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Relations
-    salon = relationship("Salon", back_populates="earnings_splits")
-    master = relationship("Master")
+    provider = relationship("Provider", back_populates="earnings_splits")
+    professional = relationship("Professional")
 
     __table_args__ = (
-        Index("ix_earnings_splits_salon_master", "salon_id", "master_id"),
+        Index("ix_earnings_splits_provider_professional", "provider_id", "professional_id"),
     )

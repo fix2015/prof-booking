@@ -20,7 +20,7 @@ class ServiceUpdate(BaseModel):
 
 class ServiceResponse(BaseModel):
     id: int
-    salon_id: int
+    provider_id: int
     name: str
     description: Optional[str]
     duration_minutes: int

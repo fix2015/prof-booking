@@ -2,6 +2,9 @@ import apiClient from "./client";
 import { Session } from "@/types";
 
 export interface SessionFilters {
+  provider_id?: number;
+  professional_id?: number;
+  // Backward-compat aliases (also accepted by the API)
   salon_id?: number;
   master_id?: number;
   status?: string;

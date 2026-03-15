@@ -1,17 +1,20 @@
 import apiClient from "./client";
-import { Salon } from "@/types";
+import { Provider } from "@/types";
 
-export const salonsApi = {
-  listPublic: () => apiClient.get<Salon[]>("/salons/public").then((r) => r.data),
+export const providersApi = {
+  listPublic: () => apiClient.get<Provider[]>("/providers/public").then((r) => r.data),
 
   getPublic: (id: number) =>
-    apiClient.get<Salon>(`/salons/public/${id}`).then((r) => r.data),
+    apiClient.get<Provider>(`/providers/public/${id}`).then((r) => r.data),
 
   getById: (id: number) =>
-    apiClient.get<Salon>(`/salons/${id}`).then((r) => r.data),
+    apiClient.get<Provider>(`/providers/${id}`).then((r) => r.data),
 
-  update: (id: number, data: Partial<Salon>) =>
-    apiClient.patch<Salon>(`/salons/${id}`, data).then((r) => r.data),
+  update: (id: number, data: Partial<Provider>) =>
+    apiClient.patch<Provider>(`/providers/${id}`, data).then((r) => r.data),
 
-  listAll: () => apiClient.get<Salon[]>("/salons/").then((r) => r.data),
+  listAll: () => apiClient.get<Provider[]>("/providers/").then((r) => r.data),
 };
+
+// Backward-compat alias
+export const salonsApi = providersApi;
