@@ -85,22 +85,26 @@ jobs:
           EOF
 
       # ── 7. Build & start containers ──────────────────────────────────
+      # ServerAliveInterval prevents SSH "Broken pipe" during long docker builds
       - name: Deploy with Docker Compose
+        timeout-minutes: 20
         run: |
           ssh -i /tmp/deploy_key.pem \
               -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=20 \
               ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
             cd /opt/prof-booking/infra
 
             # Stop old containers
-            docker compose down --remove-orphans || true
+            sudo docker compose down --remove-orphans || true
 
-            # Build & start all services
-            docker compose up -d --build
+            # Build & start all services (sudo avoids docker group timing issue)
+            sudo docker compose up -d --build
 
             # Show running containers
-            docker compose ps
+            sudo docker compose ps
           EOF
 
       # ── 8. Cleanup local key ─────────────────────────────────────────
