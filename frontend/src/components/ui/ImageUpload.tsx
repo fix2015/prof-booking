@@ -10,6 +10,7 @@ interface ImageUploadProps {
   label?: string;
   shape?: "square" | "circle";
   size?: number; // px
+  maxSize?: number; // max image dimension sent to backend
 }
 
 export function ImageUpload({
@@ -18,6 +19,7 @@ export function ImageUpload({
   label = "Upload Image",
   shape = "square",
   size = 96,
+  maxSize = 1200,
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -26,7 +28,7 @@ export function ImageUpload({
   const handleFile = async (file: File) => {
     setUploading(true);
     try {
-      const url = await uploadsApi.uploadImage(file);
+      const url = await uploadsApi.uploadImage(file, maxSize);
       setPreview(url);
       onUpload(url);
     } catch {

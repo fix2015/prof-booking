@@ -6,21 +6,25 @@ function toAbsolute(url: string): string {
 }
 
 export const uploadsApi = {
-  uploadImage: async (file: File): Promise<string> => {
+  uploadImage: async (file: File, maxSize = 1200): Promise<string> => {
     const form = new FormData();
     form.append("file", file);
-    const res = await apiClient.post<{ url: string }>("/upload/image", form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await apiClient.post<{ url: string }>(
+      `/upload/image?max_size=${maxSize}`,
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
     return toAbsolute(res.data.url);
   },
 
-  uploadImages: async (files: File[]): Promise<string[]> => {
+  uploadImages: async (files: File[], maxSize = 1200): Promise<string[]> => {
     const form = new FormData();
     files.forEach((f) => form.append("files", f));
-    const res = await apiClient.post<{ urls: string[] }>("/upload/images", form, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const res = await apiClient.post<{ urls: string[] }>(
+      `/upload/images?max_size=${maxSize}`,
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
     return res.data.urls.map(toAbsolute);
   },
 };
