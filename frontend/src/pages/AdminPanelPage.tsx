@@ -34,7 +34,7 @@ export function AdminPanelPage() {
         <>
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-            <StatsCard title="Total Providers" value={providers.length} icon={Building2} color="pink" />
+            <StatsCard title="Total Providers" value={providers.length} icon={Building2} color="slate" />
             <StatsCard title="Total Users" value={users.length} icon={Users} color="blue" />
             <StatsCard title="Provider Owners" value={ownerCount} icon={Users} color="purple" />
             <StatsCard title="Professionals" value={professionalCount} icon={Activity} color="green" />

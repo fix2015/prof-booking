@@ -91,7 +91,7 @@ export function MasterRegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
@@ -165,13 +165,13 @@ export function MasterRegisterPage() {
                       return s ? (
                         <span
                           key={id}
-                          className="flex items-center gap-1 bg-pink-100 text-pink-800 text-xs font-medium px-2 py-1 rounded-full"
+                          className="flex items-center gap-1 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded-full"
                         >
                           {s.name}
                           <button
                             type="button"
                             onClick={() => removeProvider(id)}
-                            className="hover:text-pink-600"
+                            className="hover:text-gray-700"
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -223,7 +223,7 @@ export function MasterRegisterPage() {
             </Button>
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-pink-600 hover:underline font-medium">
+              <Link to="/login" className="text-gray-700 hover:underline font-medium">
                 Sign in
               </Link>
             </p>

@@ -109,7 +109,7 @@ export function ServicesPage() {
                   <div>
                     <p className="font-semibold">{service.name}</p>
                     {service.description && <p className="text-xs text-muted-foreground mt-0.5">{service.description}</p>}
-                    <p className="mt-2 text-lg font-bold text-pink-600">{formatCurrency(service.price)}</p>
+                    <p className="mt-2 text-lg font-bold text-gray-700">{formatCurrency(service.price)}</p>
                     <p className="text-xs text-muted-foreground">{service.duration_minutes} min</p>
                   </div>
                   <div className="flex gap-1">

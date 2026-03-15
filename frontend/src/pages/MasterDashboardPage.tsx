@@ -74,7 +74,7 @@ export function MasterDashboardPage() {
           title="Today's Sessions"
           value={todaySessions?.length ?? 0}
           icon={Scissors}
-          color="pink"
+          color="slate"
         />
         <StatsCard
           title="Upcoming"

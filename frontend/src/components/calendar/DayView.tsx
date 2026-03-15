@@ -65,7 +65,7 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
           <h3 className="font-semibold">{formatDate(date, "EEEE, MMMM d, yyyy")}</h3>
           <p className="text-sm text-muted-foreground">
             {workSlots.length} availability block{workSlots.length !== 1 ? "s" : ""} · {sessions.length} session{sessions.length !== 1 ? "s" : ""}
-            {onAddSlot && <span className="ml-2 text-pink-500">· click a row to add a slot</span>}
+            {onAddSlot && <span className="ml-2 text-gray-500">· click a row to add a slot</span>}
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
                     half === 0 ? "border-gray-200" : "border-gray-100 border-dashed",
                     past
                       ? "bg-gray-50/70 cursor-not-allowed"
-                      : onAddSlot && "cursor-pointer hover:bg-pink-50/60"
+                      : onAddSlot && "cursor-pointer hover:bg-gray-50/60"
                   )}
                   style={{ height: ROW_HEIGHT }}
                   onClick={() => handleRowClick(hour, half)}
@@ -152,7 +152,7 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
                   type="time"
                   value={form.start}
                   onChange={(e) => setForm((f) => f && { ...f, start: e.target.value })}
-                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 />
               </div>
               <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
                   type="time"
                   value={form.end}
                   onChange={(e) => setForm((f) => f && { ...f, end: e.target.value })}
-                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 />
               </div>
               {form.end <= form.start && (

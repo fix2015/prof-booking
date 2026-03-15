@@ -114,7 +114,7 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
-      <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100 overflow-hidden">
+      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
         {coverImage ? (
           <img
             src={coverImage}
@@ -122,7 +122,7 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-pink-300">
+          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-gray-300">
             {professional.name.charAt(0).toUpperCase()}
           </div>
         )}
@@ -161,7 +161,7 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
             <Button variant="outline" size="sm" className="w-full">View Profile</Button>
           </Link>
           <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
-            <Button size="sm" className="w-full bg-pink-600 hover:bg-pink-700">Book</Button>
+            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">Book</Button>
           </Link>
         </div>
       </CardContent>

@@ -235,7 +235,7 @@ function ProfessionalCard({
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100 font-semibold text-pink-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 font-semibold text-gray-700">
               {(professionalProvider.professional?.name ?? "#").slice(0, 2).toUpperCase()}
             </div>
           )}

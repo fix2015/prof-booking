@@ -266,12 +266,12 @@ export function SalonSelectorPage() {
   const selectedCoords = selectedProvider ? getCoords(selectedProvider) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex flex-col">
       {/* Header */}
       <div className="px-4 pt-6 pb-4 text-center">
         <div className="text-4xl mb-2">✨</div>
-        <h1 className="text-3xl font-bold text-pink-800">Find Your Provider</h1>
-        <p className="text-pink-600 mt-1">Discover service providers near you</p>
+        <h1 className="text-3xl font-bold text-gray-800">Find Your Provider</h1>
+        <p className="text-gray-700 mt-1">Discover service providers near you</p>
       </div>
 
       {/* Controls */}
@@ -290,7 +290,7 @@ export function SalonSelectorPage() {
             />
           </div>
           <Button
-            className="bg-pink-600 hover:bg-pink-700 shrink-0"
+            className="bg-gray-900 hover:bg-gray-950 shrink-0"
             onClick={handleSearch}
             disabled={locationLoading}
           >
@@ -325,8 +325,8 @@ export function SalonSelectorPage() {
               className={cn(
                 "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
                 activeType === t
-                  ? "bg-pink-600 border-pink-600 text-white"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-pink-400 hover:text-pink-700"
+                  ? "bg-gray-900 border-gray-700 text-white"
+                  : "bg-white border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-700"
               )}
             >
               {t}
@@ -505,7 +505,7 @@ export function SalonSelectorPage() {
                 ) : (
                   <div className="flex h-full items-center justify-center bg-gray-100 text-sm text-gray-500 p-6 text-center">
                     <div>
-                      <MapPin className="h-10 w-10 mx-auto mb-2 text-pink-400" />
+                      <MapPin className="h-10 w-10 mx-auto mb-2 text-gray-400" />
                       <p className="font-medium">Map unavailable</p>
                       <p className="text-xs mt-1">Set <code>VITE_GOOGLE_MAPS_API_KEY</code> in your <code>.env</code> file to enable the map.</p>
                     </div>
@@ -539,7 +539,7 @@ export function SalonSelectorPage() {
       {/* Professionals results */}
       {hasProfessionalFilter && (
         <div className="px-4 pb-8 max-w-6xl mx-auto w-full">
-          <h2 className="text-xl font-bold text-pink-800 mb-3">Professionals</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-3">Professionals</h2>
           {professionalsLoading ? (
             <div className="flex justify-center py-8">
               <Spinner />
@@ -563,7 +563,7 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
   const coverImage = professional.avatar_url ?? professional.photos?.[0]?.image_url;
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow group bg-white">
-      <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100 overflow-hidden">
+      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
         {coverImage ? (
           <img
             src={coverImage}
@@ -571,7 +571,7 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-pink-300">
+          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-gray-300">
             {professional.name.charAt(0).toUpperCase()}
           </div>
         )}
@@ -598,7 +598,7 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
             <Button variant="outline" size="sm" className="w-full">View Profile</Button>
           </Link>
           <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
-            <Button size="sm" className="w-full bg-pink-600 hover:bg-pink-700">Book</Button>
+            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">Book</Button>
           </Link>
         </div>
       </CardContent>
@@ -616,7 +616,7 @@ function ProviderCard({
 }) {
   return (
     <Card
-      className={`cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 ${isSelected ? "ring-2 ring-pink-500 shadow-md" : ""}`}
+      className={`cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 ${isSelected ? "ring-2 ring-gray-500 shadow-md" : ""}`}
       onClick={onClick}
     >
       <CardContent className="p-4">
@@ -626,10 +626,10 @@ function ProviderCard({
             <img
               src={provider.logo_url}
               alt={provider.name}
-              className="w-12 h-12 rounded-lg object-cover border border-pink-100 shrink-0"
+              className="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0"
             />
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center text-xl font-bold text-white shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-xl font-bold text-white shrink-0">
               {provider.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -638,7 +638,7 @@ function ProviderCard({
             <div className="flex items-center justify-between gap-1">
               <h2 className="text-base font-semibold text-gray-900 truncate">{provider.name}</h2>
               {hasMapPin && (
-                <MapPin className="h-3.5 w-3.5 text-pink-500 shrink-0" />
+                <MapPin className="h-3.5 w-3.5 text-gray-500 shrink-0" />
               )}
             </div>
             {provider.description && (
@@ -647,19 +647,19 @@ function ProviderCard({
             <div className="flex flex-col gap-0.5 mt-1.5 text-xs text-gray-500">
               {provider.address && (
                 <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-pink-400 shrink-0" />
+                  <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
                   <span className="truncate">{provider.address}</span>
                 </span>
               )}
               {provider.phone && (
                 <span className="flex items-center gap-1">
-                  <Phone className="h-3 w-3 text-pink-400 shrink-0" />
+                  <Phone className="h-3 w-3 text-gray-400 shrink-0" />
                   {provider.phone}
                 </span>
               )}
               {provider.email && (
                 <span className="flex items-center gap-1">
-                  <Mail className="h-3 w-3 text-pink-400 shrink-0" />
+                  <Mail className="h-3 w-3 text-gray-400 shrink-0" />
                   <span className="truncate">{provider.email}</span>
                 </span>
               )}
@@ -671,7 +671,7 @@ function ProviderCard({
           <a
             href={`/book/${provider.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center rounded-full bg-pink-50 px-4 py-1.5 text-xs font-medium text-pink-700 hover:bg-pink-100 transition-colors"
+            className="inline-flex items-center rounded-full bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
           >
             Book Now →
           </a>

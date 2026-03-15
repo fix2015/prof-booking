@@ -53,7 +53,7 @@ export function ImageUpload({
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className={`relative border-2 border-dashed border-muted-foreground/30 bg-muted/20 flex items-center justify-center cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-colors ${borderRadius} overflow-hidden`}
+        className={`relative border-2 border-dashed border-muted-foreground/30 bg-muted/20 flex items-center justify-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors ${borderRadius} overflow-hidden`}
         style={{ width: size, height: size }}
         onClick={() => !uploading && inputRef.current?.click()}
         onDrop={handleDrop}

@@ -125,7 +125,7 @@ export function OwnerAnalyticsPage() {
                         {w.avatar_url ? (
                           <img src={w.avatar_url} alt={w.professional_name} className="h-7 w-7 rounded-full object-cover" />
                         ) : (
-                          <div className="h-7 w-7 rounded-full bg-pink-100 flex items-center justify-center text-xs font-bold text-pink-700">
+                          <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-700">
                             {w.professional_name.charAt(0)}
                           </div>
                         )}
@@ -153,7 +153,7 @@ function SummaryCard({ icon, label, value }: { icon: React.ReactNode; label: str
   return (
     <Card>
       <CardContent className="p-4 flex items-center gap-3">
-        <div className="rounded-full bg-pink-50 p-2 text-pink-600">{icon}</div>
+        <div className="rounded-full bg-gray-50 p-2 text-gray-700">{icon}</div>
         <div>
           <p className="text-xs text-muted-foreground">{label}</p>
           <p className="text-xl font-bold">{value}</p>

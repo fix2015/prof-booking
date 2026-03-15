@@ -50,9 +50,9 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         salon: {
-          pink: "#ec4899",
-          "pink-light": "#fdf2f8",
-          "pink-dark": "#be185d",
+          accent: "#1e2a3a",
+          "accent-light": "#f1f3f5",
+          "accent-dark": "#0f1621",
         },
       },
       borderRadius: {

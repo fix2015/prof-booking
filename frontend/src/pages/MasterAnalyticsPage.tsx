@@ -63,7 +63,7 @@ export function MasterAnalyticsPage() {
             <StatCard icon={<Users className="h-5 w-5" />} label="Clients" value={analytics.unique_clients} color="text-blue-600" bg="bg-blue-50" />
             <StatCard icon={<Clock className="h-5 w-5" />} label="Hours Worked" value={`${analytics.total_hours}h`} color="text-purple-600" bg="bg-purple-50" />
             <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Sessions" value={analytics.completed_sessions} color="text-green-600" bg="bg-green-50" />
-            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-pink-600" bg="bg-pink-50" />
+            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-gray-700" bg="bg-gray-50" />
           </div>
 
           {/* Monthly chart */}
