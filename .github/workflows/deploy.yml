@@ -12,6 +12,11 @@ permissions:
   contents: read
   packages: read
 
+# Only one deploy at a time — cancel any in-progress run when a new one starts
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
