@@ -68,7 +68,7 @@ export function PublicBookingPage() {
 
   const handleBooking = async (data: {
     service_id: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     master_id?: number;
     slot: { start_time: string; master_id: number };
     client_name: string;
@@ -180,7 +180,7 @@ export function PublicBookingPage() {
               salonId={activeProviderId}
               services={services}
               masters={professionals}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               onSubmit={handleBooking as any}
               isLoading={isBooking}
               availableSlots={availableSlots}

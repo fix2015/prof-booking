@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Flag, Clock, Star } from "lucide-react";
+import { MapPin, Phone, List, Map, Search, Navigation, Flag, Clock } from "lucide-react";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
