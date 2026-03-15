@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app.dependencies import get_current_user, get_current_owner, get_current_admin
+from app.dependencies import get_current_owner, get_current_admin
 from app.modules.salons.schemas import ProviderResponse, ProviderUpdate, ProviderPublic
 from app.modules.salons.services import (
     list_providers, get_provider_or_404, update_provider, assert_owner_of_provider,

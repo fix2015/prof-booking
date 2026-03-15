@@ -1,12 +1,9 @@
 import hashlib
 import hmac
-import secrets
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from datetime import timedelta
 
 from app.modules.booking.schemas import PublicBookingRequest, BookingConfirmation
-from app.modules.sessions.models import Session as BookingSession, SessionStatus
 from app.modules.sessions.services import create_session
 from app.modules.sessions.schemas import SessionCreate
 from app.modules.salons.services import get_provider_or_404

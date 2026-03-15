@@ -134,7 +134,7 @@ def get_available_slots(
         .filter(
             WorkSlot.provider_id == provider_id,
             WorkSlot.slot_date == query_date,
-            WorkSlot.is_available == True,
+            WorkSlot.is_available == True,  # noqa: E712
         )
     )
     if professional_id:

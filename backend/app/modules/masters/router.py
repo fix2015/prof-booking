@@ -11,7 +11,7 @@ from app.modules.masters.schemas import (
     ProfessionalDirectCreate,
 )
 from app.modules.masters.services import (
-    list_provider_professionals, get_professional_or_404, approve_professional,
+    list_provider_professionals, approve_professional,
     update_professional, get_professional_by_user_id, get_professional_providers,
     create_professional_with_user,
 )

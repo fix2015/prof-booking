@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from typing import List, Optional
 
 from app.database import get_db
@@ -48,7 +47,7 @@ def list_reviews(
     db: Session = Depends(get_db),
 ):
     """Public endpoint — list published reviews."""
-    q = db.query(Review).filter(Review.is_published == True)
+    q = db.query(Review).filter(Review.is_published == True)  # noqa: E712
     if professional_id:
         q = q.filter(Review.professional_id == professional_id)
     if provider_id:
@@ -63,7 +62,7 @@ def professional_review_stats(
 ):
     reviews = db.query(Review).filter(
         Review.professional_id == professional_id,
-        Review.is_published == True,
+        Review.is_published == True,  # noqa: E712
     ).all()
 
     if not reviews:

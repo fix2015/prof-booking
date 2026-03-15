@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -7,14 +6,14 @@ def test_register_owner(client: TestClient):
         "email": "owner@example.com",
         "phone": "+1234567890",
         "password": "securepass123",
-        "salon_name": "My Nail Salon",
-        "salon_address": "456 Oak Ave",
+        "provider_name": "My Nail Salon",
+        "provider_address": "456 Oak Ave",
         "worker_payment_amount": 40.0,
     })
     assert resp.status_code == 201
     data = resp.json()
     assert "access_token" in data
-    assert data["role"] == "salon_owner"
+    assert data["role"] == "provider_owner"
 
 
 def test_register_duplicate_email(client: TestClient):
@@ -22,8 +21,8 @@ def test_register_duplicate_email(client: TestClient):
         "email": "dup@example.com",
         "phone": "+1234567890",
         "password": "securepass123",
-        "salon_name": "Salon A",
-        "salon_address": "123 St",
+        "provider_name": "Salon A",
+        "provider_address": "123 St",
         "worker_payment_amount": 0,
     }
     client.post("/api/v1/auth/register/owner", json=payload)
@@ -36,8 +35,8 @@ def test_login_success(client: TestClient):
         "email": "login@example.com",
         "phone": "+1234567890",
         "password": "mypassword1",
-        "salon_name": "Login Salon",
-        "salon_address": "789 St",
+        "provider_name": "Login Salon",
+        "provider_address": "789 St",
         "worker_payment_amount": 0,
     })
     resp = client.post("/api/v1/auth/login", json={
@@ -55,8 +54,8 @@ def test_login_wrong_password(client: TestClient):
         "email": "wrong@example.com",
         "phone": "+1234567890",
         "password": "correctpass1",
-        "salon_name": "W Salon",
-        "salon_address": "1 St",
+        "provider_name": "W Salon",
+        "provider_address": "1 St",
         "worker_payment_amount": 0,
     })
     resp = client.post("/api/v1/auth/login", json={
@@ -71,7 +70,7 @@ def test_get_me(client: TestClient, owner_headers: dict):
     assert resp.status_code == 200
     data = resp.json()
     assert data["email"] == "owner@test.com"
-    assert data["role"] == "salon_owner"
+    assert data["role"] == "provider_owner"
 
 
 def test_refresh_token(client: TestClient):
@@ -79,8 +78,8 @@ def test_refresh_token(client: TestClient):
         "email": "refresh@example.com",
         "phone": "+1234567890",
         "password": "refreshpass1",
-        "salon_name": "Refresh Salon",
-        "salon_address": "1 St",
+        "provider_name": "Refresh Salon",
+        "provider_address": "1 St",
         "worker_payment_amount": 0,
     })
     refresh_token = reg.json()["refresh_token"]

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
-from app.modules.masters.schemas import ProfessionalCreate, ProfessionalUpdate, ProfessionalDirectCreate
+from app.modules.masters.schemas import ProfessionalUpdate, ProfessionalDirectCreate
 from app.modules.users.models import User, UserRole
 
 

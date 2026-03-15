@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db
-from app.dependencies import get_current_user, get_current_owner
+from app.dependencies import get_current_owner
 from app.modules.services.schemas import ServiceCreate, ServiceUpdate, ServiceResponse
 from app.modules.services.services import (
     create_service, list_services, get_service_or_404, update_service, delete_service,

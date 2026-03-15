@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,7 +12,7 @@ from app.modules.auth.services import (
     refresh_access_token, revoke_all_tokens,
 )
 from app.modules.users.models import User, UserRole
-from app.modules.users.services import create_user, get_user_by_email
+from app.modules.users.services import create_user
 from app.modules.users.schemas import UserCreate
 from app.modules.salons.services import create_provider_for_owner
 from app.modules.masters.services import create_professional_profile

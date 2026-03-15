@@ -1,6 +1,6 @@
 import stripe
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 from typing import Optional
 
 from app.config import settings
