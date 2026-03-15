@@ -49,3 +49,4 @@ logs/
 
 # Alembic
 backend/alembic/versions/*.pyc
+claude_bridge.py
