@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { salonsApi } from "@/api/salons";
+import { providersApi } from "@/api/salons";
 import apiClient from "@/api/client";
 import { User } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,9 +9,9 @@ import { Building2, Users, Activity } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 
 export function AdminPanelPage() {
-  const { data: salons = [], isLoading: salonsLoading } = useQuery({
-    queryKey: ["admin", "salons"],
-    queryFn: () => salonsApi.listAll(),
+  const { data: providers = [], isLoading: providersLoading } = useQuery({
+    queryKey: ["admin", "providers"],
+    queryFn: () => providersApi.listAll(),
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
@@ -19,10 +19,10 @@ export function AdminPanelPage() {
     queryFn: () => apiClient.get<User[]>("/users/").then((r) => r.data),
   });
 
-  const isLoading = salonsLoading || usersLoading;
+  const isLoading = providersLoading || usersLoading;
 
-  const ownerCount = users.filter((u) => u.role === "salon_owner").length;
-  const masterCount = users.filter((u) => u.role === "master").length;
+  const ownerCount = users.filter((u) => u.role === "provider_owner").length;
+  const professionalCount = users.filter((u) => u.role === "professional").length;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -34,16 +34,16 @@ export function AdminPanelPage() {
         <>
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
-            <StatsCard title="Total Salons" value={salons.length} icon={Building2} color="pink" />
+            <StatsCard title="Total Providers" value={providers.length} icon={Building2} color="pink" />
             <StatsCard title="Total Users" value={users.length} icon={Users} color="blue" />
-            <StatsCard title="Salon Owners" value={ownerCount} icon={Users} color="purple" />
-            <StatsCard title="Masters" value={masterCount} icon={Activity} color="green" />
+            <StatsCard title="Provider Owners" value={ownerCount} icon={Users} color="purple" />
+            <StatsCard title="Professionals" value={professionalCount} icon={Activity} color="green" />
           </div>
 
-          {/* Salons table */}
+          {/* Providers table */}
           <Card>
             <CardHeader>
-              <CardTitle>All Salons</CardTitle>
+              <CardTitle>All Providers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -57,14 +57,14 @@ export function AdminPanelPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {salons.map((salon) => (
-                      <tr key={salon.id}>
-                        <td className="py-2 text-muted-foreground">#{salon.id}</td>
-                        <td className="py-2 font-medium">{salon.name}</td>
-                        <td className="py-2 text-muted-foreground">{salon.address || "—"}</td>
+                    {providers.map((provider) => (
+                      <tr key={provider.id}>
+                        <td className="py-2 text-muted-foreground">#{provider.id}</td>
+                        <td className="py-2 font-medium">{provider.name}</td>
+                        <td className="py-2 text-muted-foreground">{provider.address || "—"}</td>
                         <td className="py-2">
-                          <Badge variant={salon.is_active ? "success" : "secondary"}>
-                            {salon.is_active ? "Active" : "Inactive"}
+                          <Badge variant={provider.is_active ? "success" : "secondary"}>
+                            {provider.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </td>
                       </tr>

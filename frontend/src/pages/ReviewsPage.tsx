@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Star, Eye, EyeOff, MessageSquare } from "lucide-react";
 import { reviewsApi } from "@/api/reviews";
-import { salonsApi } from "@/api/salons";
+import { providersApi } from "@/api/salons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -11,17 +11,17 @@ import type { Review } from "@/types";
 
 export function ReviewsPage() {
   const qc = useQueryClient();
-  const [salonFilter, setSalonFilter] = useState<number | null>(null);
+  const [providerFilter, setProviderFilter] = useState<number | null>(null);
 
-  const { data: salons = [] } = useQuery({
-    queryKey: ["salons", "public"],
-    queryFn: () => salonsApi.listPublic(),
+  const { data: providers = [] } = useQuery({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
   });
 
   const { data: reviews = [], isLoading } = useQuery({
-    queryKey: ["reviews", "all", salonFilter],
+    queryKey: ["reviews", "all", providerFilter],
     queryFn: () =>
-      reviewsApi.list({ salon_id: salonFilter ?? undefined, limit: 100 }).then((r) => r.data),
+      reviewsApi.list({ provider_id: providerFilter ?? undefined, limit: 100 } as any).then((r) => r.data),
   });
 
   const toggleMutation = useMutation({
@@ -53,24 +53,24 @@ export function ReviewsPage() {
         </div>
       </div>
 
-      {/* Salon filter */}
-      {salons.length > 1 && (
+      {/* Provider filter */}
+      {providers.length > 1 && (
         <div className="flex gap-2 flex-wrap">
           <Button
             size="sm"
-            variant={salonFilter === null ? "default" : "outline"}
-            onClick={() => setSalonFilter(null)}
+            variant={providerFilter === null ? "default" : "outline"}
+            onClick={() => setProviderFilter(null)}
           >
-            All Salons
+            All Providers
           </Button>
-          {salons.map((s) => (
+          {providers.map((p) => (
             <Button
-              key={s.id}
+              key={p.id}
               size="sm"
-              variant={salonFilter === s.id ? "default" : "outline"}
-              onClick={() => setSalonFilter(s.id)}
+              variant={providerFilter === p.id ? "default" : "outline"}
+              onClick={() => setProviderFilter(p.id)}
             >
-              {s.name}
+              {p.name}
             </Button>
           ))}
         </div>
@@ -113,7 +113,7 @@ function ReviewRow({
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
               <p className="font-medium">{review.client_name}</p>
               {review.client_phone && (
                 <span className="text-xs text-muted-foreground">{review.client_phone}</span>

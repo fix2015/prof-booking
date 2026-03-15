@@ -5,7 +5,7 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.modules.auth.schemas import (
     LoginRequest, TokenResponse, RefreshRequest,
-    OwnerRegisterRequest, MasterRegisterRequest,
+    OwnerRegisterRequest, ProfessionalRegisterRequest,
 )
 from app.modules.auth.services import (
     authenticate_user, create_access_token, create_refresh_token,
@@ -14,9 +14,9 @@ from app.modules.auth.services import (
 from app.modules.users.models import User, UserRole
 from app.modules.users.services import create_user, get_user_by_email
 from app.modules.users.schemas import UserCreate
-from app.modules.salons.services import create_salon_for_owner
-from app.modules.masters.services import create_master_profile
-from app.modules.masters.models import MasterSalon, MasterStatus
+from app.modules.salons.services import create_provider_for_owner
+from app.modules.masters.services import create_professional_profile
+from app.modules.masters.models import ProfessionalProvider, ProfessionalStatus
 from app.modules.invites.services import consume_invite
 
 router = APIRouter()
@@ -64,14 +64,14 @@ def register_owner(data: OwnerRegisterRequest, db: Session = Depends(get_db)):
             email=data.email,
             phone=data.phone,
             password=data.password,
-            role=UserRole.SALON_OWNER,
+            role=UserRole.PROVIDER_OWNER,
         ),
     )
-    create_salon_for_owner(
+    create_provider_for_owner(
         db,
         owner_user=user,
-        salon_name=data.salon_name,
-        salon_address=data.salon_address,
+        provider_name=data.provider_name,
+        provider_address=data.provider_address,
         worker_payment_amount=data.worker_payment_amount,
     )
     access_token = create_access_token(user)
@@ -84,43 +84,43 @@ def register_owner(data: OwnerRegisterRequest, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/register/master", response_model=TokenResponse, status_code=201)
-def register_master(data: MasterRegisterRequest, db: Session = Depends(get_db)):
+@router.post("/register/professional", response_model=TokenResponse, status_code=201)
+def register_professional(data: ProfessionalRegisterRequest, db: Session = Depends(get_db)):
     user = create_user(
         db,
         UserCreate(
             email=data.email,
             phone=data.phone,
             password=data.password,
-            role=UserRole.MASTER,
+            role=UserRole.PROFESSIONAL,
         ),
     )
-    salon_id = None
+    provider_id = None
     if data.invite_token:
-        salon_id = consume_invite(db, data.invite_token, user)
+        provider_id = consume_invite(db, data.invite_token, user)
 
-    master = create_master_profile(
+    professional = create_professional_profile(
         db,
         user=user,
         name=data.name,
         phone=data.phone,
         social_links=data.social_links or {},
-        salon_id=salon_id,
+        provider_id=provider_id,
     )
 
-    # Self-selected salons (without invite) — create PENDING requests
-    for sid in (data.salon_ids or []):
-        if sid == salon_id:
+    # Self-selected providers (without invite) — create PENDING requests
+    for pid in (data.provider_ids or []):
+        if pid == provider_id:
             continue  # already handled via invite
-        existing = db.query(MasterSalon).filter(
-            MasterSalon.master_id == master.id,
-            MasterSalon.salon_id == sid,
+        existing = db.query(ProfessionalProvider).filter(
+            ProfessionalProvider.professional_id == professional.id,
+            ProfessionalProvider.provider_id == pid,
         ).first()
         if not existing:
-            db.add(MasterSalon(
-                master_id=master.id,
-                salon_id=sid,
-                status=MasterStatus.PENDING,
+            db.add(ProfessionalProvider(
+                professional_id=professional.id,
+                provider_id=pid,
+                status=ProfessionalStatus.PENDING,
             ))
     db.commit()
     access_token = create_access_token(user)
@@ -131,3 +131,9 @@ def register_master(data: MasterRegisterRequest, db: Session = Depends(get_db)):
         user_id=user.id,
         role=user.role,
     )
+
+
+# Backward-compat alias — keeps old /register/master endpoint working
+@router.post("/register/master", response_model=TokenResponse, status_code=201, include_in_schema=False)
+def register_master(data: ProfessionalRegisterRequest, db: Session = Depends(get_db)):
+    return register_professional(data, db)

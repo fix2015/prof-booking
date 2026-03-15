@@ -8,27 +8,27 @@ from app.modules.services.schemas import ServiceCreate, ServiceUpdate, ServiceRe
 from app.modules.services.services import (
     create_service, list_services, get_service_or_404, update_service, delete_service,
 )
-from app.modules.salons.services import assert_owner_of_salon
+from app.modules.salons.services import assert_owner_of_provider
 from app.modules.users.models import User
 
 router = APIRouter()
 
 
-@router.get("/salon/{salon_id}", response_model=List[ServiceResponse])
-def get_services(salon_id: int, db: Session = Depends(get_db)):
-    """Public endpoint for listing salon services."""
-    return list_services(db, salon_id)
+@router.get("/provider/{provider_id}", response_model=List[ServiceResponse])
+def get_services(provider_id: int, db: Session = Depends(get_db)):
+    """Public endpoint for listing provider services."""
+    return list_services(db, provider_id)
 
 
-@router.post("/salon/{salon_id}", response_model=ServiceResponse, status_code=201)
+@router.post("/provider/{provider_id}", response_model=ServiceResponse, status_code=201)
 def create_service_endpoint(
-    salon_id: int,
+    provider_id: int,
     data: ServiceCreate,
     current_user: User = Depends(get_current_owner),
     db: Session = Depends(get_db),
 ):
-    assert_owner_of_salon(db, current_user, salon_id)
-    return create_service(db, salon_id, data)
+    assert_owner_of_provider(db, current_user, provider_id)
+    return create_service(db, provider_id, data)
 
 
 @router.patch("/{service_id}", response_model=ServiceResponse)
@@ -39,7 +39,7 @@ def update_service_endpoint(
     db: Session = Depends(get_db),
 ):
     service = get_service_or_404(db, service_id)
-    assert_owner_of_salon(db, current_user, service.salon_id)
+    assert_owner_of_provider(db, current_user, service.provider_id)
     return update_service(db, service, data)
 
 
@@ -50,5 +50,5 @@ def delete_service_endpoint(
     db: Session = Depends(get_db),
 ):
     service = get_service_or_404(db, service_id)
-    assert_owner_of_salon(db, current_user, service.salon_id)
+    assert_owner_of_provider(db, current_user, service.provider_id)
     delete_service(db, service)

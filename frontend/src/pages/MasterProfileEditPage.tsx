@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { User, Globe, Clock, FileText, AlignLeft, Phone } from "lucide-react";
-import { useMyMasterProfile, useUpdateMasterProfile } from "@/hooks/useMaster";
+import { useMyProfessionalProfile, useUpdateProfessionalProfile } from "@/hooks/useMaster";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +11,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/hooks/useToast";
 
 export function MasterProfileEditPage() {
-  const { data: master, isLoading } = useMyMasterProfile();
-  const updateMaster = useUpdateMasterProfile();
+  const { data: professional, isLoading } = useMyProfessionalProfile();
+  const updateProfessional = useUpdateProfessionalProfile();
   const qc = useQueryClient();
 
   const [form, setForm] = useState({
@@ -25,17 +25,17 @@ export function MasterProfileEditPage() {
   });
 
   useEffect(() => {
-    if (master) {
+    if (professional) {
       setForm({
-        name: master.name ?? "",
-        phone: master.phone ?? "",
-        bio: master.bio ?? "",
-        description: master.description ?? "",
-        nationality: master.nationality ?? "",
-        experience_years: master.experience_years != null ? String(master.experience_years) : "",
+        name: professional.name ?? "",
+        phone: professional.phone ?? "",
+        bio: professional.bio ?? "",
+        description: professional.description ?? "",
+        nationality: professional.nationality ?? "",
+        experience_years: professional.experience_years != null ? String(professional.experience_years) : "",
       });
     }
-  }, [master]);
+  }, [professional]);
 
   const handleChange = (field: keyof typeof form) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -44,7 +44,7 @@ export function MasterProfileEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateMaster.mutateAsync({
+      await updateProfessional.mutateAsync({
         name: form.name || undefined,
         phone: form.phone || undefined,
         bio: form.bio || undefined,
@@ -57,6 +57,9 @@ export function MasterProfileEditPage() {
       toast({ title: "Failed to update profile", variant: "destructive" });
     }
   };
+
+  // Prevent unused variable warning
+  void qc;
 
   if (isLoading) return <Spinner className="mx-auto mt-20" />;
 
@@ -73,9 +76,9 @@ export function MasterProfileEditPage() {
         </CardHeader>
         <CardContent>
           <ImageUpload
-            currentUrl={master?.avatar_url ?? undefined}
+            currentUrl={professional?.avatar_url ?? undefined}
             onUpload={(url) =>
-              updateMaster.mutate(
+              updateProfessional.mutate(
                 { avatar_url: url || undefined },
                 { onSuccess: () => toast({ title: "Avatar updated", variant: "success" }) }
               )
@@ -178,9 +181,9 @@ export function MasterProfileEditPage() {
             <Button
               type="submit"
               className="w-full md:w-auto bg-pink-600 hover:bg-pink-700"
-              disabled={updateMaster.isPending}
+              disabled={updateProfessional.isPending}
             >
-              {updateMaster.isPending ? "Saving…" : "Save Changes"}
+              {updateProfessional.isPending ? "Saving…" : "Save Changes"}
             </Button>
           </form>
         </CardContent>

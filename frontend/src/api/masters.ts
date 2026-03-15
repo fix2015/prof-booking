@@ -1,54 +1,54 @@
 import apiClient from "./client";
-import type { Master, MasterSalon, MasterPhoto } from "@/types";
+import type { Professional, ProfessionalProvider, ProfessionalPhoto } from "@/types";
 
-export const mastersApi = {
-  getMe: () => apiClient.get<Master>("/masters/me").then((r) => r.data),
+export const professionalsApi = {
+  getMe: () => apiClient.get<Professional>("/professionals/me").then((r) => r.data),
 
-  updateMe: (data: Partial<Master>) =>
-    apiClient.patch<Master>("/masters/me", data).then((r) => r.data),
+  updateMe: (data: Partial<Professional>) =>
+    apiClient.patch<Professional>("/professionals/me", data).then((r) => r.data),
 
-  getSalonMastersPublic: (salonId: number) =>
-    apiClient.get<Master[]>(`/masters/salon/${salonId}/public`).then((r) => r.data),
+  getProviderProfessionalsPublic: (providerId: number) =>
+    apiClient.get<Professional[]>(`/professionals/provider/${providerId}/public`).then((r) => r.data),
 
-  getSalonMasters: (salonId: number, status?: string) =>
+  getProviderProfessionals: (providerId: number, status?: string) =>
     apiClient
-      .get<MasterSalon[]>(`/masters/salon/${salonId}`, { params: { status } })
+      .get<ProfessionalProvider[]>(`/professionals/provider/${providerId}`, { params: { status } })
       .then((r) => r.data),
 
-  approveMaster: (salonId: number, masterId: number, status: string, paymentAmount?: number) =>
+  approveProfessional: (providerId: number, professionalId: number, status: string, paymentAmount?: number) =>
     apiClient
-      .patch<MasterSalon>(`/masters/salon/${salonId}/${masterId}/approval`, {
+      .patch<ProfessionalProvider>(`/professionals/provider/${providerId}/${professionalId}/approval`, {
         status,
         payment_amount: paymentAmount,
       })
       .then((r) => r.data),
 
-  getById: (id: number) => apiClient.get<Master>(`/masters/${id}`).then((r) => r.data),
+  getById: (id: number) => apiClient.get<Professional>(`/professionals/${id}`).then((r) => r.data),
 
   discover: (params?: {
     search?: string;
     nationality?: string;
     min_experience?: number;
-    salon_id?: number;
+    provider_id?: number;
     skip?: number;
     limit?: number;
-  }) => apiClient.get<Master[]>("/masters/discover", { params }).then((r) => r.data),
+  }) => apiClient.get<Professional[]>("/professionals/discover", { params }).then((r) => r.data),
 
-  getPhotos: (masterId: number) =>
-    apiClient.get<MasterPhoto[]>(`/masters/${masterId}/photos`).then((r) => r.data),
+  getPhotos: (professionalId: number) =>
+    apiClient.get<ProfessionalPhoto[]>(`/professionals/${professionalId}/photos`).then((r) => r.data),
 
   addPhoto: (data: { image_url: string; caption?: string; order?: number }) =>
     apiClient
-      .post<MasterPhoto>("/masters/me/photos", null, {
+      .post<ProfessionalPhoto>("/professionals/me/photos", null, {
         params: { image_url: data.image_url, caption: data.caption, order: data.order ?? 0 },
       })
       .then((r) => r.data),
 
   deletePhoto: (photoId: number) =>
-    apiClient.delete(`/masters/me/photos/${photoId}`),
+    apiClient.delete(`/professionals/me/photos/${photoId}`),
 
   createDirect: (
-    salonId: number,
+    providerId: number,
     data: {
       email: string;
       name: string;
@@ -61,6 +61,17 @@ export const mastersApi = {
     }
   ) =>
     apiClient
-      .post<MasterSalon>(`/masters/salon/${salonId}/create`, data)
+      .post<ProfessionalProvider>(`/professionals/provider/${providerId}/create`, data)
       .then((r) => r.data),
+};
+
+// Backward-compat alias
+export const mastersApi = {
+  ...professionalsApi,
+  getSalonMastersPublic: (salonId: number) =>
+    professionalsApi.getProviderProfessionalsPublic(salonId),
+  getSalonMasters: (salonId: number, status?: string) =>
+    professionalsApi.getProviderProfessionals(salonId, status),
+  approveMaster: (salonId: number, masterId: number, status: string, paymentAmount?: number) =>
+    professionalsApi.approveProfessional(salonId, masterId, status, paymentAmount),
 };

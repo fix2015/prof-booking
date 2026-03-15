@@ -2,17 +2,17 @@ import apiClient from "./client";
 import { WorkSlot, AvailableSlot } from "@/types";
 
 export interface WorkSlotPayload {
-  salon_id: number;
+  provider_id: number;
   slot_date: string;
   start_time: string;
   end_time: string;
 }
 
 export const calendarApi = {
-  getAvailability: (salonId: number, date: string, durationMinutes: number, masterId?: number) =>
+  getAvailability: (providerId: number, date: string, durationMinutes: number, professionalId?: number) =>
     apiClient
       .get<AvailableSlot[]>("/calendar/availability", {
-        params: { salon_id: salonId, date, duration_minutes: durationMinutes, master_id: masterId },
+        params: { provider_id: providerId, date, duration_minutes: durationMinutes, professional_id: professionalId },
       })
       .then((r) => r.data),
 
@@ -26,9 +26,9 @@ export const calendarApi = {
 
   deleteSlot: (slotId: number) => apiClient.delete(`/calendar/slots/${slotId}`),
 
-  copyWeek: (data: { source_week_start: string; target_week_start: string; salon_id: number }) =>
+  copyWeek: (data: { source_week_start: string; target_week_start: string; provider_id: number }) =>
     apiClient.post<{ created: number }>("/calendar/slots/copy-week", data).then((r) => r.data),
 
-  copyPeriod: (data: { source_start: string; source_end: string; target_start: string; salon_id: number }) =>
+  copyPeriod: (data: { source_start: string; source_end: string; target_start: string; provider_id: number }) =>
     apiClient.post<{ created: number }>("/calendar/slots/copy-period", data).then((r) => r.data),
 };

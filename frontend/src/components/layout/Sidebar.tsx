@@ -17,19 +17,19 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Calendar", href: "/calendar", icon: Calendar, roles: ["master", "salon_owner"] },
+  { label: "Calendar", href: "/calendar", icon: Calendar, roles: ["professional", "provider_owner"] },
   { label: "Sessions", href: "/sessions", icon: Scissors },
-  { label: "Masters", href: "/masters", icon: Users, roles: ["salon_owner", "platform_admin"] },
-  { label: "Services", href: "/services", icon: Settings, roles: ["salon_owner"] },
-  { label: "Reviews", href: "/reviews", icon: Star, roles: ["salon_owner", "platform_admin"] },
-  { label: "Analytics", href: "/analytics/owner", icon: BarChart2, roles: ["salon_owner", "platform_admin"] },
-  { label: "My Analytics", href: "/analytics/master", icon: TrendingUp, roles: ["master"] },
-  { label: "Invoices", href: "/invoices", icon: FileText, roles: ["salon_owner", "master", "platform_admin"] },
-  { label: "Reports", href: "/reports", icon: BarChart2, roles: ["salon_owner", "platform_admin"] },
+  { label: "Professionals", href: "/professionals", icon: Users, roles: ["provider_owner", "platform_admin"] },
+  { label: "Services", href: "/services", icon: Settings, roles: ["provider_owner"] },
+  { label: "Reviews", href: "/reviews", icon: Star, roles: ["provider_owner", "platform_admin"] },
+  { label: "Analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
+  { label: "My Analytics", href: "/analytics/professional", icon: TrendingUp, roles: ["professional"] },
+  { label: "Invoices", href: "/invoices", icon: FileText, roles: ["provider_owner", "professional", "platform_admin"] },
+  { label: "Reports", href: "/reports", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
   { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Admin", href: "/admin", icon: Shield, roles: ["platform_admin"] },
-  { label: "My Profile", href: "/profile/master", icon: User, roles: ["master"] },
-  { label: "Salon Settings", href: "/profile/salon", icon: Settings2, roles: ["salon_owner"] },
+  { label: "My Profile", href: "/profile/professional", icon: User, roles: ["professional"] },
+  { label: "Provider Settings", href: "/profile/provider", icon: Settings2, roles: ["provider_owner"] },
 ];
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -81,8 +81,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           })}
         </ul>
 
-        {/* Discovery link — hidden from masters */}
-        {role !== "master" && (
+        {/* Discovery link — hidden from professionals */}
+        {role !== "professional" && (
           <div className="mt-4 border-t pt-4">
             <Link
               to="/discover"
@@ -90,7 +90,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             >
               <Search className="h-5 w-5 text-gray-400 shrink-0" />
-              Discover Masters
+              Discover Professionals
             </Link>
           </div>
         )}

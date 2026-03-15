@@ -17,10 +17,13 @@ export function MasterAnalyticsPage() {
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
 
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ["analytics", "master", dateFrom, dateTo],
+    queryKey: ["analytics", "professional", dateFrom, dateTo],
     queryFn: () =>
-      analyticsApi.masterSummary({ date_from: dateFrom, date_to: dateTo }).then((r) => r.data),
+      analyticsApi.professionalSummary({ date_from: dateFrom, date_to: dateTo }).then((r) => r.data),
   });
+
+  // Support both new (provider_breakdown) and old (salon_breakdown) field names
+  const providerBreakdown = (analytics as any)?.provider_breakdown ?? (analytics as any)?.salon_breakdown ?? [];
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -83,8 +86,8 @@ export function MasterAnalyticsPage() {
             </Card>
           )}
 
-          {/* Per-salon breakdown */}
-          {analytics.salon_breakdown.length > 0 && (
+          {/* Per-provider breakdown */}
+          {providerBreakdown.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>By Location</CardTitle>
@@ -100,14 +103,17 @@ export function MasterAnalyticsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {analytics.salon_breakdown.map((sb) => (
-                      <tr key={sb.salon_id} className="border-b hover:bg-muted/40">
-                        <td className="px-4 py-3">Salon #{sb.salon_id}</td>
-                        <td className="px-4 py-3 text-right">{sb.sessions}</td>
-                        <td className="px-4 py-3 text-right">{sb.hours.toFixed(1)}h</td>
-                        <td className="px-4 py-3 text-right">{formatCurrency(sb.revenue)}</td>
-                      </tr>
-                    ))}
+                    {providerBreakdown.map((sb: any) => {
+                      const sbId = sb.provider_id ?? sb.salon_id;
+                      return (
+                        <tr key={sbId} className="border-b hover:bg-muted/40">
+                          <td className="px-4 py-3">Provider #{sbId}</td>
+                          <td className="px-4 py-3 text-right">{sb.sessions}</td>
+                          <td className="px-4 py-3 text-right">{sb.hours.toFixed(1)}h</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(sb.revenue)}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

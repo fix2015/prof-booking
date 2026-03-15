@@ -110,15 +110,15 @@ export function BookingForm({
         </Select>
       </div>
 
-      {/* Master */}
+      {/* Professional */}
       <div className="space-y-1">
-        <Label>Master (optional)</Label>
+        <Label>Professional (optional)</Label>
         <Select onValueChange={handleMasterChange} defaultValue="any">
           <SelectTrigger>
-            <SelectValue placeholder="Any available master" />
+            <SelectValue placeholder="Any available professional" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="any">Any available master</SelectItem>
+            <SelectItem value="any">Any available professional</SelectItem>
             {masters.map((m) => (
               <SelectItem key={m.id} value={String(m.id)}>
                 {m.name}
@@ -161,8 +161,8 @@ export function BookingForm({
                   }`}
                 >
                   {formatTime(`2000-01-01T${slot.start_time}`)}
-                  {slot.master_name && (
-                    <div className="text-xs text-muted-foreground truncate">{slot.master_name}</div>
+                  {slot.professional_name && (
+                    <div className="text-xs text-muted-foreground truncate">{slot.professional_name}</div>
                   )}
                 </button>
               ))}
@@ -200,7 +200,7 @@ export function BookingForm({
           <p className="font-semibold text-pink-800">Booking Summary</p>
           <p className="mt-1 text-pink-700">Service: {selectedServiceData.name}</p>
           <p className="text-pink-700">Time: {formatTime(`2000-01-01T${selectedSlot.start_time}`)}</p>
-          <p className="text-pink-700">Master: {selectedSlot.master_name}</p>
+          <p className="text-pink-700">Professional: {selectedSlot.professional_name}</p>
           <p className="font-semibold text-pink-800">Price: {formatCurrency(selectedServiceData.price)}</p>
         </div>
       )}

@@ -24,16 +24,16 @@ class OwnerRegisterRequest(BaseModel):
     email: EmailStr
     phone: str
     password: str
-    salon_name: str
-    salon_address: str
+    provider_name: str
+    provider_address: str
     worker_payment_amount: float = 0.0
 
 
-class MasterRegisterRequest(BaseModel):
+class ProfessionalRegisterRequest(BaseModel):
     email: EmailStr
     name: str
     phone: str
     password: str
     social_links: Optional[dict] = {}
     invite_token: Optional[str] = None
-    salon_ids: Optional[List[int]] = []
+    provider_ids: Optional[List[int]] = []

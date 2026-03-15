@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Copy } from "lucide-react";
 import { BookingCalendar } from "@/components/calendar/BookingCalendar";
 import { useMyWorkSlots, useCreateWorkSlot, useDeleteWorkSlot, useCopyPeriod, useSessions } from "@/hooks/useBooking";
-import { useMyMasterProfile } from "@/hooks/useMaster";
+import { useMyProfessionalProfile } from "@/hooks/useMaster";
 import { toISODateString, addDays, getWeekStart, addWeeks } from "@/utils/dates";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ function endOfYear(d: Date): Date {
 }
 
 export function CalendarPage() {
-  const { data: master, isLoading: masterLoading } = useMyMasterProfile();
+  const { data: professional, isLoading: professionalLoading } = useMyProfessionalProfile();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Fetch a 6-week window centred on the current calendar date (±3 weeks)
@@ -40,7 +40,7 @@ export function CalendarPage() {
   const { data: workSlots = [] } = useMyWorkSlots(rangeStart, rangeEnd);
 
   const { data: sessions = [] } = useSessions({
-    master_id: master?.id,
+    professional_id: professional?.id,
     date_from: rangeStart,
     date_to: rangeEnd,
   });
@@ -51,25 +51,25 @@ export function CalendarPage() {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [showCopyPanel, setShowCopyPanel] = useState(false);
 
-  if (masterLoading) return <Spinner className="mx-auto mt-20" />;
-  if (!master) {
+  if (professionalLoading) return <Spinner className="mx-auto mt-20" />;
+  if (!professional) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Master profile not found.</p>
+        <p className="text-muted-foreground">Professional profile not found.</p>
       </div>
     );
   }
 
-  const salonId = master.master_salons?.[0]?.salon_id;
+  const providerId = professional.professional_providers?.[0]?.provider_id;
 
   const handleAddSlot = async (date: Date, start: string, end: string) => {
-    if (!salonId) {
-      toast({ title: "Not linked to a salon", variant: "destructive" });
+    if (!providerId) {
+      toast({ title: "Not linked to a provider", variant: "destructive" });
       return;
     }
     try {
       await createSlot.mutateAsync({
-        salon_id: salonId,
+        provider_id: providerId,
         slot_date: toISODateString(date),
         start_time: start,
         end_time: end,
@@ -90,13 +90,13 @@ export function CalendarPage() {
   };
 
   const handleCopy = async (label: string, sourceStart: Date, sourceEnd: Date, targetStart: Date) => {
-    if (!salonId) { toast({ title: "Not linked to a salon", variant: "destructive" }); return; }
+    if (!providerId) { toast({ title: "Not linked to a provider", variant: "destructive" }); return; }
     try {
       const result = await copyPeriod.mutateAsync({
         source_start: toISODateString(sourceStart),
         source_end: toISODateString(sourceEnd),
         target_start: toISODateString(targetStart),
-        salon_id: salonId,
+        provider_id: providerId,
       });
       toast({ title: `${result.created} slot${result.created !== 1 ? "s" : ""} copied to ${label}`, variant: "success" });
     } catch (e: any) {

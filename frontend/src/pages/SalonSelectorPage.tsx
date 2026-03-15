@@ -2,15 +2,15 @@ import { useState, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
 import { MapPin, Phone, List, Map, Search, Navigation, Flag, Clock, Star } from "lucide-react";
-import { usePublicSalons } from "@/hooks/useSalon";
+import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
-import { mastersApi } from "@/api/masters";
+import { professionalsApi } from "@/api/masters";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
-import type { Salon, Master } from "@/types";
+import type { Provider, Professional } from "@/types";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
 const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
@@ -22,8 +22,8 @@ const SERVICE_TYPES = [
 ];
 
 export function SalonSelectorPage() {
-  const { data: salons = [], isLoading } = usePublicSalons();
-  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+  const { data: providers = [], isLoading } = usePublicProviders();
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -31,7 +31,6 @@ export function SalonSelectorPage() {
   const [locationLoading, setLocationLoading] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  // ── URL-driven filters ──────────────────────────────
   const [searchParams, setSearchParams] = useSearchParams();
 
   const setParam = (key: string, val: string) => {
@@ -59,16 +58,14 @@ export function SalonSelectorPage() {
   const minExp = searchParams.get("min_exp") ?? "";
   const activeType = searchParams.get("type") ?? "";
 
-  // ── Committed filter state (only updates on Search button click) ──
   const [committed, setCommitted] = useState<{
     nationality: string; minExp: string; type: string;
   } | null>(null);
 
-  // ── Master discovery ────────────────────────────────
-  const { data: masters = [], isLoading: mastersLoading } = useQuery({
-    queryKey: ["masters", "discover", committed],
+  const { data: professionals = [], isLoading: professionalsLoading } = useQuery({
+    queryKey: ["professionals", "discover", committed],
     queryFn: () =>
-      mastersApi.discover({
+      professionalsApi.discover({
         nationality: committed?.nationality || undefined,
         min_experience: committed?.minExp ? Number(committed.minExp) : undefined,
         search: committed?.type || undefined,
@@ -77,7 +74,6 @@ export function SalonSelectorPage() {
     enabled: !!(committed && (committed.nationality || committed.minExp || committed.type)),
   });
 
-  // ── Map helpers ─────────────────────────────────────
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
     requestLocation(map);
@@ -100,26 +96,24 @@ export function SalonSelectorPage() {
     );
   };
 
-  const hasMasterFilter = !!committed;
+  const hasProfessionalFilter = !!committed;
 
-  // Single Search button: get location + commit master filters
   const handleSearch = () => {
     requestLocation();
     setCommitted({ nationality, minExp, type: activeType });
   };
 
-  const handleCardClick = (salon: Salon) => {
-    setSelectedSalon(salon);
-    if (salon.latitude != null && salon.longitude != null) {
-      setMapCenter({ lat: salon.latitude!, lng: salon.longitude! });
+  const handleCardClick = (provider: Provider) => {
+    setSelectedProvider(provider);
+    if (provider.latitude != null && provider.longitude != null) {
+      setMapCenter({ lat: provider.latitude!, lng: provider.longitude! });
       setMapZoom(15);
-      mapRef.current?.panTo({ lat: salon.latitude!, lng: salon.longitude! });
+      mapRef.current?.panTo({ lat: provider.latitude!, lng: provider.longitude! });
       if (view === "list") setView("split");
     }
   };
 
-  // ── Filtering ───────────────────────────────────────
-  const filteredSalons = salons.filter((s) => {
+  const filteredProviders = providers.filter((s) => {
     const q = search.toLowerCase();
     const matchSearch =
       !q ||
@@ -132,7 +126,7 @@ export function SalonSelectorPage() {
     return matchSearch && matchType;
   });
 
-  const salonsWithCoords = filteredSalons.filter(
+  const providersWithCoords = filteredProviders.filter(
     (s) => s.latitude != null && s.longitude != null
   );
 
@@ -143,15 +137,15 @@ export function SalonSelectorPage() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 flex flex-col">
       {/* Header */}
       <div className="px-4 pt-6 pb-4 text-center">
-        <div className="text-4xl mb-2">💅</div>
-        <h1 className="text-3xl font-bold text-pink-800">Find Your Salon</h1>
-        <p className="text-pink-600 mt-1">Discover beauty salons near you</p>
+        <div className="text-4xl mb-2">✨</div>
+        <h1 className="text-3xl font-bold text-pink-800">Find Your Provider</h1>
+        <p className="text-pink-600 mt-1">Discover service providers near you</p>
       </div>
 
       {/* Controls */}
       <div className="px-4 pb-3 flex flex-col gap-2 max-w-6xl mx-auto w-full">
 
-        {/* Row 1: Salon text search + Search button + View toggles */}
+        {/* Row 1: Provider text search + Search button + View toggles */}
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -208,12 +202,12 @@ export function SalonSelectorPage() {
           ))}
         </div>
 
-        {/* Row 3: Master filters */}
+        {/* Row 3: Professional filters */}
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Flag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Master nationality (e.g. French)"
+              placeholder="Professional nationality (e.g. French)"
               value={nationality}
               onChange={(e) => setParam("nationality", e.target.value)}
               className="pl-9 bg-white"
@@ -238,7 +232,7 @@ export function SalonSelectorPage() {
         </div>
       </div>
 
-      {/* Main content: Map + Salon list */}
+      {/* Main content: Map + Provider list */}
       <div className="flex-1 px-4 pb-6 max-w-6xl mx-auto w-full">
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -273,26 +267,26 @@ export function SalonSelectorPage() {
                           title="Your location"
                         />
                       )}
-                      {salonsWithCoords.map((salon) => (
+                      {providersWithCoords.map((provider) => (
                         <Marker
-                          key={salon.id}
-                          position={{ lat: salon.latitude!, lng: salon.longitude! }}
-                          title={salon.name}
-                          onClick={() => setSelectedSalon(salon)}
+                          key={provider.id}
+                          position={{ lat: provider.latitude!, lng: provider.longitude! }}
+                          title={provider.name}
+                          onClick={() => setSelectedProvider(provider)}
                         />
                       ))}
-                      {selectedSalon?.latitude != null && selectedSalon?.longitude != null && (
+                      {selectedProvider?.latitude != null && selectedProvider?.longitude != null && (
                         <InfoWindow
-                          position={{ lat: selectedSalon.latitude!, lng: selectedSalon.longitude! }}
-                          onCloseClick={() => setSelectedSalon(null)}
+                          position={{ lat: selectedProvider.latitude!, lng: selectedProvider.longitude! }}
+                          onCloseClick={() => setSelectedProvider(null)}
                         >
                           <div className="p-1 min-w-[160px]">
-                            <p className="font-semibold text-sm">{selectedSalon.name}</p>
-                            {selectedSalon.address && (
-                              <p className="text-xs text-gray-500 mt-0.5">{selectedSalon.address}</p>
+                            <p className="font-semibold text-sm">{selectedProvider.name}</p>
+                            {selectedProvider.address && (
+                              <p className="text-xs text-gray-500 mt-0.5">{selectedProvider.address}</p>
                             )}
                             <a
-                              href={`/book/${selectedSalon.id}`}
+                              href={`/book/${selectedProvider.id}`}
                               className="mt-2 inline-block text-xs font-medium text-pink-600 hover:underline"
                             >
                               Book Now →
@@ -314,18 +308,18 @@ export function SalonSelectorPage() {
               </div>
             )}
 
-            {/* Salon list panel */}
+            {/* Provider list panel */}
             {showList && (
               <div className={`space-y-3 ${view === "split" ? "lg:w-80 lg:overflow-y-auto lg:max-h-[calc(100vh-340px)]" : ""}`}>
-                {filteredSalons.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No salons found</p>
+                {filteredProviders.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No providers found</p>
                 ) : (
-                  filteredSalons.map((salon) => (
-                    <SalonCard
-                      key={salon.id}
-                      salon={salon}
-                      isSelected={selectedSalon?.id === salon.id}
-                      onClick={() => handleCardClick(salon)}
+                  filteredProviders.map((provider) => (
+                    <ProviderCard
+                      key={provider.id}
+                      provider={provider}
+                      isSelected={selectedProvider?.id === provider.id}
+                      onClick={() => handleCardClick(provider)}
                     />
                   ))
                 )}
@@ -335,22 +329,22 @@ export function SalonSelectorPage() {
         )}
       </div>
 
-      {/* Masters results — shown when any master filter is active */}
-      {hasMasterFilter && (
+      {/* Professionals results — shown when any professional filter is active */}
+      {hasProfessionalFilter && (
         <div className="px-4 pb-8 max-w-6xl mx-auto w-full">
-          <h2 className="text-xl font-bold text-pink-800 mb-3">Masters</h2>
-          {mastersLoading ? (
+          <h2 className="text-xl font-bold text-pink-800 mb-3">Professionals</h2>
+          {professionalsLoading ? (
             <div className="flex justify-center py-8">
               <Spinner />
             </div>
-          ) : masters.length > 0 ? (
+          ) : professionals.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {masters.map((master) => (
-                <MasterCard key={master.id} master={master} />
+              {professionals.map((professional) => (
+                <ProfessionalCard key={professional.id} professional={professional} />
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">No masters found matching your filters</p>
+            <p className="text-center text-muted-foreground py-8">No professionals found matching your filters</p>
           )}
         </div>
       )}
@@ -358,45 +352,45 @@ export function SalonSelectorPage() {
   );
 }
 
-function MasterCard({ master }: { master: Master }) {
-  const coverImage = master.avatar_url ?? master.photos?.[0]?.image_url;
+function ProfessionalCard({ professional }: { professional: Professional }) {
+  const coverImage = professional.avatar_url ?? professional.photos?.[0]?.image_url;
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow group bg-white">
       <div className="aspect-square bg-gradient-to-br from-pink-100 to-purple-100 overflow-hidden">
         {coverImage ? (
           <img
             src={coverImage}
-            alt={master.name}
+            alt={professional.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-pink-300">
-            {master.name.charAt(0).toUpperCase()}
+            {professional.name.charAt(0).toUpperCase()}
           </div>
         )}
       </div>
       <CardContent className="p-4">
-        <h3 className="font-semibold text-base truncate">{master.name}</h3>
+        <h3 className="font-semibold text-base truncate">{professional.name}</h3>
         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {master.nationality && (
+          {professional.nationality && (
             <span className="flex items-center gap-1">
-              <Flag className="h-3 w-3" />{master.nationality}
+              <Flag className="h-3 w-3" />{professional.nationality}
             </span>
           )}
-          {master.experience_years != null && (
+          {professional.experience_years != null && (
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />{master.experience_years}y exp
+              <Clock className="h-3 w-3" />{professional.experience_years}y exp
             </span>
           )}
         </div>
-        {master.bio && (
-          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{master.bio}</p>
+        {professional.bio && (
+          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{professional.bio}</p>
         )}
         <div className="mt-3 flex gap-2">
-          <Link to={`/masters/${master.id}`} className="flex-1">
+          <Link to={`/professionals/${professional.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">View Profile</Button>
           </Link>
-          <Link to={`/book?master_id=${master.id}`} className="flex-1">
+          <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
             <Button size="sm" className="w-full bg-pink-600 hover:bg-pink-700">Book</Button>
           </Link>
         </div>
@@ -405,7 +399,7 @@ function MasterCard({ master }: { master: Master }) {
   );
 }
 
-function SalonCard({ salon, isSelected, onClick }: { salon: Salon; isSelected: boolean; onClick: () => void }) {
+function ProviderCard({ provider, isSelected, onClick }: { provider: Provider; isSelected: boolean; onClick: () => void }) {
   return (
     <Card
       className={`cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 ${isSelected ? "ring-2 ring-pink-500 shadow-md" : ""}`}
@@ -414,32 +408,32 @@ function SalonCard({ salon, isSelected, onClick }: { salon: Salon; isSelected: b
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-semibold text-gray-900 truncate">{salon.name}</h2>
-            {salon.description && (
-              <p className="text-gray-600 text-xs mt-0.5 line-clamp-2">{salon.description}</p>
+            <h2 className="text-base font-semibold text-gray-900 truncate">{provider.name}</h2>
+            {provider.description && (
+              <p className="text-gray-600 text-xs mt-0.5 line-clamp-2">{provider.description}</p>
             )}
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
-              {salon.address && (
+              {provider.address && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3 text-pink-500 shrink-0" />
-                  <span className="truncate">{salon.address}</span>
+                  <span className="truncate">{provider.address}</span>
                 </span>
               )}
-              {salon.phone && (
+              {provider.phone && (
                 <span className="flex items-center gap-1">
                   <Phone className="h-3 w-3 text-pink-500 shrink-0" />
-                  {salon.phone}
+                  {provider.phone}
                 </span>
               )}
             </div>
           </div>
-          {salon.latitude != null && salon.longitude != null && (
+          {provider.latitude != null && provider.longitude != null && (
             <MapPin className="h-4 w-4 text-pink-400 shrink-0 mt-0.5" />
           )}
         </div>
         <div className="mt-3">
           <a
-            href={`/book/${salon.id}`}
+            href={`/book/${provider.id}`}
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center rounded-full bg-pink-50 px-4 py-1.5 text-xs font-medium text-pink-700 hover:bg-pink-100 transition-colors"
           >

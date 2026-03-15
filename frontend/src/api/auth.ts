@@ -10,20 +10,23 @@ export interface OwnerRegisterPayload {
   email: string;
   phone: string;
   password: string;
-  salon_name: string;
-  salon_address: string;
+  provider_name: string;
+  provider_address: string;
   worker_payment_amount: number;
 }
 
-export interface MasterRegisterPayload {
+export interface ProfessionalRegisterPayload {
   email: string;
   name: string;
   phone: string;
   password: string;
   social_links?: Record<string, string>;
   invite_token?: string;
-  salon_ids?: number[];
+  provider_ids?: number[];
 }
+
+// Backward-compat alias
+export type MasterRegisterPayload = ProfessionalRegisterPayload;
 
 export const authApi = {
   login: (data: LoginPayload) =>
@@ -32,8 +35,12 @@ export const authApi = {
   registerOwner: (data: OwnerRegisterPayload) =>
     apiClient.post<AuthTokens>("/auth/register/owner", data).then((r) => r.data),
 
-  registerMaster: (data: MasterRegisterPayload) =>
-    apiClient.post<AuthTokens>("/auth/register/master", data).then((r) => r.data),
+  registerProfessional: (data: ProfessionalRegisterPayload) =>
+    apiClient.post<AuthTokens>("/auth/register/professional", data).then((r) => r.data),
+
+  // Backward-compat alias
+  registerMaster: (data: ProfessionalRegisterPayload) =>
+    apiClient.post<AuthTokens>("/auth/register/professional", data).then((r) => r.data),
 
   logout: () => apiClient.post("/auth/logout"),
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { reportsApi } from "@/api/reports";
-import { salonsApi } from "@/api/salons";
+import { providersApi } from "@/api/salons";
 import { useAuth } from "@/hooks/useAuth";
 import { SalonAnalytics } from "@/components/analytics/SalonAnalytics";
 import { MasterAnalytics } from "@/components/analytics/MasterAnalytics";
@@ -15,26 +15,26 @@ export function ReportsPage() {
   const [dateFrom, setDateFrom] = useState(format(subDays(new Date(), 30), "yyyy-MM-dd"));
   const [dateTo, setDateTo] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  const { data: salons } = useQuery({
-    queryKey: ["salons", "public"],
-    queryFn: () => salonsApi.listPublic(),
-    enabled: role === "salon_owner",
+  const { data: providers } = useQuery({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
+    enabled: role === "provider_owner",
   });
-  const salonId = salons?.[0]?.id;
+  const providerId = providers?.[0]?.id;
 
-  const { data: salonReport, isLoading: salonLoading } = useQuery({
-    queryKey: ["reports", "salon", salonId, dateFrom, dateTo],
-    queryFn: () => reportsApi.getSalonReport(salonId!, dateFrom, dateTo),
-    enabled: !!salonId && role === "salon_owner",
-  });
-
-  const { data: masterReport, isLoading: masterLoading } = useQuery({
-    queryKey: ["reports", "master", "me", dateFrom, dateTo],
-    queryFn: () => reportsApi.getMyMasterReport(dateFrom, dateTo),
-    enabled: role === "master",
+  const { data: providerReport, isLoading: providerLoading } = useQuery({
+    queryKey: ["reports", "provider", providerId, dateFrom, dateTo],
+    queryFn: () => reportsApi.getProviderReport(providerId!, dateFrom, dateTo),
+    enabled: !!providerId && role === "provider_owner",
   });
 
-  const isLoading = salonLoading || masterLoading;
+  const { data: professionalReport, isLoading: professionalLoading } = useQuery({
+    queryKey: ["reports", "professional", "me", dateFrom, dateTo],
+    queryFn: () => reportsApi.getMyProfessionalReport(dateFrom, dateTo),
+    enabled: role === "professional",
+  });
+
+  const isLoading = providerLoading || professionalLoading;
 
   return (
     <div className="space-y-6">
@@ -64,10 +64,10 @@ export function ReportsPage() {
 
       {isLoading && <Spinner className="mx-auto mt-12" />}
 
-      {salonReport && <SalonAnalytics report={salonReport} />}
-      {masterReport && <MasterAnalytics report={masterReport} />}
+      {providerReport && <SalonAnalytics report={providerReport} />}
+      {professionalReport && <MasterAnalytics report={professionalReport} />}
 
-      {!isLoading && !salonReport && !masterReport && (
+      {!isLoading && !providerReport && !professionalReport && (
         <div className="py-12 text-center text-muted-foreground">
           No report data available for this period.
         </div>

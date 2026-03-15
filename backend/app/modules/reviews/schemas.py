@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 class ReviewCreate(BaseModel):
-    master_id: int
-    salon_id: int
+    professional_id: int
+    provider_id: int
     client_name: str
     client_phone: Optional[str] = None
     rating: int = Field(..., ge=1, le=5)
@@ -16,8 +16,8 @@ class ReviewCreate(BaseModel):
 class ReviewResponse(BaseModel):
     id: int
     session_id: Optional[int]
-    master_id: int
-    salon_id: int
+    professional_id: int
+    provider_id: int
     client_name: str
     client_phone: Optional[str]
     rating: int
@@ -29,7 +29,7 @@ class ReviewResponse(BaseModel):
 
 
 class ReviewStats(BaseModel):
-    master_id: int
+    professional_id: int
     total_reviews: int
     average_rating: float
     rating_distribution: dict  # {1: count, 2: count, ...}

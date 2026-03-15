@@ -3,18 +3,18 @@ from typing import List, Optional
 from datetime import date
 
 
-class MasterEarningsSummary(BaseModel):
-    master_id: int
-    master_name: str
+class ProfessionalEarningsSummary(BaseModel):
+    professional_id: int
+    professional_name: str
     sessions_completed: int
     total_earnings: float
     period_start: date
     period_end: date
 
 
-class SalonRevenueSummary(BaseModel):
-    salon_id: int
-    salon_name: str
+class ProviderRevenueSummary(BaseModel):
+    provider_id: int
+    provider_name: str
     period_start: date
     period_end: date
     total_sessions: int
@@ -31,9 +31,9 @@ class ServicePopularity(BaseModel):
     total_revenue: float
 
 
-class MasterPerformance(BaseModel):
-    master_id: int
-    master_name: str
+class ProfessionalPerformance(BaseModel):
+    professional_id: int
+    professional_name: str
     sessions_completed: int
     sessions_cancelled: int
     completion_rate: float
@@ -46,13 +46,21 @@ class DailyRevenue(BaseModel):
     session_count: int
 
 
-class SalonReportResponse(BaseModel):
-    summary: SalonRevenueSummary
+class ProviderReportResponse(BaseModel):
+    summary: ProviderRevenueSummary
     service_popularity: List[ServicePopularity]
-    master_performance: List[MasterPerformance]
+    professional_performance: List[ProfessionalPerformance]
     daily_revenue: List[DailyRevenue]
 
 
-class MasterReportResponse(BaseModel):
-    summary: MasterEarningsSummary
+class ProfessionalReportResponse(BaseModel):
+    summary: ProfessionalEarningsSummary
     daily_earnings: List[DailyRevenue]
+
+
+# Backward-compat aliases
+MasterEarningsSummary = ProfessionalEarningsSummary
+SalonRevenueSummary = ProviderRevenueSummary
+MasterPerformance = ProfessionalPerformance
+SalonReportResponse = ProviderReportResponse
+MasterReportResponse = ProfessionalReportResponse

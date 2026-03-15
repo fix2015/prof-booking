@@ -14,22 +14,21 @@ class DiscountType(str, enum.Enum):
 
 
 class LoyaltyProgram(Base):
-    """Loyalty/promotion program for a salon."""
+    """Loyalty/promotion program for a service provider."""
     __tablename__ = "loyalty_programs"
 
     id = Column(Integer, primary_key=True, index=True)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relations
     discount_rules = relationship("DiscountRule", back_populates="program", cascade="all, delete-orphan")
 
     __table_args__ = (
-        Index("ix_loyalty_programs_salon", "salon_id"),
+        Index("ix_loyalty_programs_provider", "provider_id"),
     )
 
 
@@ -41,13 +40,11 @@ class DiscountRule(Base):
     program_id = Column(Integer, ForeignKey("loyalty_programs.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     discount_type = Column(SAEnum(DiscountType), nullable=False, default=DiscountType.PERCENTAGE)
-    discount_value = Column(Float, nullable=False)   # percent or fixed amount
-    # Conditions stored as JSON: {"min_visits": 3, "occasion": "birthday", "month": 12}
+    discount_value = Column(Float, nullable=False)
     conditions = Column(JSON, default=dict)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    # Relations
     program = relationship("LoyaltyProgram", back_populates="discount_rules")
 
     __table_args__ = (

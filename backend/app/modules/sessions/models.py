@@ -21,8 +21,8 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id = Column(Integer, primary_key=True, index=True)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
-    master_id = Column(Integer, ForeignKey("masters.id", ondelete="SET NULL"), nullable=True)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="SET NULL"), nullable=True)
     service_id = Column(Integer, ForeignKey("services.id", ondelete="SET NULL"), nullable=True)
 
     # Client info (no account required)
@@ -42,7 +42,7 @@ class Session(Base):
     deposit_paid = Column(Float, default=0.0)
     total_paid = Column(Float, default=0.0)
 
-    # Master earnings tracking
+    # Professional earnings tracking
     earnings_amount = Column(Float, nullable=True)
     earnings_recorded_at = Column(DateTime, nullable=True)
 
@@ -52,18 +52,18 @@ class Session(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relations
-    salon = relationship("Salon", back_populates="sessions")
-    master = relationship("Master", back_populates="sessions")
+    provider = relationship("Provider", back_populates="sessions")
+    professional = relationship("Professional", back_populates="sessions")
     service = relationship("Service", back_populates="sessions")
     payment = relationship("Payment", back_populates="session", uselist=False)
     notifications = relationship("Notification", back_populates="session")
 
     __table_args__ = (
-        Index("ix_sessions_salon", "salon_id"),
-        Index("ix_sessions_master", "master_id"),
+        Index("ix_sessions_provider", "provider_id"),
+        Index("ix_sessions_professional", "professional_id"),
         Index("ix_sessions_starts_at", "starts_at"),
         Index("ix_sessions_status", "status"),
-        Index("ix_sessions_salon_date", "salon_id", "starts_at"),
+        Index("ix_sessions_provider_date", "provider_id", "starts_at"),
     )
 
     def __repr__(self) -> str:

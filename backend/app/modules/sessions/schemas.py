@@ -5,8 +5,8 @@ from app.modules.sessions.models import SessionStatus
 
 
 class SessionCreate(BaseModel):
-    salon_id: int
-    master_id: Optional[int] = None
+    provider_id: int
+    professional_id: Optional[int] = None
     service_id: Optional[int] = None
     client_name: str
     client_phone: str
@@ -19,7 +19,7 @@ class SessionCreate(BaseModel):
 
 class SessionUpdate(BaseModel):
     status: Optional[SessionStatus] = None
-    master_id: Optional[int] = None
+    professional_id: Optional[int] = None
     starts_at: Optional[datetime] = None
     duration_minutes: Optional[int] = None
     price: Optional[float] = None
@@ -32,8 +32,8 @@ class EarningsInput(BaseModel):
 
 class SessionResponse(BaseModel):
     id: int
-    salon_id: int
-    master_id: Optional[int]
+    provider_id: int
+    professional_id: Optional[int]
     service_id: Optional[int]
     client_name: str
     client_phone: str
@@ -61,7 +61,7 @@ class SessionSummary(BaseModel):
     ends_at: datetime
     status: SessionStatus
     service_id: Optional[int]
-    master_id: Optional[int]
+    professional_id: Optional[int]
     price: Optional[float]
 
     model_config = {"from_attributes": True}

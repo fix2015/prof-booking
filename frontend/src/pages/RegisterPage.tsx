@@ -14,8 +14,8 @@ const schema = z.object({
   email: z.string().email(),
   phone: z.string().min(6),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  salon_name: z.string().min(2, "Salon name is required"),
-  salon_address: z.string().min(5, "Address is required"),
+  provider_name: z.string().min(2, "Business name is required"),
+  provider_address: z.string().min(5, "Address is required"),
   worker_payment_amount: z.coerce.number().min(0),
 });
 
@@ -36,9 +36,9 @@ export function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100 p-4">
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader className="text-center">
-          <div className="mb-2 text-4xl">💅</div>
-          <CardTitle className="text-2xl">Register Your Salon</CardTitle>
-          <CardDescription>Create your salon owner account</CardDescription>
+          <div className="mb-2 text-4xl">✨</div>
+          <CardTitle className="text-2xl">Register Your Business</CardTitle>
+          <CardDescription>Create your provider owner account</CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit((data) => register_.mutate(data))}>
@@ -52,7 +52,7 @@ export function RegisterPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Email *</Label>
-                <Input type="email" {...register("email")} placeholder="owner@salon.com" />
+                <Input type="email" {...register("email")} placeholder="owner@business.com" />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
               <div className="space-y-1">
@@ -69,15 +69,15 @@ export function RegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Salon Name *</Label>
-              <Input {...register("salon_name")} placeholder="My Nail Salon" />
-              {errors.salon_name && <p className="text-xs text-destructive">{errors.salon_name.message}</p>}
+              <Label>Business Name *</Label>
+              <Input {...register("provider_name")} placeholder="My Business" />
+              {errors.provider_name && <p className="text-xs text-destructive">{errors.provider_name.message}</p>}
             </div>
 
             <div className="space-y-1">
-              <Label>Salon Address *</Label>
-              <Input {...register("salon_address")} placeholder="123 Main Street, City, State" />
-              {errors.salon_address && <p className="text-xs text-destructive">{errors.salon_address.message}</p>}
+              <Label>Business Address *</Label>
+              <Input {...register("provider_address")} placeholder="123 Main Street, City, State" />
+              {errors.provider_address && <p className="text-xs text-destructive">{errors.provider_address.message}</p>}
             </div>
 
             <div className="space-y-1">

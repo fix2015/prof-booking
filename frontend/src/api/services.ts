@@ -9,15 +9,18 @@ export interface ServicePayload {
 }
 
 export const servicesApi = {
-  listBySalon: (salonId: number) =>
-    apiClient.get<Service[]>(`/services/salon/${salonId}`).then((r) => r.data),
+  listByProvider: (providerId: number) =>
+    apiClient.get<Service[]>(`/services/provider/${providerId}`).then((r) => r.data),
 
-  create: (salonId: number, data: ServicePayload) =>
-    apiClient.post<Service>(`/services/salon/${salonId}`, data).then((r) => r.data),
+  create: (providerId: number, data: ServicePayload) =>
+    apiClient.post<Service>(`/services/provider/${providerId}`, data).then((r) => r.data),
 
   update: (serviceId: number, data: Partial<ServicePayload & { is_active?: boolean }>) =>
     apiClient.patch<Service>(`/services/${serviceId}`, data).then((r) => r.data),
 
-  delete: (serviceId: number) =>
-    apiClient.delete(`/services/${serviceId}`),
+  delete: (serviceId: number) => apiClient.delete(`/services/${serviceId}`),
+
+  // Backward-compat alias
+  listBySalon: (salonId: number) =>
+    apiClient.get<Service[]>(`/services/provider/${salonId}`).then((r) => r.data),
 };

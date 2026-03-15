@@ -7,15 +7,15 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { MultiImageUpload } from "@/components/ui/MultiImageUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodaySessions, useSessions } from "@/hooks/useBooking";
-import { useMyMasterProfile, useUpdateMasterProfile } from "@/hooks/useMaster";
-import { mastersApi } from "@/api/masters";
+import { useMyProfessionalProfile, useUpdateProfessionalProfile } from "@/hooks/useMaster";
+import { professionalsApi } from "@/api/masters";
 import { formatCurrency } from "@/utils/formatters";
 import { format, subDays } from "date-fns";
 
 export function MasterDashboardPage() {
   const qc = useQueryClient();
-  const { data: master } = useMyMasterProfile();
-  const updateMaster = useUpdateMasterProfile();
+  const { data: professional } = useMyProfessionalProfile();
+  const updateProfessional = useUpdateProfessionalProfile();
   const { data: todaySessions, isLoading } = useTodaySessions();
   const { data: monthlySessions } = useSessions({
     date_from: format(subDays(new Date(), 30), "yyyy-MM-dd"),
@@ -23,20 +23,20 @@ export function MasterDashboardPage() {
   });
 
   const { data: photos = [] } = useQuery({
-    queryKey: ["master-photos", "me"],
-    queryFn: () => master ? mastersApi.getPhotos(master.id) : [],
-    enabled: !!master,
+    queryKey: ["professional-photos", "me"],
+    queryFn: () => professional ? professionalsApi.getPhotos(professional.id) : [],
+    enabled: !!professional,
   });
 
   const addPhotos = useMutation({
     mutationFn: (urls: string[]) =>
-      Promise.all(urls.map((url, i) => mastersApi.addPhoto({ image_url: url, order: photos.length + i }))),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["master-photos", "me"] }),
+      Promise.all(urls.map((url, i) => professionalsApi.addPhoto({ image_url: url, order: photos.length + i }))),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professional-photos", "me"] }),
   });
 
   const removePhoto = useMutation({
-    mutationFn: (id: number) => mastersApi.deletePhoto(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["master-photos", "me"] }),
+    mutationFn: (id: number) => professionalsApi.deletePhoto(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professional-photos", "me"] }),
   });
 
   const totalMonthlyEarnings = monthlySessions?.reduce(
@@ -54,15 +54,15 @@ export function MasterDashboardPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center gap-3">
         <ImageUpload
-          currentUrl={master?.avatar_url ?? undefined}
-          onUpload={(url) => updateMaster.mutate({ avatar_url: url || undefined })}
+          currentUrl={professional?.avatar_url ?? undefined}
+          onUpload={(url) => updateProfessional.mutate({ avatar_url: url || undefined })}
           shape="circle"
           size={64}
           label="Avatar"
         />
         <div className="min-w-0">
           <h1 className="text-xl md:text-2xl font-bold truncate">
-            Welcome back, {master?.name || "Master"}!
+            Welcome back, {professional?.name || "Professional"}!
           </h1>
           <p className="text-sm text-muted-foreground">Here's your overview for today.</p>
         </div>

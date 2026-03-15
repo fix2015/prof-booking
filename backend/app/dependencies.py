@@ -52,16 +52,20 @@ def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
 
 
 def get_current_owner(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role not in (UserRole.PLATFORM_ADMIN, UserRole.SALON_OWNER):
+    if current_user.role not in (UserRole.PLATFORM_ADMIN, UserRole.PROVIDER_OWNER):
         raise HTTPException(status_code=403, detail="Owner access required")
     return current_user
 
 
-def get_current_master_or_owner(current_user: User = Depends(get_current_user)) -> User:
+def get_current_professional_or_owner(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role not in (
         UserRole.PLATFORM_ADMIN,
-        UserRole.SALON_OWNER,
-        UserRole.MASTER,
+        UserRole.PROVIDER_OWNER,
+        UserRole.PROFESSIONAL,
     ):
         raise HTTPException(status_code=403, detail="Access denied")
     return current_user
+
+
+# Backward-compat alias
+get_current_master_or_owner = get_current_professional_or_owner

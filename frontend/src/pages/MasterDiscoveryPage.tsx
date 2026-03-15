@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Star, Clock, Flag } from "lucide-react";
-import { mastersApi } from "@/api/masters";
+import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import type { Master } from "@/types";
+import type { Professional } from "@/types";
 
 export function MasterDiscoveryPage() {
   const [search, setSearch] = useState("");
@@ -16,10 +16,10 @@ export function MasterDiscoveryPage() {
   const [minExperience, setMinExperience] = useState<number | "">("");
   const [filters, setFilters] = useState({ search: "", nationality: "", min_experience: undefined as number | undefined });
 
-  const { data: masters = [], isLoading } = useQuery({
-    queryKey: ["masters", "discover", filters],
+  const { data: professionals = [], isLoading } = useQuery({
+    queryKey: ["professionals", "discover", filters],
     queryFn: () =>
-      mastersApi.discover({
+      professionalsApi.discover({
         search: filters.search || undefined,
         nationality: filters.nationality || undefined,
         min_experience: filters.min_experience,
@@ -46,8 +46,8 @@ export function MasterDiscoveryPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Discover Masters</h1>
-        <p className="text-muted-foreground">Find the perfect beauty specialist for you</p>
+        <h1 className="text-2xl font-bold">Discover Professionals</h1>
+        <p className="text-muted-foreground">Find the perfect specialist for you</p>
       </div>
 
       {/* Filters */}
@@ -86,15 +86,15 @@ export function MasterDiscoveryPage() {
       {/* Results */}
       {isLoading ? (
         <Spinner className="mx-auto" />
-      ) : masters.length === 0 ? (
+      ) : professionals.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg">No masters found</p>
+          <p className="text-lg">No professionals found</p>
           <p className="text-sm mt-1">Try adjusting your filters</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {masters.map((master: Master) => (
-            <MasterCard key={master.id} master={master} />
+          {professionals.map((professional: Professional) => (
+            <ProfessionalCard key={professional.id} professional={professional} />
           ))}
         </div>
       )}
@@ -102,15 +102,15 @@ export function MasterDiscoveryPage() {
   );
 }
 
-function MasterCard({ master }: { master: Master }) {
+function ProfessionalCard({ professional }: { professional: Professional }) {
   const { data: stats } = useQuery({
-    queryKey: ["review-stats", master.id],
-    queryFn: () => reviewsApi.masterStats(master.id).then((r) => r.data),
+    queryKey: ["review-stats", professional.id],
+    queryFn: () => reviewsApi.masterStats(professional.id).then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   });
 
   // Use first portfolio photo if no avatar
-  const coverImage = master.avatar_url ?? master.photos?.[0]?.image_url;
+  const coverImage = professional.avatar_url ?? professional.photos?.[0]?.image_url;
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
@@ -118,30 +118,30 @@ function MasterCard({ master }: { master: Master }) {
         {coverImage ? (
           <img
             src={coverImage}
-            alt={master.name}
+            alt={professional.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-pink-300">
-            {master.name.charAt(0).toUpperCase()}
+            {professional.name.charAt(0).toUpperCase()}
           </div>
         )}
       </div>
 
       <CardContent className="p-4">
-        <h3 className="font-semibold text-base truncate">{master.name}</h3>
+        <h3 className="font-semibold text-base truncate">{professional.name}</h3>
 
         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {master.nationality && (
+          {professional.nationality && (
             <span className="flex items-center gap-1">
               <Flag className="h-3 w-3" />
-              {master.nationality}
+              {professional.nationality}
             </span>
           )}
-          {master.experience_years != null && (
+          {professional.experience_years != null && (
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {master.experience_years}y
+              {professional.experience_years}y
             </span>
           )}
           {stats && stats.total_reviews > 0 && (
@@ -152,15 +152,15 @@ function MasterCard({ master }: { master: Master }) {
           )}
         </div>
 
-        {master.bio && (
-          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{master.bio}</p>
+        {professional.bio && (
+          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{professional.bio}</p>
         )}
 
         <div className="mt-3 flex gap-2">
-          <Link to={`/masters/${master.id}`} className="flex-1">
+          <Link to={`/professionals/${professional.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">View Profile</Button>
           </Link>
-          <Link to={`/book?master_id=${master.id}`} className="flex-1">
+          <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
             <Button size="sm" className="w-full bg-pink-600 hover:bg-pink-700">Book</Button>
           </Link>
         </div>

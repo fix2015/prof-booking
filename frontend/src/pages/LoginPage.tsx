@@ -31,8 +31,8 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="mb-2 text-4xl">💅</div>
-          <CardTitle className="text-2xl">NailSalon Platform</CardTitle>
+          <div className="mb-2 text-4xl">✨</div>
+          <CardTitle className="text-2xl">Service Platform</CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
 
@@ -73,21 +73,21 @@ export function LoginPage() {
               Sign In
             </Button>
             <p className="text-sm text-muted-foreground">
-              New salon owner?{" "}
+              New provider?{" "}
               <Link to="/register" className="text-pink-600 hover:underline font-medium">
-                Register your salon
+                Register your business
               </Link>
             </p>
             <p className="text-sm text-muted-foreground">
               Client booking?{" "}
-              <Link to="/salons" className="text-pink-600 hover:underline font-medium">
+              <Link to="/providers" className="text-pink-600 hover:underline font-medium">
                 Book appointment
               </Link>
             </p>
             <p className="text-sm text-muted-foreground">
-              Are you a master?{" "}
-              <Link to="/register/master" className="text-pink-600 hover:underline font-medium">
-                Join as a Master
+              Are you a professional?{" "}
+              <Link to="/register/professional" className="text-pink-600 hover:underline font-medium">
+                Join as a Professional
               </Link>
             </p>
           </CardFooter>

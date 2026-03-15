@@ -1,42 +1,78 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { mastersApi } from "@/api/masters";
+import { professionalsApi, mastersApi } from "@/api/masters";
 
-export function useMyMasterProfile() {
+export function useMyProfessionalProfile() {
   return useQuery({
-    queryKey: ["master", "me"],
-    queryFn: () => mastersApi.getMe(),
+    queryKey: ["professional", "me"],
+    queryFn: () => professionalsApi.getMe(),
   });
 }
 
-export function useUpdateMasterProfile() {
+export function useUpdateProfessionalProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof mastersApi.updateMe>[0]) => mastersApi.updateMe(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["master", "me"] }),
+    mutationFn: (data: Parameters<typeof professionalsApi.updateMe>[0]) =>
+      professionalsApi.updateMe(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professional", "me"] }),
   });
 }
 
-export function useSalonMasters(salonId: number, status?: string) {
+export function useProviderProfessionals(providerId: number, status?: string) {
   return useQuery({
-    queryKey: ["masters", "salon", salonId, status],
-    queryFn: () => mastersApi.getSalonMasters(salonId, status),
-    enabled: !!salonId,
+    queryKey: ["professionals", "provider", providerId, status],
+    queryFn: () => professionalsApi.getProviderProfessionals(providerId, status),
+    enabled: !!providerId,
   });
+}
+
+export function useProviderProfessionalsPublic(providerId: number) {
+  return useQuery({
+    queryKey: ["professionals", "provider", providerId, "public"],
+    queryFn: () => professionalsApi.getProviderProfessionalsPublic(providerId),
+    enabled: !!providerId,
+  });
+}
+
+export function useApproveProfessional(providerId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      professionalId,
+      status,
+      paymentAmount,
+    }: {
+      professionalId: number;
+      status: string;
+      paymentAmount?: number;
+    }) => professionalsApi.approveProfessional(providerId, professionalId, status, paymentAmount),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professionals", "provider", providerId] }),
+  });
+}
+
+// Backward-compat aliases
+export const useMyMasterProfile = useMyProfessionalProfile;
+export const useUpdateMasterProfile = useUpdateProfessionalProfile;
+
+export function useSalonMasters(salonId: number, status?: string) {
+  return useProviderProfessionals(salonId, status);
 }
 
 export function useSalonMastersPublic(salonId: number) {
-  return useQuery({
-    queryKey: ["masters", "salon", salonId, "public"],
-    queryFn: () => mastersApi.getSalonMastersPublic(salonId),
-    enabled: !!salonId,
-  });
+  return useProviderProfessionalsPublic(salonId);
 }
 
 export function useApproveMaster(salonId: number) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ masterId, status, paymentAmount }: { masterId: number; status: string; paymentAmount?: number }) =>
-      mastersApi.approveMaster(salonId, masterId, status, paymentAmount),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["masters", "salon", salonId] }),
+    mutationFn: ({
+      masterId,
+      status,
+      paymentAmount,
+    }: {
+      masterId: number;
+      status: string;
+      paymentAmount?: number;
+    }) => mastersApi.approveMaster(salonId, masterId, status, paymentAmount),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["professionals", "provider", salonId] }),
   });
 }

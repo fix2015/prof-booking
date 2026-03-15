@@ -8,7 +8,7 @@ class Service(Base):
     __tablename__ = "services"
 
     id = Column(Integer, primary_key=True, index=True)
-    salon_id = Column(Integer, ForeignKey("salons.id", ondelete="CASCADE"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=False, default=60)
@@ -17,11 +17,11 @@ class Service(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    salon = relationship("Salon", back_populates="services")
+    provider = relationship("Provider", back_populates="services")
     sessions = relationship("Session", back_populates="service")
 
     __table_args__ = (
-        Index("ix_services_salon", "salon_id"),
+        Index("ix_services_provider", "provider_id"),
         Index("ix_services_active", "is_active"),
     )
 

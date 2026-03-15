@@ -22,7 +22,7 @@ def create_session(db: DBSession, data: SessionCreate) -> Session:
     conflict = (
         db.query(Session)
         .filter(
-            Session.master_id == data.master_id,
+            Session.professional_id == data.professional_id,
             Session.status.notin_([SessionStatus.CANCELLED, SessionStatus.NO_SHOW]),
             Session.starts_at < ends_at,
             Session.ends_at > starts_at,
@@ -33,8 +33,8 @@ def create_session(db: DBSession, data: SessionCreate) -> Session:
         raise HTTPException(status_code=409, detail="Time slot is already booked")
 
     session = Session(
-        salon_id=data.salon_id,
-        master_id=data.master_id,
+        provider_id=data.provider_id,
+        professional_id=data.professional_id,
         service_id=data.service_id,
         client_name=data.client_name,
         client_phone=data.client_phone,
@@ -84,8 +84,8 @@ def record_earnings(db: DBSession, session: Session, data: EarningsInput) -> Ses
 
 def list_sessions(
     db: DBSession,
-    salon_id: Optional[int] = None,
-    master_id: Optional[int] = None,
+    provider_id: Optional[int] = None,
+    professional_id: Optional[int] = None,
     status: Optional[SessionStatus] = None,
     date_from: Optional[datetime] = None,
     date_to: Optional[datetime] = None,
@@ -93,10 +93,10 @@ def list_sessions(
     limit: int = 100,
 ) -> List[Session]:
     query = db.query(Session)
-    if salon_id:
-        query = query.filter(Session.salon_id == salon_id)
-    if master_id:
-        query = query.filter(Session.master_id == master_id)
+    if provider_id:
+        query = query.filter(Session.provider_id == provider_id)
+    if professional_id:
+        query = query.filter(Session.professional_id == professional_id)
     if status:
         query = query.filter(Session.status == status)
     if date_from:
@@ -106,12 +106,12 @@ def list_sessions(
     return query.order_by(Session.starts_at.asc()).offset(skip).limit(limit).all()
 
 
-def get_master_today_sessions(db: DBSession, master_id: int) -> List[Session]:
+def get_professional_today_sessions(db: DBSession, professional_id: int) -> List[Session]:
     today = datetime.utcnow().date()
     return (
         db.query(Session)
         .filter(
-            Session.master_id == master_id,
+            Session.professional_id == professional_id,
             Session.starts_at >= datetime.combine(today, datetime.min.time()),
             Session.starts_at < datetime.combine(today, datetime.max.time()),
             Session.status.notin_([SessionStatus.CANCELLED]),
@@ -119,6 +119,10 @@ def get_master_today_sessions(db: DBSession, master_id: int) -> List[Session]:
         .order_by(Session.starts_at.asc())
         .all()
     )
+
+
+# Backward-compat alias
+get_master_today_sessions = get_professional_today_sessions
 
 
 # ── PDF confirmation ───────────────────────────────────────────────────────────
@@ -167,21 +171,20 @@ def build_confirmation_pdf(session: Session) -> io.BytesIO:
         alignment=1,
     )
 
-    salon_name = session.salon.name if session.salon else "Nail Salon"
-    salon_addr = session.salon.address if session.salon else ""
-    salon_phone = session.salon.phone if session.salon else ""
+    provider_name = session.provider.name if session.provider else "Service Provider"
+    provider_addr = session.provider.address if session.provider else ""
+    provider_phone = session.provider.phone if session.provider else ""
     service_name = session.service.name if session.service else "Service"
-    master_name = session.master.name if session.master else "Assigned master"
+    professional_name = session.professional.name if session.professional else "Assigned professional"
     date_str = session.starts_at.strftime("%B %d, %Y")
     time_str = session.starts_at.strftime("%I:%M %p")
     duration = f"{session.duration_minutes} min"
     price = f"${session.price:.2f}" if session.price else "—"
 
-    # confirmation_code isn't stored on session — show session id as reference
     ref = f"#{session.id:06d}"
 
     story = [
-        Paragraph(salon_name, title_style),
+        Paragraph(provider_name, title_style),
         Paragraph("Booking Confirmation", sub_style),
         Spacer(1, 6 * mm),
         HRFlowable(width="100%", thickness=1.5, color=_PINK),
@@ -196,13 +199,13 @@ def build_confirmation_pdf(session: Session) -> io.BytesIO:
     details = [
         ["Client", session.client_name],
         ["Service", f"{service_name} ({duration})"],
-        ["Master", master_name],
+        ["Professional", professional_name],
         ["Date", date_str],
         ["Time", time_str],
         ["Price", price],
     ]
-    if salon_addr:
-        details.append(["Location", salon_addr])
+    if provider_addr:
+        details.append(["Location", provider_addr])
 
     tbl = Table(details, colWidths=[50 * mm, 110 * mm])
     tbl.setStyle(TableStyle([
@@ -222,8 +225,8 @@ def build_confirmation_pdf(session: Session) -> io.BytesIO:
     story.append(Spacer(1, 4 * mm))
 
     footer_lines = ["Please arrive 5 minutes early."]
-    if salon_phone:
-        footer_lines.append(f"Questions? Call us at {salon_phone}")
+    if provider_phone:
+        footer_lines.append(f"Questions? Call us at {provider_phone}")
 
     footer_style = ParagraphStyle(
         "Footer",

@@ -5,69 +5,69 @@ from datetime import date, timedelta
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_owner
-from app.modules.reports.schemas import SalonReportResponse, MasterReportResponse
+from app.modules.reports.schemas import ProviderReportResponse, ProfessionalReportResponse
 from app.modules.reports.services import (
-    get_salon_report, get_master_report,
-    export_salon_report_xlsx, export_master_report_xlsx,
+    get_provider_report, get_professional_report,
+    export_provider_report_xlsx, export_professional_report_xlsx,
 )
-from app.modules.salons.services import assert_owner_of_salon
-from app.modules.masters.services import get_master_by_user_id
+from app.modules.salons.services import assert_owner_of_provider
+from app.modules.masters.services import get_professional_by_user_id
 from app.modules.users.models import User
 
 router = APIRouter()
 
 
-@router.get("/salon/{salon_id}", response_model=SalonReportResponse)
-def salon_report(
-    salon_id: int,
+@router.get("/provider/{provider_id}", response_model=ProviderReportResponse)
+def provider_report(
+    provider_id: int,
     date_from: date = Query(default_factory=lambda: date.today() - timedelta(days=30)),
     date_to: date = Query(default_factory=date.today),
     current_user: User = Depends(get_current_owner),
     db: Session = Depends(get_db),
 ):
-    assert_owner_of_salon(db, current_user, salon_id)
-    return get_salon_report(db, salon_id, date_from, date_to)
+    assert_owner_of_provider(db, current_user, provider_id)
+    return get_provider_report(db, provider_id, date_from, date_to)
 
 
-@router.get("/master/me", response_model=MasterReportResponse)
-def my_master_report(
+@router.get("/professional/me", response_model=ProfessionalReportResponse)
+def my_professional_report(
     date_from: date = Query(default_factory=lambda: date.today() - timedelta(days=30)),
     date_to: date = Query(default_factory=date.today),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    master = get_master_by_user_id(db, current_user.id)
-    if not master:
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Master profile not found")
-    return get_master_report(db, master.id, date_from, date_to)
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    return get_professional_report(db, professional.id, date_from, date_to)
 
 
-@router.get("/master/{master_id}", response_model=MasterReportResponse)
-def master_report(
-    master_id: int,
+@router.get("/professional/{professional_id}", response_model=ProfessionalReportResponse)
+def professional_report(
+    professional_id: int,
     date_from: date = Query(default_factory=lambda: date.today() - timedelta(days=30)),
     date_to: date = Query(default_factory=date.today),
     current_user: User = Depends(get_current_owner),
     db: Session = Depends(get_db),
 ):
-    return get_master_report(db, master_id, date_from, date_to)
+    return get_professional_report(db, professional_id, date_from, date_to)
 
 
 # ── Excel exports ─────────────────────────────────────────────────────────────
 
-@router.get("/salon/{salon_id}/export")
-def export_salon_report(
-    salon_id: int,
+@router.get("/provider/{provider_id}/export")
+def export_provider_report(
+    provider_id: int,
     date_from: date = Query(default_factory=lambda: date.today() - timedelta(days=30)),
     date_to: date = Query(default_factory=date.today),
     current_user: User = Depends(get_current_owner),
     db: Session = Depends(get_db),
 ):
-    assert_owner_of_salon(db, current_user, salon_id)
-    report = get_salon_report(db, salon_id, date_from, date_to)
-    buf = export_salon_report_xlsx(report)
-    filename = f"salon-report-{salon_id}-{date_from}-{date_to}.xlsx"
+    assert_owner_of_provider(db, current_user, provider_id)
+    report = get_provider_report(db, provider_id, date_from, date_to)
+    buf = export_provider_report_xlsx(report)
+    filename = f"provider-report-{provider_id}-{date_from}-{date_to}.xlsx"
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -75,20 +75,20 @@ def export_salon_report(
     )
 
 
-@router.get("/master/me/export")
-def export_my_master_report(
+@router.get("/professional/me/export")
+def export_my_professional_report(
     date_from: date = Query(default_factory=lambda: date.today() - timedelta(days=30)),
     date_to: date = Query(default_factory=date.today),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    master = get_master_by_user_id(db, current_user.id)
-    if not master:
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Master profile not found")
-    report = get_master_report(db, master.id, date_from, date_to)
-    buf = export_master_report_xlsx(report)
-    filename = f"master-report-{master.id}-{date_from}-{date_to}.xlsx"
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    report = get_professional_report(db, professional.id, date_from, date_to)
+    buf = export_professional_report_xlsx(report)
+    filename = f"professional-report-{professional.id}-{date_from}-{date_to}.xlsx"
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
