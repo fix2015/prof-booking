@@ -52,6 +52,7 @@ export function SalonSelectorPage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [view, setView] = useState<"split" | "map" | "list">("split");
   const [locationLoading, setLocationLoading] = useState(false);
+  const [mapsLoaded, setMapsLoaded] = useState(false);
 
   // Geocoded coords for providers without lat/lng
   const [geocodedCoords, setGeocodedCoords] = useState<Record<number, { lat: number; lng: number }>>({});
@@ -208,6 +209,7 @@ export function SalonSelectorPage() {
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
     geocoderRef.current = new google.maps.Geocoder();
+    setMapsLoaded(true);
     if (providers.length > 0) geocodeProviders(providers);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -385,7 +387,7 @@ export function SalonSelectorPage() {
                       options={{ streetViewControl: false, fullscreenControl: false, mapTypeControl: false }}
                     >
                       {/* User location dot */}
-                      {userLocation && (
+                      {mapsLoaded && userLocation && (
                         <Marker
                           position={userLocation}
                           icon={{
@@ -401,7 +403,7 @@ export function SalonSelectorPage() {
                       )}
 
                       {/* Salon markers (real coords + geocoded) */}
-                      {providersOnMap.map(({ provider, coords }) => (
+                      {mapsLoaded && providersOnMap.map(({ provider, coords }) => (
                         <Marker
                           key={provider.id}
                           position={coords}
@@ -420,7 +422,7 @@ export function SalonSelectorPage() {
                       ))}
 
                       {/* Rich InfoWindow popup */}
-                      {selectedProvider && selectedCoords && (
+                      {mapsLoaded && selectedProvider && selectedCoords && (
                         <InfoWindow
                           position={selectedCoords}
                           onCloseClick={() => setSelectedProvider(null)}
