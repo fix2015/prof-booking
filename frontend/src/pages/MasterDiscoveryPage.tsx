@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, Star, Clock, Flag } from "lucide-react";
 import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
+import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,10 +63,9 @@ export function MasterDiscoveryPage() {
             onKeyDown={(e) => e.key === "Enter" && applyFilters()}
           />
         </div>
-        <Input
-          placeholder="Nationality (e.g. French)"
+        <NationalitySelect
           value={nationality}
-          onChange={(e) => setNationality(e.target.value)}
+          onChange={setNationality}
         />
         <Input
           type="number"

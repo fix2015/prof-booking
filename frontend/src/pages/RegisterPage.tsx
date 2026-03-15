@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, Navigate } from "react-router-dom";
+import { AxiosError } from "axios";
 import { useRegisterOwner } from "@/hooks/useAuth";
 import { useAuthContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export function RegisterPage() {
           <CardContent className="space-y-4">
             {register_.isError && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                Registration failed. Email may already be in use.
+                {(register_.error as AxiosError<{ detail: string }>)?.response?.data?.detail ?? "Registration failed. Please try again."}
               </div>
             )}
 
