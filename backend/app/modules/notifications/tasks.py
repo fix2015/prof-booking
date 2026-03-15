@@ -2,7 +2,6 @@
 Background task queue using Redis + Celery.
 These tasks handle async notifications and reminders.
 """
-import os
 from celery import Celery
 from app.config import settings
 
@@ -53,7 +52,6 @@ def task_send_reminders_for_tomorrow():
     from datetime import date, timedelta, datetime
     from app.database import SessionLocal
     from app.modules.sessions.models import Session as BookingSession, SessionStatus
-    from app.modules.notifications.services import send_booking_reminder
 
     db = SessionLocal()
     try:

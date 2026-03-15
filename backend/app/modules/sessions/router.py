@@ -6,9 +6,9 @@ from datetime import datetime
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_professional_or_owner
-from app.modules.sessions.schemas import SessionCreate, SessionUpdate, SessionResponse, SessionSummary, EarningsInput
+from app.modules.sessions.schemas import SessionUpdate, SessionResponse, SessionSummary, EarningsInput
 from app.modules.sessions.services import (
-    create_session, get_session_or_404, update_session,
+    get_session_or_404, update_session,
     list_sessions, record_earnings, get_professional_today_sessions,
     build_confirmation_pdf,
 )

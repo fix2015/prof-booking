@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from typing import Optional, List
 
 from app.modules.salons.models import Provider, ProviderOwner
-from app.modules.salons.schemas import ProviderCreate, ProviderUpdate
+from app.modules.salons.schemas import ProviderUpdate
 from app.modules.users.models import User
 
 
@@ -48,7 +48,7 @@ def get_owner_provider(db: Session, user: User) -> Optional[Provider]:
 
 
 def list_providers(db: Session, skip: int = 0, limit: int = 50) -> List[Provider]:
-    return db.query(Provider).filter(Provider.is_active == True).offset(skip).limit(limit).all()
+    return db.query(Provider).filter(Provider.is_active == True).offset(skip).limit(limit).all()  # noqa: E712
 
 
 def update_provider(db: Session, provider: Provider, data: ProviderUpdate) -> Provider:

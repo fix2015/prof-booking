@@ -1,7 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
 from datetime import date, datetime, timedelta
-from typing import List
 import io
 
 import openpyxl

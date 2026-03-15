@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date
 
 from app.database import get_db
 from app.dependencies import get_current_owner, get_current_user
-from app.modules.invoices.models import Invoice, EarningsSplit, InvoiceStatus
+from app.modules.invoices.models import Invoice, EarningsSplit
 from app.modules.invoices.schemas import (
     InvoiceCreate, InvoiceResponse, InvoiceStatusUpdate,
     EarningsSplitCreate, EarningsSplitResponse,
@@ -13,7 +12,7 @@ from app.modules.invoices.schemas import (
 from app.modules.sessions.models import Session as SessionModel, SessionStatus
 from app.modules.salons.services import assert_owner_of_provider
 from app.modules.masters.services import get_professional_by_user_id
-from app.modules.users.models import User, UserRole
+from app.modules.users.models import User
 
 router = APIRouter()
 

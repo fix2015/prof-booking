@@ -27,7 +27,7 @@ def create_service(db: Session, provider_id: int, data: ServiceCreate) -> Servic
 def list_services(db: Session, provider_id: int, active_only: bool = True) -> List[Service]:
     query = db.query(Service).filter(Service.provider_id == provider_id)
     if active_only:
-        query = query.filter(Service.is_active == True)
+        query = query.filter(Service.is_active == True)  # noqa: E712
     return query.all()
 
 

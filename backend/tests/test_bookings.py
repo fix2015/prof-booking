@@ -1,23 +1,22 @@
-import pytest
 from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 
 
 def test_public_booking_flow(client: TestClient, owner_headers: dict):
-    # Get salon
-    salons_resp = client.get("/api/v1/salons/public")
-    assert salons_resp.status_code == 200
-    salons = salons_resp.json()
-    assert len(salons) >= 1
-    salon_id = salons[0]["id"]
+    # Get provider
+    providers_resp = client.get("/api/v1/providers/public")
+    assert providers_resp.status_code == 200
+    providers = providers_resp.json()
+    assert len(providers) >= 1
+    provider_id = providers[0]["id"]
 
     # Get services
-    svc_resp = client.get(f"/api/v1/services/salon/{salon_id}")
+    svc_resp = client.get(f"/api/v1/services/provider/{provider_id}")
     assert svc_resp.status_code == 200
 
     # Create a service first
     svc_create = client.post(
-        f"/api/v1/services/salon/{salon_id}",
+        f"/api/v1/services/provider/{provider_id}",
         headers=owner_headers,
         json={"name": "Gel Manicure", "duration_minutes": 60, "price": 45.0},
     )
@@ -27,7 +26,7 @@ def test_public_booking_flow(client: TestClient, owner_headers: dict):
     # Book appointment
     starts_at = (datetime.utcnow() + timedelta(days=1)).replace(hour=10, minute=0, second=0, microsecond=0)
     booking_resp = client.post("/api/v1/booking/", json={
-        "salon_id": salon_id,
+        "provider_id": provider_id,
         "service_id": service_id,
         "client_name": "Jane Doe",
         "client_phone": "+1987654321",
@@ -42,7 +41,7 @@ def test_public_booking_flow(client: TestClient, owner_headers: dict):
 
 def test_booking_requires_name(client: TestClient):
     resp = client.post("/api/v1/booking/", json={
-        "salon_id": 1,
+        "provider_id": 1,
         "service_id": 1,
         "client_name": "",
         "client_phone": "+1111111111",
@@ -52,15 +51,15 @@ def test_booking_requires_name(client: TestClient):
 
 
 def test_get_services(client: TestClient, owner_headers: dict):
-    salons = client.get("/api/v1/salons/public").json()
-    salon_id = salons[0]["id"]
+    providers = client.get("/api/v1/providers/public").json()
+    provider_id = providers[0]["id"]
 
     client.post(
-        f"/api/v1/services/salon/{salon_id}",
+        f"/api/v1/services/provider/{provider_id}",
         headers=owner_headers,
         json={"name": "Manicure", "duration_minutes": 60, "price": 30.0},
     )
-    resp = client.get(f"/api/v1/services/salon/{salon_id}")
+    resp = client.get(f"/api/v1/services/provider/{provider_id}")
     assert resp.status_code == 200
     services = resp.json()
     assert len(services) >= 1

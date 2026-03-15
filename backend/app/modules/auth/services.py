@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional
-from jose import jwt, JWTError
+from jose import jwt
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
@@ -50,7 +49,7 @@ def refresh_access_token(db: Session, refresh_token_str: str) -> tuple[str, str]
         db.query(RefreshToken)
         .filter(
             RefreshToken.token == refresh_token_str,
-            RefreshToken.revoked == False,
+            RefreshToken.revoked == False,  # noqa: E712
             RefreshToken.expires_at > datetime.utcnow(),
         )
         .first()
@@ -72,6 +71,6 @@ def refresh_access_token(db: Session, refresh_token_str: str) -> tuple[str, str]
 
 def revoke_all_tokens(db: Session, user_id: int) -> None:
     db.query(RefreshToken).filter(
-        RefreshToken.user_id == user_id, RefreshToken.revoked == False
+        RefreshToken.user_id == user_id, RefreshToken.revoked == False  # noqa: E712
     ).update({"revoked": True})
     db.commit()

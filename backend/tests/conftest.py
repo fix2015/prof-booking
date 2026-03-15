@@ -44,8 +44,8 @@ def owner_token(client):
         "email": "owner@test.com",
         "phone": "+1234567890",
         "password": "testpass123",
-        "salon_name": "Test Salon",
-        "salon_address": "123 Main St",
+        "provider_name": "Test Salon",
+        "provider_address": "123 Main St",
         "worker_payment_amount": 50.0,
     })
     assert resp.status_code == 201
