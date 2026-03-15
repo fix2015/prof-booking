@@ -18,10 +18,6 @@ const MASTERS = [
   { id: 1, name: "Anna K.", phone: "+1234567890", salon_id: 1 },
   { id: 2, name: "Maria L.", phone: "+0987654321", salon_id: 1 },
 ];
-const MASTER_SALONS = [
-  { master_id: 1, salon_id: 1 },
-  { master_id: 2, salon_id: 1 },
-];
 const PROFESSIONAL_PROVIDERS = [
   { id: 1, professional_id: 1, provider_id: 1, status: "active", payment_amount: 30, joined_at: "2026-01-01T00:00:00" },
   { id: 2, professional_id: 2, provider_id: 1, status: "active", payment_amount: 25, joined_at: "2026-01-01T00:00:00" },
