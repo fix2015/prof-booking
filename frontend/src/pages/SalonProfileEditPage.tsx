@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, MapPin, Phone, Mail, AlignLeft } from "lucide-react";
+import { Building2, MapPin, Phone, Mail, AlignLeft, Plus } from "lucide-react";
 import { providersApi } from "@/api/salons";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { AddressAutocomplete } from "@/components/ui/AddressAutocomplete";
@@ -14,18 +14,27 @@ import { toast } from "@/hooks/useToast";
 export function SalonProfileEditPage() {
   const qc = useQueryClient();
 
-  const { data: providers, isLoading } = useQuery({
-    queryKey: ["providers", "all"],
-    queryFn: () => providersApi.listPublic(),
+  const { data: provider, isLoading } = useQuery({
+    queryKey: ["providers", "my"],
+    queryFn: () => providersApi.getMy(),
+    retry: false,
   });
 
-  const provider = providers?.[0];
   const providerId = provider?.id;
 
   const updateProvider = useMutation({
     mutationFn: (data: Parameters<typeof providersApi.update>[1]) =>
       providersApi.update(providerId!, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["providers"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["providers", "my"] }),
+  });
+
+  const createProvider = useMutation({
+    mutationFn: (data: Parameters<typeof providersApi.create>[0]) =>
+      providersApi.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["providers", "my"] });
+      toast({ title: "Provider created", variant: "success" });
+    },
   });
 
   const [form, setForm] = useState({
@@ -37,6 +46,8 @@ export function SalonProfileEditPage() {
     latitude: undefined as number | undefined,
     longitude: undefined as number | undefined,
   });
+
+  const [createForm, setCreateForm] = useState({ name: "", address: "" });
 
   useEffect(() => {
     if (provider) {
@@ -79,7 +90,42 @@ export function SalonProfileEditPage() {
 
   if (!provider) {
     return (
-      <p className="text-center py-20 text-muted-foreground">No provider found.</p>
+      <div className="max-w-md mx-auto mt-20 space-y-4">
+        <h1 className="text-xl font-bold text-center">Create Your Provider</h1>
+        <p className="text-sm text-muted-foreground text-center">
+          You don't have a provider yet. Create one to get started.
+        </p>
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="create-name">Provider Name *</Label>
+              <Input
+                id="create-name"
+                value={createForm.name}
+                onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. Luxe Nail Studio"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="create-address">Address</Label>
+              <Input
+                id="create-address"
+                value={createForm.address}
+                onChange={(e) => setCreateForm((f) => ({ ...f, address: e.target.value }))}
+                placeholder="e.g. 123 High Street, London"
+              />
+            </div>
+            <Button
+              className="w-full bg-gray-900 hover:bg-gray-950"
+              disabled={!createForm.name || createProvider.isPending}
+              onClick={() => createProvider.mutate({ name: createForm.name, address: createForm.address })}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {createProvider.isPending ? "Creating…" : "Create Provider"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
