@@ -147,7 +147,7 @@ export function SalonSelectorPage() {
     mapRef.current = map;
     geocoderRef.current = new google.maps.Geocoder();
     requestLocation(map);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const hasProfessionalFilter = !!committed;
 

@@ -7,6 +7,7 @@ export interface NationalityOption {
   flag: string;  // "🇺🇦"
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const NATIONALITIES: NationalityOption[] = [
   { flag: "🇦🇫", label: "Afghan" },
   { flag: "🇦🇱", label: "Albanian" },
