@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, X } from "lucide-react";
 import { useRegisterProfessional } from "@/hooks/useAuth";
+import { useAuthContext as useAuth } from "@/context/AuthContext";
 import { providersApi } from "@/api/salons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +26,12 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function MasterRegisterPage() {
+  const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite") || undefined;
   const register_ = useRegisterProfessional();
+
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   const [selectedProviderIds, setSelectedProviderIds] = useState<number[]>([]);
   const [providerSearch, setProviderSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -101,7 +106,7 @@ export function MasterRegisterPage() {
           <CardContent className="space-y-4">
             {register_.isError && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                Registration failed. Please try again.
+                {(register_.error as AxiosError<{ detail: string }>)?.response?.data?.detail ?? "Registration failed. Please try again."}
               </div>
             )}
 

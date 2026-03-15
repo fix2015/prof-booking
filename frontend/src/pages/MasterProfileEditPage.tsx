@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { User, Globe, Clock, FileText, AlignLeft, Phone } from "lucide-react";
 import { useMyProfessionalProfile, useUpdateProfessionalProfile } from "@/hooks/useMaster";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -123,14 +124,12 @@ export function MasterProfileEditPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="nationality" className="flex items-center gap-1.5">
+                <Label className="flex items-center gap-1.5">
                   <Globe className="h-3.5 w-3.5" /> Nationality
                 </Label>
-                <Input
-                  id="nationality"
+                <NationalitySelect
                   value={form.nationality}
-                  onChange={handleChange("nationality")}
-                  placeholder="e.g. Ukrainian"
+                  onChange={(val) => setForm((prev) => ({ ...prev, nationality: val }))}
                 />
               </div>
 
