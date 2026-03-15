@@ -14,6 +14,11 @@ export const providersApi = {
     apiClient.patch<Provider>(`/providers/${id}`, data).then((r) => r.data),
 
   listAll: () => apiClient.get<Provider[]>("/providers/").then((r) => r.data),
+
+  getMy: () => apiClient.get<Provider>("/providers/my").then((r) => r.data),
+
+  create: (data: Partial<Provider>) =>
+    apiClient.post<Provider>("/providers/", data).then((r) => r.data),
 };
 
 // Backward-compat alias
