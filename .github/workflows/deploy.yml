@@ -133,16 +133,19 @@ jobs:
             cd /opt/prof-booking/infra
             echo "=== Container status ==="
             sudo docker compose -f docker-compose.prod.yml ps
-            echo "=== Waiting for backend to be ready ==="
+            echo "=== Waiting for backend API ==="
             for i in $(seq 1 24); do
-              STATUS=$(sudo docker inspect --format='{{.State.Health.Status}}' nail_backend 2>/dev/null || echo "unknown")
-              echo "[$i/24] backend: $STATUS"
-              if [ "$STATUS" = "healthy" ] || [ "$STATUS" = "running" ]; then
-                echo "Backend is up."
-                break
+              STATE=$(sudo docker inspect --format='{{.State.Status}}' nail_backend 2>/dev/null || echo "unknown")
+              echo "[$i/24] backend container: $STATE"
+              if [ "$STATE" = "running" ]; then
+                # Also verify API responds
+                if curl -sf http://localhost:8000/api/v1/health > /dev/null 2>&1; then
+                  echo "Backend API is up."
+                  break
+                fi
               fi
               if [ "$i" = "24" ]; then
-                echo "ERROR: backend did not become healthy in time"
+                echo "ERROR: backend did not become ready in time"
                 sudo docker compose -f docker-compose.prod.yml logs --tail=50 backend
                 exit 1
               fi
