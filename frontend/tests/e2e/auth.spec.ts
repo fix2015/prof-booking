@@ -34,7 +34,7 @@ test.describe("Auth", () => {
     await page.getByRole("button", { name: /sign in/i }).click();
 
     // Should show error message (toast or inline)
-    await expect(page.getByText(/invalid credentials|error|failed/i)).toBeVisible({
+    await expect(page.getByText(/invalid email or password|invalid credentials|error|failed/i)).toBeVisible({
       timeout: 5000,
     });
   });
@@ -49,19 +49,31 @@ test.describe("Auth", () => {
           refresh_token: "fake-refresh-token",
           token_type: "bearer",
           user_id: 1,
-          role: "salon_owner",
+          role: "provider_owner",
         }),
       })
     );
-    await page.route(`${API}/auth/me`, (route) =>
+    // getMe() uses /users/me, not /auth/me
+    await page.route(`${API}/users/me`, (route) =>
       route.fulfill({
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
           id: 1,
           email: "owner@salon.com",
-          role: "salon_owner",
+          role: "provider_owner",
           is_active: true,
+        }),
+      })
+    );
+    // Catch any refresh attempts so they don't trigger redirect loops
+    await page.route(`${API}/auth/refresh`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          access_token: "fake-access-token",
+          refresh_token: "fake-refresh-token",
         }),
       })
     );
@@ -79,6 +91,6 @@ test.describe("Auth", () => {
     await page.goto("/register");
     await page.waitForLoadState("networkidle");
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/salon name/i)).toBeVisible();
+    await expect(page.getByLabel(/business name/i)).toBeVisible();
   });
 });

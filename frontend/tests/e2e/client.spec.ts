@@ -44,7 +44,7 @@ const REVIEW_STATS_1 = {
   master_id: 1,
   total_reviews: 12,
   average_rating: 4.8,
-  distribution: { "5": 10, "4": 2, "3": 0, "2": 0, "1": 0 },
+  rating_distribution: { "5": 10, "4": 2, "3": 0, "2": 0, "1": 0 },
 };
 
 const REVIEWS_MASTER_1 = {
@@ -96,7 +96,8 @@ const SLOTS = [
 test.describe("Client — Master Discovery", () => {
   test.beforeEach(async ({ page }) => {
     // Discovery is PUBLIC — no auth needed
-    await page.route(`${API}/masters/discover*`, (r: Route) =>
+    // Frontend calls /professionals/discover (not /masters/discover)
+    await page.route(`${API}/professionals/discover*`, (r: Route) =>
       r.fulfill({
         status: 200, contentType: "application/json",
         body: JSON.stringify(MASTERS_DISCOVER),
@@ -119,7 +120,8 @@ test.describe("Client — Master Discovery", () => {
   test("1.2 discover page shows heading", async ({ page }) => {
     await page.goto("/discover");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/discover masters/i)).toBeVisible({ timeout: 5000 });
+    // Page heading says "Discover Professionals" not "Discover Masters"
+    await expect(page.getByText(/discover professionals/i)).toBeVisible({ timeout: 5000 });
   });
 
   test("1.3 discover page shows master cards", async ({ page }) => {
@@ -153,7 +155,7 @@ test.describe("Client — Master Discovery", () => {
 
   test("1.7 search input filters by name", async ({ page }) => {
     // Search returns only Anna
-    await page.route(`${API}/masters/discover*`, (r: Route) => {
+    await page.route(`${API}/professionals/discover*`, (r: Route) => {
       const url = r.request().url();
       if (url.includes("search=Anna")) {
         return r.fulfill({
@@ -197,34 +199,37 @@ test.describe("Client — Master Discovery", () => {
     await expect(page.getByRole("button", { name: /clear/i })).toBeVisible({ timeout: 5000 });
   });
 
-  test("1.10 empty state shows when no masters found", async ({ page }) => {
-    await page.route(`${API}/masters/discover*`, (r: Route) =>
+  test("1.10 empty state shows when no professionals found", async ({ page }) => {
+    await page.route(`${API}/professionals/discover*`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
     );
 
     await page.goto("/discover");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/no masters found/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/no professionals found|no masters found/i)).toBeVisible({ timeout: 5000 });
   });
 
-  test("1.11 clicking View Profile navigates to master profile page", async ({ page }) => {
-    await page.route(`${API}/masters/1`, (r: Route) =>
+  test("1.11 clicking View Profile navigates to professional profile page", async ({ page }) => {
+    await page.route(`${API}/professionals/1`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTER_1) })
+    );
+    await page.route(`${API}/professionals/1/photos`, (r: Route) =>
+      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
+    );
+    await page.route(`${API}/reviews**`, (r: Route) =>
+      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEWS_MASTER_1.data) })
     );
     await page.route(`${API}/reviews/stats/master/1`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEW_STATS_1) })
-    );
-    await page.route(`${API}/reviews*`, (r: Route) =>
-      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEWS_MASTER_1) })
     );
 
     await page.goto("/discover");
     await page.waitForLoadState("networkidle");
 
-    // Click first "View Profile" button
+    // Click first "View Profile" link — navigates to /professionals/1
     await page.getByRole("link", { name: /view profile/i }).first().click();
     await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/masters\/1/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/professionals\/1|\/masters\/1/, { timeout: 5000 });
   });
 });
 
@@ -232,14 +237,22 @@ test.describe("Client — Master Discovery", () => {
 
 test.describe("Client — Master Profile Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route(`${API}/masters/1`, (r: Route) =>
+    // Frontend calls /professionals/${id} (not /masters/${id})
+    await page.route(`${API}/professionals/1`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTER_1) })
     );
+    await page.route(`${API}/professionals/1/photos`, (r: Route) =>
+      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
+    );
+    // Register reviews** BEFORE reviews/stats (LIFO — last registered matches first)
+    // Use ** (not *) so it matches /reviews/ with trailing slash + query params
+    await page.route(`${API}/reviews**`, (r: Route) =>
+      // Return plain array (not {data,total} wrapper) — component calls reviews.map() directly
+      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEWS_MASTER_1.data) })
+    );
+    // Stats route registered last (matched first in LIFO) — returns stats object
     await page.route(`${API}/reviews/stats/master/1`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEW_STATS_1) })
-    );
-    await page.route(`${API}/reviews*`, (r: Route) =>
-      r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEWS_MASTER_1) })
     );
   });
 
@@ -264,7 +277,8 @@ test.describe("Client — Master Profile Page", () => {
   test("2.4 master profile shows experience years", async ({ page }) => {
     await page.goto("/masters/1");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/5/)).toBeVisible({ timeout: 5000 });
+    // Component renders "5 years experience" — use .first() to avoid strict-mode (bio also has "5 years of experience")
+    await expect(page.getByText(/5 years/i).first()).toBeVisible({ timeout: 5000 });
   });
 
   test("2.5 master profile shows bio", async ({ page }) => {
@@ -276,13 +290,13 @@ test.describe("Client — Master Profile Page", () => {
   test("2.6 master profile shows average rating", async ({ page }) => {
     await page.goto("/masters/1");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/4\.8/)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/4\.8/).first()).toBeVisible({ timeout: 5000 });
   });
 
   test("2.7 master profile shows total review count", async ({ page }) => {
     await page.goto("/masters/1");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/12/)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/12/).first()).toBeVisible({ timeout: 5000 });
   });
 
   test("2.8 master profile shows client reviews", async ({ page }) => {
@@ -304,7 +318,8 @@ test.describe("Client — Master Profile Page", () => {
 
     const bookLink = page.getByRole("link", { name: /book appointment/i });
     const href = await bookLink.getAttribute("href");
-    expect(href).toContain("master_id=1");
+    // Link uses professional_id=1 (not master_id=1) per current frontend code
+    expect(href).toContain("professional_id=1");
   });
 });
 
@@ -312,16 +327,19 @@ test.describe("Client — Master Profile Page", () => {
 
 test.describe("Client — Full Booking Flow", () => {
   test.beforeEach(async ({ page }) => {
-    await page.route(`${API}/salons/public`, (r: Route) =>
+    // Frontend uses /providers/public (not /salons/public)
+    await page.route(`${API}/providers/public`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SALONS) })
     );
-    await page.route(`${API}/salons/public/1`, (r: Route) =>
+    await page.route(`${API}/providers/public/1`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SALONS[0]) })
     );
-    await page.route(`${API}/services/salon/1`, (r: Route) =>
+    // Services use /provider/ prefix
+    await page.route(`${API}/services/provider/1`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SERVICES) })
     );
-    await page.route(`${API}/masters/salon/1/public`, (r: Route) =>
+    // Professionals use /professionals/provider/ prefix
+    await page.route(`${API}/professionals/provider/1/public`, (r: Route) =>
       r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTERS_PUBLIC) })
     );
     await page.route(`${API}/calendar/availability*`, (r: Route) =>
@@ -329,8 +347,9 @@ test.describe("Client — Full Booking Flow", () => {
     );
   });
 
-  test("3.1 /salons page shows salon list publicly", async ({ page }) => {
-    await page.goto("/salons");
+  test("3.1 /providers page shows provider list publicly", async ({ page }) => {
+    // /salons redirects to /providers
+    await page.goto("/providers");
     await page.waitForLoadState("networkidle");
     await expect(page).not.toHaveURL(/\/login/);
     await expect(page.getByText("Glamour Nails")).toBeVisible({ timeout: 5000 });
@@ -339,24 +358,38 @@ test.describe("Client — Full Booking Flow", () => {
   test("3.2 /book/1 shows service selection step", async ({ page }) => {
     await page.goto("/book/1");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Manicure")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Pedicure")).toBeVisible();
-    await expect(page.getByText("Gel Nails")).toBeVisible();
+    // Service label is always visible; items are inside Radix UI SelectContent (hidden portal)
+    await expect(page.getByText("Service *")).toBeVisible({ timeout: 5000 });
+    // Open the service select to verify services loaded
+    await page.locator('[role="combobox"]').first().click();
+    await expect(page.getByRole("option", { name: /manicure/i })).toBeVisible({ timeout: 3000 });
+    await expect(page.getByRole("option", { name: /pedicure/i })).toBeVisible();
+    await expect(page.getByRole("option", { name: /gel nails/i })).toBeVisible();
+    await page.keyboard.press("Escape");
   });
 
   test("3.3 selecting a service shows master selection", async ({ page }) => {
     await page.goto("/book/1");
     await page.waitForLoadState("networkidle");
-    await page.getByText("Manicure").click();
-    await expect(page.getByText("Anna K.")).toBeVisible({ timeout: 5000 });
+    // Open service select (Radix UI combobox trigger) and select Manicure
+    await page.locator('[role="combobox"]').first().click();
+    await page.getByRole("option", { name: /manicure/i }).click();
+    // Open professional select and verify professionals are loaded
+    await page.locator('[role="combobox"]').nth(1).click();
+    await expect(page.getByRole("option", { name: /anna k/i })).toBeVisible({ timeout: 5000 });
+    await page.keyboard.press("Escape");
   });
 
   test("3.4 selecting a master shows time slot picker", async ({ page }) => {
     await page.goto("/book/1");
     await page.waitForLoadState("networkidle");
-    await page.getByText("Manicure").click();
-    await page.getByText("Anna K.").click();
-    // Time slots should become visible
+    // Select service
+    await page.locator('[role="combobox"]').first().click();
+    await page.getByRole("option", { name: /manicure/i }).click();
+    // Select professional
+    await page.locator('[role="combobox"]').nth(1).click();
+    await page.getByRole("option", { name: /anna k/i }).click();
+    // Time slots should appear after service+professional selection triggers availability query
     await expect(page.getByText(/10:00/i)).toBeVisible({ timeout: 5000 });
   });
 
@@ -380,37 +413,42 @@ test.describe("Client — Full Booking Flow", () => {
     await page.goto("/book/1");
     await page.waitForLoadState("networkidle");
 
-    // Step 1: Service
-    await page.getByText("Manicure").click();
+    // Step 1: Select service via Radix combobox
+    await page.locator('[role="combobox"]').first().click();
+    await page.getByRole("option", { name: /manicure/i }).click();
 
-    // Step 2: Master
-    await page.getByText("Anna K.").click();
+    // Step 2: Time slot (service selection triggers availability query)
+    // Use getByRole("button") to avoid strict-mode — slot buttons render formatTime "10:00 AM"
+    await page.getByRole("button", { name: /10:00/i }).click();
 
-    // Step 3: Time slot
-    await page.getByText(/10:00/i).click();
-
-    // Step 4: Client info
-    await page.getByLabel(/name/i).fill("Jane Doe");
-    await page.getByLabel(/phone/i).fill("+1234567890");
-    await page.getByLabel(/email/i).fill("jane@example.com");
+    // Step 3: Client info — use placeholders since labels aren't associated with inputs
+    await page.getByPlaceholder("Jane Doe").fill("Jane Doe");
+    await page.getByPlaceholder("+1 (555) 000-0000").fill("+1234567890");
+    await page.getByPlaceholder("jane@example.com").fill("jane@example.com");
 
     // Submit
-    await page.getByRole("button", { name: /book|confirm/i }).click();
+    await page.getByRole("button", { name: /book appointment/i }).click();
 
-    // Confirmation
-    await expect(page.getByText(/BEAUTY42|confirmed|success/i)).toBeVisible({ timeout: 5000 });
+    // Confirmation — use heading to avoid strict-mode (h2 + paragraph + code all match /confirmed|success/i)
+    await expect(page.getByRole("heading", { name: /booking confirmed/i })).toBeVisible({ timeout: 5000 });
   });
 
   test("3.6 booking page shows service price", async ({ page }) => {
     await page.goto("/book/1");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/30|45|50/)).toBeVisible({ timeout: 5000 });
+    // Open service select to see options with prices
+    await page.locator('[role="combobox"]').first().click();
+    await expect(page.getByRole("option", { name: /\$30/i })).toBeVisible({ timeout: 5000 });
+    await page.keyboard.press("Escape");
   });
 
   test("3.7 booking page shows service duration", async ({ page }) => {
     await page.goto("/book/1");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/60|90|75/)).toBeVisible({ timeout: 5000 });
+    // Open service select to see options with durations
+    await page.locator('[role="combobox"]').first().click();
+    await expect(page.getByRole("option", { name: /60 min/i })).toBeVisible({ timeout: 5000 });
+    await page.keyboard.press("Escape");
   });
 });
 
@@ -503,7 +541,8 @@ test.describe("Client — Login Page", () => {
     await page.getByLabel(/password/i).fill("wrongpassword");
     await page.getByRole("button", { name: /sign in/i }).click();
 
-    await expect(page.getByText(/invalid credentials|error|failed/i)).toBeVisible({ timeout: 5000 });
+    // LoginPage shows "Invalid email or password" when login.isError is true
+    await expect(page.getByText(/invalid email or password|invalid credentials|error|failed/i)).toBeVisible({ timeout: 5000 });
   });
 
   test("5.3 login page has link to register", async ({ page }) => {

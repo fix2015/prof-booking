@@ -12,7 +12,7 @@ const API = "http://localhost:8000/api/v1";
 
 // ─── Shared mock data ────────────────────────────────────────────────────────
 
-const OWNER_USER = { id: 1, email: "owner@glamour.com", role: "salon_owner", is_active: true };
+const OWNER_USER = { id: 1, email: "owner@glamour.com", role: "provider_owner", is_active: true };
 const SALON = { id: 1, name: "Glamour Nails", address: "123 Main St", is_active: true, deposit_percentage: 20 };
 const MASTERS = [
   { id: 1, name: "Anna K.", phone: "+1234567890", salon_id: 1 },
@@ -21,6 +21,10 @@ const MASTERS = [
 const MASTER_SALONS = [
   { master_id: 1, salon_id: 1 },
   { master_id: 2, salon_id: 1 },
+];
+const PROFESSIONAL_PROVIDERS = [
+  { id: 1, professional_id: 1, provider_id: 1, status: "active", payment_amount: 30, joined_at: "2026-01-01T00:00:00" },
+  { id: 2, professional_id: 2, provider_id: 1, status: "active", payment_amount: 25, joined_at: "2026-01-01T00:00:00" },
 ];
 const SESSIONS = [
   {
@@ -48,14 +52,16 @@ const REVIEWS = [
 ];
 const ANALYTICS_WORKERS = [
   {
-    master_id: 1, master_name: "Anna K.",
+    professional_id: 1, professional_name: "Anna K.", avatar_url: null,
     completed_sessions: 15, total_hours: 20,
-    total_revenue: 450, master_earnings: 315, salon_earnings: 135,
+    total_revenue: 450, professional_earnings: 315, provider_earnings: 135,
+    professional_percentage: 70,
   },
   {
-    master_id: 2, master_name: "Maria L.",
+    professional_id: 2, professional_name: "Maria L.", avatar_url: null,
     completed_sessions: 8, total_hours: 12,
-    total_revenue: 360, master_earnings: 252, salon_earnings: 108,
+    total_revenue: 360, professional_earnings: 252, provider_earnings: 108,
+    professional_percentage: 70,
   },
 ];
 const INVOICES = [
@@ -94,88 +100,111 @@ const SERVICES = [
 
 // ─── Helper: inject auth + wire all API mocks ────────────────────────────────
 
-function setupOwnerMocks(page: Page) {
-  // Inject tokens before page loads
-  page.addInitScript(() => {
+async function setupOwnerMocks(page: Page) {
+  // Inject tokens before page loads (must be awaited before goto)
+  await page.addInitScript(() => {
     localStorage.setItem("access_token", "fake-owner-token");
     localStorage.setItem("refresh_token", "fake-owner-refresh");
     localStorage.setItem("user_id", "1");
-    localStorage.setItem("role", "salon_owner");
+    localStorage.setItem("role", "provider_owner");
   });
 
-  // Auth
-  page.route(`${API}/auth/me`, (r: Route) =>
+  // Auth — getMe() uses /users/me
+  await page.route(`${API}/users/me`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(OWNER_USER) })
   );
+  // Prevent refresh token redirect loops
+  await page.route(`${API}/auth/refresh`, (r: Route) =>
+    r.fulfill({
+      status: 200, contentType: "application/json",
+      body: JSON.stringify({ access_token: "fake-owner-token", refresh_token: "fake-owner-refresh" }),
+    })
+  );
+  // Logout — mock to avoid real network call delays
+  await page.route(`${API}/auth/logout`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ message: "logged out" }) })
+  );
 
-  // Salons
-  page.route(`${API}/salons/public`, (r: Route) =>
+  // Providers (both new path and compat salons path)
+  await page.route(`${API}/providers/public`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([SALON]) })
   );
-  page.route(`${API}/salons/public/1`, (r: Route) =>
+  await page.route(`${API}/providers/public/1`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SALON) })
   );
-  page.route(`${API}/salons/**`, (r: Route) =>
+  await page.route(`${API}/providers/**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SALON) })
+  );
+  await page.route(`${API}/providers**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([SALON]) })
   );
 
-  // Sessions
-  page.route(`${API}/sessions*`, (r: Route) =>
+  // Sessions — use ** to match trailing slash (/sessions/) and query params
+  await page.route(`${API}/sessions**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SESSIONS) })
   );
 
-  // Masters
-  page.route(`${API}/masters/salon/1/public`, (r: Route) =>
+  // Professionals (new path) + Masters (compat)
+  // Register wildcards FIRST so specific routes (registered later) are checked first in LIFO order
+  await page.route(`${API}/professionals**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTERS) })
   );
-  page.route(`${API}/masters/salon/1`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTER_SALONS) })
+  await page.route(`${API}/masters**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTERS) })
   );
-  page.route(`${API}/masters*`, (r: Route) =>
+  // Specific routes after wildcards → checked first in LIFO
+  await page.route(`${API}/professionals/provider/1**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(PROFESSIONAL_PROVIDERS) })
+  );
+  await page.route(`${API}/professionals/provider/1/public`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MASTERS) })
   );
 
-  // Services
-  page.route(`${API}/services/salon/1`, (r: Route) =>
+  // Services — ** to match /services/ and /services/provider/1 etc.
+  await page.route(`${API}/services/provider/1`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SERVICES) })
   );
-  page.route(`${API}/services*`, (r: Route) =>
+  await page.route(`${API}/services**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SERVICES) })
   );
 
-  // Reviews
-  page.route(`${API}/reviews*`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: REVIEWS, total: REVIEWS.length }) })
+  // Reviews — ** to match /reviews/ and /reviews/stats/master/:id
+  // Return plain array (not {data,total}) — ReviewsPage calls reviews.map()/.reduce() directly
+  await page.route(`${API}/reviews**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEWS) })
   );
 
-  // Analytics
-  page.route(`${API}/analytics/owner/salon/1/workers*`, (r: Route) =>
+  // Analytics — ** to match /analytics/owner/provider/1/workers and sub-paths
+  await page.route(`${API}/analytics/owner/provider/1/workers**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ANALYTICS_WORKERS) })
   );
-  page.route(`${API}/analytics*`, (r: Route) =>
+  await page.route(`${API}/analytics**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ANALYTICS_WORKERS) })
   );
 
-  // Invoices
-  page.route(`${API}/invoices/salon/1`, (r: Route) =>
+  // Invoices — ** to match /invoices/ and /invoices/salon/1
+  await page.route(`${API}/invoices/salon/1`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(INVOICES) })
   );
-  page.route(`${API}/invoices*`, (r: Route) =>
+  await page.route(`${API}/invoices**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(INVOICES) })
   );
 
-  // Reports
-  page.route(`${API}/reports*`, (r: Route) =>
+  // Reports — ** to match /reports/provider/:id and sub-paths
+  await page.route(`${API}/reports/provider/**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REPORTS) })
+  );
+  await page.route(`${API}/reports**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REPORTS) })
   );
 
-  // Notifications
-  page.route(`${API}/notifications*`, (r: Route) =>
+  // Notifications — ** to match /notifications/ and sub-paths
+  await page.route(`${API}/notifications**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(NOTIFICATIONS) })
   );
 
-  // Calendar
-  page.route(`${API}/calendar*`, (r: Route) =>
+  // Calendar — ** to match /calendar/ and sub-paths
+  await page.route(`${API}/calendar**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 }
@@ -184,7 +213,7 @@ function setupOwnerMocks(page: Page) {
 
 test.describe("Salon Owner (Admin) — Full Flow", () => {
   test.beforeEach(async ({ page }) => {
-    setupOwnerMocks(page);
+    await setupOwnerMocks(page);
   });
 
   // ── 1. Authentication ────────────────────────────────────────────────────
@@ -204,7 +233,7 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
           refresh_token: "fake-owner-refresh",
           token_type: "bearer",
           user_id: 1,
-          role: "salon_owner",
+          role: "provider_owner",
         }),
       })
     );
@@ -240,7 +269,8 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
     await page.waitForLoadState("networkidle");
     // Sidebar nav items visible to salon_owner
     await expect(page.getByRole("link", { name: /sessions/i })).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole("link", { name: /masters/i })).toBeVisible();
+    // Sidebar uses "Professionals" (not "Masters") as the nav label — exact match to avoid matching "Discover Professionals"
+    await expect(page.getByRole("link", { name: "Professionals", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: /reviews/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /invoices/i })).toBeVisible();
   });
@@ -261,18 +291,19 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
     await expect(page.getByText("Bob Jones")).toBeVisible();
   });
 
-  test("3.2 sessions page shows service names and prices", async ({ page }) => {
+  test("3.2 sessions page shows prices", async ({ page }) => {
     await page.goto("/sessions");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Manicure")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Pedicure")).toBeVisible();
+    // Sessions show price (formatted as currency), not service name
+    await expect(page.getByText("$30.00")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("$45.00")).toBeVisible();
   });
 
   test("3.3 sessions page shows status badges", async ({ page }) => {
     await page.goto("/sessions");
     await page.waitForLoadState("networkidle");
-    // completed and scheduled statuses should appear
-    await expect(page.getByText(/completed/i)).toBeVisible({ timeout: 5000 });
+    // completed and scheduled statuses should appear (use .first() — multiple matches possible)
+    await expect(page.getByText(/completed/i).first()).toBeVisible({ timeout: 5000 });
   });
 
   // ── 4. Masters ──────────────────────────────────────────────────────────
@@ -281,8 +312,9 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
     await page.goto("/masters");
     await page.waitForLoadState("networkidle");
     await expect(page).not.toHaveURL(/\/login/);
-    await expect(page.getByText("Anna K.")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Maria L.")).toBeVisible();
+    // MastersPage renders ProfessionalProvider format: "Professional #N"
+    await expect(page.getByText("Professional #1")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Professional #2")).toBeVisible();
   });
 
   // ── 5. Services ─────────────────────────────────────────────────────────
@@ -306,12 +338,12 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
   });
 
   test("6.2 reviews page shows client names and ratings", async ({ page }) => {
-    // Make reviews return data directly (not wrapped)
-    await page.route(`${API}/reviews*`, (r: Route) =>
+    // Return plain array — ReviewsPage calls reviews.map() directly, not {data,total}
+    await page.route(`${API}/reviews**`, (r: Route) =>
       r.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ data: REVIEWS, total: 2 }),
+        body: JSON.stringify(REVIEWS),
       })
     );
     await page.goto("/reviews");
@@ -354,9 +386,9 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
     await page.goto("/invoices");
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /generate invoice/i }).click();
-    // Form should appear
+    // Form should appear — use .first() since invoice rows also have a status <select>
     await expect(page.getByText(/generate monthly invoice/i)).toBeVisible({ timeout: 5000 });
-    await expect(page.locator("select")).toBeVisible();
+    await expect(page.locator("select").first()).toBeVisible();
   });
 
   test("8.4 invoices list shows period and amounts", async ({ page }) => {
@@ -380,7 +412,8 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
     await page.goto("/notifications");
     await page.waitForLoadState("networkidle");
     await expect(page).not.toHaveURL(/\/login/);
-    await expect(page.getByText(/notifications/i)).toBeVisible({ timeout: 5000 });
+    // Use first() to avoid strict mode: sidebar link + page heading both match
+    await expect(page.getByText(/notifications/i).first()).toBeVisible({ timeout: 5000 });
   });
 
   // ── 11. Sign out ─────────────────────────────────────────────────────────
@@ -413,9 +446,10 @@ test.describe("Salon Owner (Admin) — Full Flow", () => {
     await expect(page.getByRole("link", { name: /^admin$/i })).not.toBeVisible();
   });
 
-  test("12.3 sidebar shows Discover Masters link", async ({ page }) => {
+  test("12.3 sidebar shows Discover Professionals link", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("link", { name: /discover masters/i })).toBeVisible({ timeout: 5000 });
+    // Sidebar uses "Discover Professionals" (not "Discover Masters")
+    await expect(page.getByRole("link", { name: /discover professionals/i })).toBeVisible({ timeout: 5000 });
   });
 });

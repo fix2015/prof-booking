@@ -51,8 +51,8 @@ export function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label>Email *</Label>
-                <Input type="email" {...register("email")} placeholder="owner@business.com" />
+                <Label htmlFor="email">Email *</Label>
+                <Input id="email" type="email" {...register("email")} placeholder="owner@business.com" />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
               <div className="space-y-1">
@@ -69,8 +69,8 @@ export function RegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Business Name *</Label>
-              <Input {...register("provider_name")} placeholder="My Business" />
+              <Label htmlFor="provider_name">Business Name *</Label>
+              <Input id="provider_name" {...register("provider_name")} placeholder="My Business" />
               {errors.provider_name && <p className="text-xs text-destructive">{errors.provider_name.message}</p>}
             </div>
 
