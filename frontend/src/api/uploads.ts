@@ -1,7 +1,7 @@
 import apiClient from "./client";
 
 function toAbsolute(url: string): string {
-  const base = (apiClient.defaults.baseURL ?? "http://localhost:8000").replace(/\/api\/v1$/, "");
+  const base = (apiClient.defaults.baseURL ?? "").replace(/\/api\/v1$/, "");
   return url.startsWith("http") ? url : `${base}${url}`;
 }
 
