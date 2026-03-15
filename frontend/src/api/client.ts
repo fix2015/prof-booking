@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Empty string = relative URL → nginx proxies /api/v1/ to backend container
+const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: `${BASE_URL}/api/v1`,
@@ -59,7 +60,7 @@ apiClient.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, {
+        const { data } = await axios.post(`${BASE_URL || ""}/api/v1/auth/refresh`, {
           refresh_token: refreshToken,
         });
         localStorage.setItem("access_token", data.access_token);

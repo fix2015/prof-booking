@@ -85,8 +85,10 @@ def upgrade() -> None:
     op.create_index('ix_loyalty_programs_salon', 'loyalty_programs', ['salon_id'], unique=False)
 
     # --- discount_rules ---
-    discounttype = sa.Enum('percentage', 'fixed', name='discounttype')
-    discounttype.create(op.get_bind(), checkfirst=True)
+    # create_type=False prevents op.create_table from re-issuing CREATE TYPE
+    # after we already created it explicitly with checkfirst=True
+    sa.Enum('percentage', 'fixed', name='discounttype').create(op.get_bind(), checkfirst=True)
+    discounttype = sa.Enum('percentage', 'fixed', name='discounttype', create_type=False)
     op.create_table(
         'discount_rules',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -104,8 +106,8 @@ def upgrade() -> None:
     op.create_index('ix_discount_rules_program', 'discount_rules', ['program_id'], unique=False)
 
     # --- invoices ---
-    invoicestatus = sa.Enum('draft', 'sent', 'paid', 'overdue', name='invoicestatus')
-    invoicestatus.create(op.get_bind(), checkfirst=True)
+    sa.Enum('draft', 'sent', 'paid', 'overdue', name='invoicestatus').create(op.get_bind(), checkfirst=True)
+    invoicestatus = sa.Enum('draft', 'sent', 'paid', 'overdue', name='invoicestatus', create_type=False)
     op.create_table(
         'invoices',
         sa.Column('id', sa.Integer(), nullable=False),
