@@ -62,7 +62,7 @@ export function InvoicesPage() {
   const generateMutation = useMutation({
     mutationFn: () =>
       invoicesApi.generate(providerId!, {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         professional_id: Number(selectedProfessionalId),
         period_start: periodStart,
         period_end: periodEnd,
