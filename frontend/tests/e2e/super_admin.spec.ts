@@ -59,83 +59,95 @@ const REPORTS = {
 
 // ─── Helper: inject admin auth + API mocks ───────────────────────────────────
 
-function setupAdminMocks(page: Page) {
-  page.addInitScript(() => {
+async function setupAdminMocks(page: Page) {
+  await page.addInitScript(() => {
     localStorage.setItem("access_token", "fake-admin-token");
     localStorage.setItem("refresh_token", "fake-admin-refresh");
     localStorage.setItem("user_id", "99");
     localStorage.setItem("role", "platform_admin");
   });
 
-  // Auth
-  page.route(`${API}/auth/me`, (r: Route) =>
+  // Auth — getMe() uses /users/me
+  await page.route(`${API}/users/me`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN_USER) })
+  );
+  // Prevent refresh token redirect loops
+  await page.route(`${API}/auth/refresh`, (r: Route) =>
+    r.fulfill({
+      status: 200, contentType: "application/json",
+      body: JSON.stringify({ access_token: "fake-admin-token", refresh_token: "fake-admin-refresh" }),
+    })
+  );
+  // Logout — mock to avoid real network call delays
+  await page.route(`${API}/auth/logout`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ message: "logged out" }) })
+  );
+
+  // Providers/Salons (both paths)
+  await page.route(`${API}/providers/public`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_SALONS) })
+  );
+  await page.route(`${API}/providers/**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_SALONS) })
+  );
+  await page.route(`${API}/providers**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_SALONS) })
+  );
+
+  // Users — ** to match /users/ and /users/me
+  await page.route(`${API}/users**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_USERS) })
+  );
+  // /users/me registered after wildcard → checked first in LIFO
+  await page.route(`${API}/users/me`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ADMIN_USER) })
   );
 
-  // Salons — both /salons/ (admin list all) and /salons/public
-  page.route(`${API}/salons/public`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_SALONS) })
-  );
-  page.route(`${API}/salons`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_SALONS) })
-  );
-  page.route(`${API}/salons/**`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_SALONS) })
-  );
-
-  // Users
-  page.route(`${API}/users/`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_USERS) })
-  );
-  page.route(`${API}/users*`, (r: Route) =>
-    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ALL_USERS) })
-  );
-
-  // Sessions (admin can see all)
-  page.route(`${API}/sessions*`, (r: Route) =>
+  // Sessions (admin can see all) — use ** to match /sessions/ with trailing slash
+  await page.route(`${API}/sessions**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(SESSIONS_ALL) })
   );
 
-  // Reviews (admin can see and toggle)
-  page.route(`${API}/reviews*`, (r: Route) =>
-    r.fulfill({
-      status: 200, contentType: "application/json",
-      body: JSON.stringify({ data: REVIEWS, total: 1 }),
-    })
+  // Reviews (admin can see and toggle) — return plain array (ReviewsPage calls .map()/.reduce())
+  await page.route(`${API}/reviews**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REVIEWS) })
   );
 
-  // Masters
-  page.route(`${API}/masters*`, (r: Route) =>
+  // Professionals/Masters
+  await page.route(`${API}/professionals**`, (r: Route) =>
+    r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
+  );
+  await page.route(`${API}/masters**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 
   // Analytics
-  page.route(`${API}/analytics*`, (r: Route) =>
+  await page.route(`${API}/analytics**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 
   // Invoices
-  page.route(`${API}/invoices*`, (r: Route) =>
+  await page.route(`${API}/invoices**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 
   // Reports
-  page.route(`${API}/reports*`, (r: Route) =>
+  await page.route(`${API}/reports**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(REPORTS) })
   );
 
   // Services
-  page.route(`${API}/services*`, (r: Route) =>
+  await page.route(`${API}/services**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 
   // Notifications
-  page.route(`${API}/notifications*`, (r: Route) =>
+  await page.route(`${API}/notifications**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 
   // Calendar
-  page.route(`${API}/calendar*`, (r: Route) =>
+  await page.route(`${API}/calendar**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) })
   );
 }
@@ -144,7 +156,7 @@ function setupAdminMocks(page: Page) {
 
 test.describe("Platform Admin (Super Admin) — Full Flow", () => {
   test.beforeEach(async ({ page }) => {
-    setupAdminMocks(page);
+    await setupAdminMocks(page);
   });
 
   // ── 1. Authentication ────────────────────────────────────────────────────
@@ -183,29 +195,32 @@ test.describe("Platform Admin (Super Admin) — Full Flow", () => {
   test("2.1 platform_admin dashboard shows Platform Administration heading", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/platform administration/i)).toBeVisible({ timeout: 5000 });
+    // Use heading role to avoid strict-mode (multiple elements may contain the text)
+    await expect(page.getByRole("heading", { name: /platform administration/i })).toBeVisible({ timeout: 5000 });
   });
 
   test("2.2 admin dashboard shows stat cards for salons and users", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/total salons/i)).toBeVisible({ timeout: 5000 });
+    // Component uses "Providers" terminology (not "Salons")
+    await expect(page.getByText(/total providers/i)).toBeVisible({ timeout: 5000 });
     await expect(page.getByText(/total users/i)).toBeVisible();
-    await expect(page.getByText(/salon owners/i)).toBeVisible();
-    await expect(page.getByText(/masters/i)).toBeVisible();
+    await expect(page.getByText(/provider owners/i)).toBeVisible();
+    await expect(page.getByText(/professionals/i).first()).toBeVisible();
   });
 
   test("2.3 admin dashboard shows correct salon count (3)", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    // Value "3" for 3 salons
-    await expect(page.getByText("3")).toBeVisible({ timeout: 5000 });
+    // Use .first() to avoid strict-mode — "3" appears in stat card + table IDs/addresses
+    await expect(page.getByText("3").first()).toBeVisible({ timeout: 5000 });
   });
 
   test("2.4 admin dashboard shows correct user count (6)", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("6")).toBeVisible({ timeout: 5000 });
+    // Use .first() to avoid strict-mode — "6" appears in stat card + user IDs
+    await expect(page.getByText("6").first()).toBeVisible({ timeout: 5000 });
   });
 
   // ── 3. All Salons Table ──────────────────────────────────────────────────
@@ -213,7 +228,8 @@ test.describe("Platform Admin (Super Admin) — Full Flow", () => {
   test("3.1 admin dashboard shows All Salons table", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(/all salons/i)).toBeVisible({ timeout: 5000 });
+    // Component card header says "All Providers" (not "All Salons")
+    await expect(page.getByText(/all providers/i)).toBeVisible({ timeout: 5000 });
   });
 
   test("3.2 all salons table lists every salon", async ({ page }) => {
@@ -228,7 +244,8 @@ test.describe("Platform Admin (Super Admin) — Full Flow", () => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
     await expect(page.getByText("Active").first()).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Inactive")).toBeVisible();
+    // Multiple Inactive badges across providers and users tables — use .first()
+    await expect(page.getByText("Inactive").first()).toBeVisible();
   });
 
   // ── 4. All Users Table ───────────────────────────────────────────────────
@@ -259,7 +276,7 @@ test.describe("Platform Admin (Super Admin) — Full Flow", () => {
     await page.goto("/admin");
     await page.waitForLoadState("networkidle");
     await expect(page).not.toHaveURL(/\/login/);
-    await expect(page.getByText(/platform administration/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("heading", { name: /platform administration/i })).toBeVisible({ timeout: 5000 });
   });
 
   // ── 6. Sidebar — admin-specific navigation ───────────────────────────────
@@ -326,6 +343,10 @@ test.describe("Platform Admin (Super Admin) — Full Flow", () => {
   test("10.1 platform_admin can sign out", async ({ page }) => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
+    // Override /users/me to 401 so addInitScript-restored tokens don't re-authenticate after logout
+    await page.route(`${API}/users/me`, (r: Route) =>
+      r.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ detail: "Not authenticated" }) })
+    );
     await page.getByRole("button", { name: /sign out/i }).click();
     await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
   });
@@ -336,7 +357,7 @@ test.describe("Platform Admin (Super Admin) — Full Flow", () => {
     await page.goto("/dashboard");
     await page.waitForLoadState("networkidle");
     // platform_admin's dashboard is AdminPanelPage, not OwnerDashboardPage
-    await expect(page.getByText(/platform administration/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("heading", { name: /platform administration/i })).toBeVisible({ timeout: 5000 });
     // Owner dashboard title ("Salon Dashboard" or similar) should NOT appear
     await expect(page.getByText(/your salon/i)).not.toBeVisible();
   });

@@ -35,7 +35,10 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as typeof error.config & { _retry?: boolean };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip retry logic for the login endpoint itself (wrong credentials should surface as error, not redirect)
+    const isLoginRequest = originalRequest.url?.includes("/auth/login");
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isLoginRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
