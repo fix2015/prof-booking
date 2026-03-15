@@ -18,17 +18,17 @@ interface Props {
   onChange: (value: string) => void;
   onSelect?: (result: AddressResult) => void;
   placeholder?: string;
-  className?: string;
   id?: string;
+  className?: string;
 }
 
 export function AddressAutocomplete({
   value,
   onChange,
   onSelect,
-  placeholder = "Start typing an address or postcode…",
-  className,
+  placeholder = "Start typing address or postcode…",
   id,
+  className,
 }: Props) {
   const { isLoaded } = useLoadScript({ googleMapsApiKey: API_KEY, libraries: LIBRARIES });
 
@@ -40,7 +40,6 @@ export function AddressAutocomplete({
   const geocoderRef = useRef<google.maps.Geocoder | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialise services once Maps is loaded
   useEffect(() => {
     if (isLoaded && !serviceRef.current) {
       serviceRef.current = new google.maps.places.AutocompleteService();
@@ -48,7 +47,6 @@ export function AddressAutocomplete({
     }
   }, [isLoaded]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -103,7 +101,7 @@ export function AddressAutocomplete({
     }
   };
 
-  // Fallback: plain input if Maps not configured or not loaded yet
+  // Fallback to plain input if key missing or not yet loaded
   if (!API_KEY || !isLoaded) {
     return (
       <Input
@@ -144,12 +142,8 @@ export function AddressAutocomplete({
               >
                 <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground" />
                 <span>
-                  <span className="font-medium">
-                    {p.structured_formatting.main_text}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {" "}{p.structured_formatting.secondary_text}
-                  </span>
+                  <span className="font-medium">{p.structured_formatting.main_text}</span>
+                  <span className="text-muted-foreground"> {p.structured_formatting.secondary_text}</span>
                 </span>
               </button>
             </li>
