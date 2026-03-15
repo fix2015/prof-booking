@@ -104,6 +104,9 @@ jobs:
             # Stop old containers
             sudo docker compose -f docker-compose.prod.yml down --remove-orphans || true
 
+            # Free disk space before pulling new images
+            sudo docker image prune -af || true
+
             # Pull latest pre-built images (no build on EC2 needed)
             sudo docker compose -f docker-compose.prod.yml pull
 
