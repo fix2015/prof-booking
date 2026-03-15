@@ -106,6 +106,7 @@ export function SalonProfileEditPage() {
             shape="square"
             size={80}
             label="Logo"
+            maxSize={256}
           />
         </CardContent>
       </Card>

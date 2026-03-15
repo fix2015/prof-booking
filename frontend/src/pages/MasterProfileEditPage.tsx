@@ -120,6 +120,7 @@ export function MasterProfileEditPage() {
             shape="circle"
             size={80}
             label="Avatar"
+            maxSize={256}
           />
         </CardContent>
       </Card>
