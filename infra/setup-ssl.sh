@@ -4,7 +4,7 @@
 
 set -e
 DOMAIN="probooking.app"
-EMAIL="your@email.com"   # ← change this to your real email
+EMAIL="fix20152@gmail.com"   # ← change this to your real email
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 
 echo "==> Installing nginx & certbot..."
