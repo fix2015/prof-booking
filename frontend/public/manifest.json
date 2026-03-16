@@ -1,11 +1,11 @@
 {
-  "name": "NailSalon Platform",
-  "short_name": "NailSalon",
-  "description": "Book nail salon appointments and manage your salon",
+  "name": "ProBook — Book Professionals, Effortlessly",
+  "short_name": "ProBook",
+  "description": "Book top professionals effortlessly — ProBook makes scheduling beautiful and simple.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#ec4899",
+  "theme_color": "#db2777",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -15,22 +15,34 @@
       "purpose": "any"
     },
     {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "/pwa-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Book Appointment",
       "url": "/salons",
-      "description": "Book a nail appointment"
+      "description": "Find and book a professional"
     },
     {
       "name": "My Calendar",
       "url": "/calendar",
-      "description": "View your calendar"
+      "description": "View your upcoming appointments"
     }
   ],
   "categories": ["beauty", "lifestyle", "business"],

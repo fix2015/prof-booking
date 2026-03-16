@@ -8,24 +8,26 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
-        name: "NailSalon Platform",
-        short_name: "NailSalon",
-        description: "Book nail salon appointments online",
-        theme_color: "#ec4899",
+        name: "ProBook — Book Professionals, Effortlessly",
+        short_name: "ProBook",
+        description: "Book top professionals effortlessly — ProBook makes scheduling beautiful and simple.",
+        theme_color: "#db2777",
         background_color: "#ffffff",
         display: "standalone",
         icons: [
-          { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
-          { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
+          { src: "pwa-192x192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "pwa-192x192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+          { src: "pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.nailsalonplatform\.com\/.*/i,
+            urlPattern: /^https:\/\/probooking\.app\/api\/.*/i,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
