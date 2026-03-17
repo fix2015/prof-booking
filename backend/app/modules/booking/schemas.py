@@ -39,3 +39,25 @@ class BookingConfirmation(BaseModel):
     ends_at: datetime
     price: Optional[float]
     confirmation_code: str
+
+
+class BookingLookupResponse(BaseModel):
+    session_id: int
+    client_name: str
+    client_phone: str
+    provider_name: str
+    service_name: Optional[str]
+    professional_name: Optional[str]
+    starts_at: datetime
+    ends_at: datetime
+    price: Optional[float]
+    status: str
+    cancellation_reason: Optional[str]
+    confirmation_code: str
+    created_at: datetime
+
+
+class BookingCancelRequest(BaseModel):
+    confirmation_code: str
+    phone: str
+    reason: Optional[str] = None

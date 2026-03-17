@@ -64,6 +64,7 @@ class Session(Base):
         Index("ix_sessions_starts_at", "starts_at"),
         Index("ix_sessions_status", "status"),
         Index("ix_sessions_provider_date", "provider_id", "starts_at"),
+        Index("ix_sessions_client_phone", "client_phone"),
     )
 
     def __repr__(self) -> str:

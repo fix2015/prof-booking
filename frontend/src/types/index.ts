@@ -62,6 +62,7 @@ export interface Professional {
   nationality?: string;
   experience_years?: number;
   description?: string;
+  is_independent?: boolean;
   photos?: ProfessionalPhoto[];
   created_at: string;
   professional_providers?: ProfessionalProvider[];

@@ -84,27 +84,53 @@ def update_my_professional_profile(
 
 @router.get("/discover", response_model=List[ProfessionalPublic])
 def discover_professionals(
-    search: Optional[str] = Query(None, description="Search by name or specialty"),
+    search: Optional[str] = Query(None, description="Search by name"),
     nationality: Optional[str] = Query(None),
     min_experience: Optional[int] = Query(None, ge=0),
     provider_id: Optional[int] = Query(None),
+    service_name: Optional[str] = Query(None, description="Filter by service offered at their provider"),
+    is_independent: Optional[bool] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
 ):
     """Public endpoint: browse all active service professionals."""
+    from app.modules.services.models import Service
+
     q = db.query(Professional)
+    needs_distinct = False
 
     if provider_id:
         q = q.join(ProfessionalProvider, Professional.id == ProfessionalProvider.professional_id).filter(
             ProfessionalProvider.provider_id == provider_id,
             ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
         )
+    elif is_independent is True:
+        # Independent-only: skip the active_via_provider subquery entirely
+        q = q.filter(Professional.is_independent == True)  # noqa: E712
     else:
-        active_ids = db.query(ProfessionalProvider.professional_id).filter(
+        active_via_provider = db.query(ProfessionalProvider.professional_id).filter(
             ProfessionalProvider.status == ProfessionalStatus.ACTIVE
         ).subquery()
-        q = q.filter(Professional.id.in_(active_ids))
+        if is_independent is False:
+            q = q.filter(Professional.id.in_(active_via_provider))
+        else:
+            # Default: active via any provider OR self-declared independent
+            q = q.filter(
+                (Professional.id.in_(active_via_provider)) | (Professional.is_independent == True)  # noqa: E712
+            )
+
+    if service_name:
+        provider_ids_with_service = db.query(Service.provider_id).filter(
+            Service.name.ilike(f"%{service_name}%"),
+            Service.is_active == True,  # noqa: E712
+        ).subquery()
+        matching_prof_ids = db.query(ProfessionalProvider.professional_id).filter(
+            ProfessionalProvider.provider_id.in_(provider_ids_with_service),
+            ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
+        ).subquery()
+        q = q.filter(Professional.id.in_(matching_prof_ids))
+        needs_distinct = True
 
     if search:
         q = q.filter(Professional.name.ilike(f"%{search}%"))
@@ -113,6 +139,8 @@ def discover_professionals(
     if min_experience is not None:
         q = q.filter(Professional.experience_years >= min_experience)
 
+    if needs_distinct:
+        q = q.distinct()
     return q.offset(skip).limit(limit).all()
 
 

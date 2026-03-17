@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.database import get_db
 from app.dependencies import get_current_owner, get_current_admin
@@ -18,10 +18,11 @@ router = APIRouter()
 def get_public_providers(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, le=100),
+    search: Optional[str] = Query(None, description="Search by name or category"),
     db: Session = Depends(get_db),
 ):
     """Public endpoint — lists all active service providers for client booking."""
-    return list_providers(db, skip=skip, limit=limit)
+    return list_providers(db, skip=skip, limit=limit, search=search)
 
 
 @router.get("/public/{provider_id}", response_model=ProviderPublic)
