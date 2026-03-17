@@ -80,8 +80,14 @@ def create_professional_with_user(
     )
     db.add(pp)
     db.commit()
-    db.refresh(pp)
-    return pp
+    # Reload with professional relationship so the response serializes correctly
+    from sqlalchemy.orm import joinedload
+    return (
+        db.query(ProfessionalProvider)
+        .options(joinedload(ProfessionalProvider.professional))
+        .filter(ProfessionalProvider.id == pp.id)
+        .one()
+    )
 
 
 def get_professional_by_user_id(db: Session, user_id: int) -> Optional[Professional]:
@@ -100,9 +106,14 @@ def get_professional_or_404(db: Session, professional_id: int) -> Professional:
 
 
 def list_provider_professionals(
-    db: Session, provider_id: int, status: Optional[ProfessionalStatus] = ProfessionalStatus.ACTIVE
+    db: Session, provider_id: int, status: Optional[ProfessionalStatus] = None
 ) -> List[ProfessionalProvider]:
-    query = db.query(ProfessionalProvider).filter(ProfessionalProvider.provider_id == provider_id)
+    from sqlalchemy.orm import joinedload
+    query = (
+        db.query(ProfessionalProvider)
+        .options(joinedload(ProfessionalProvider.professional))
+        .filter(ProfessionalProvider.provider_id == provider_id)
+    )
     if status:
         query = query.filter(ProfessionalProvider.status == status)
     return query.all()
