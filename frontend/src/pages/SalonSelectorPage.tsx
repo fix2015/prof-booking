@@ -5,6 +5,7 @@ import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Buildi
 import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
+import { servicesApi } from "@/api/services";
 import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,11 +32,6 @@ function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: numb
   return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-const SERVICE_TYPES = [
-  "Manicure", "Pedicure", "Gel Nails", "Acrylic",
-  "Nail Art", "Extensions", "Shellac", "Spa",
-];
-
 // Custom pink nail-pin SVG marker
 const NAIL_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">
   <path d="M15 1C8.93 1 4 5.93 4 12c0 8.78 11 26.5 11 26.5S26 20.78 26 12C26 5.93 21.07 1 15 1z" fill="#db2777" stroke="white" stroke-width="1.5"/>
@@ -55,6 +51,11 @@ const PRO_PIN_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PRO_P
 
 export function SalonSelectorPage() {
   const { data: providers = [], isLoading } = usePublicProviders();
+  const { data: serviceNames = [] } = useQuery({
+    queryKey: ["services", "names"],
+    queryFn: () => servicesApi.listNames(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
@@ -462,23 +463,25 @@ export function SalonSelectorPage() {
           </div>
         </div>
 
-        {/* Row 2: Service type chips */}
-        <div className="flex flex-wrap gap-1.5">
-          {SERVICE_TYPES.map((t) => (
-            <button
-              key={t}
-              onClick={() => toggleType(t)}
-              className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                activeType === t
-                  ? "bg-gray-900 border-gray-700 text-white"
-                  : "bg-white border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-700"
-              )}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        {/* Row 2: Service type chips — from DB */}
+        {serviceNames.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {serviceNames.map((t) => (
+              <button
+                key={t}
+                onClick={() => toggleType(t)}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                  activeType === t
+                    ? "bg-gray-900 border-gray-700 text-white"
+                    : "bg-white border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-700"
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Row 3: Professional attribute filters (nationality, experience) */}
         <div className="flex flex-col sm:flex-row gap-2">
