@@ -52,6 +52,9 @@ export const professionalsApi = {
   attachToProvider: (providerId: number) =>
     apiClient.post<ProfessionalProvider>(`/professionals/me/providers/${providerId}`).then((r) => r.data),
 
+  detachFromProvider: (providerId: number) =>
+    apiClient.delete(`/professionals/me/providers/${providerId}`),
+
   createDirect: (
     providerId: number,
     data: {

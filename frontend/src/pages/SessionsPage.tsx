@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSessions, useUpdateSession, useRecordEarnings } from "@/hooks/useBooking";
+import { useAuthContext } from "@/context/AuthContext";
 import { Session, SessionStatus } from "@/types";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,8 @@ const STATUS_FILTERS: Array<{ value: SessionStatus | "all"; label: string }> = [
 ];
 
 export function SessionsPage() {
+  const { role } = useAuthContext();
+  const isOwner = role === "provider_owner";
   const [statusFilter, setStatusFilter] = useState<SessionStatus | "all">("all");
   const [earningsModal, setEarningsModal] = useState<Session | null>(null);
   const [earningsAmount, setEarningsAmount] = useState("");
@@ -99,46 +102,48 @@ export function SessionsPage() {
                     >
                       {statusLabel[session.status]}
                     </span>
-                    <div className="flex gap-1">
-                      {session.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleStatusChange(session, "confirmed")}
-                        >
-                          Confirm
-                        </Button>
-                      )}
-                      {session.status === "confirmed" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleStatusChange(session, "in_progress")}
-                        >
-                          Start
-                        </Button>
-                      )}
-                      {["confirmed", "in_progress"].includes(session.status) && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setEarningsModal(session);
-                            setEarningsAmount(String(session.price || ""));
-                          }}
-                        >
-                          Complete
-                        </Button>
-                      )}
-                      {session.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleStatusChange(session, "cancelled")}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
+                    {!isOwner && (
+                      <div className="flex gap-1">
+                        {session.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusChange(session, "confirmed")}
+                          >
+                            Confirm
+                          </Button>
+                        )}
+                        {session.status === "confirmed" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusChange(session, "in_progress")}
+                          >
+                            Start
+                          </Button>
+                        )}
+                        {["confirmed", "in_progress"].includes(session.status) && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setEarningsModal(session);
+                              setEarningsAmount(String(session.price || ""));
+                            }}
+                          >
+                            Complete
+                          </Button>
+                        )}
+                        {session.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleStatusChange(session, "cancelled")}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

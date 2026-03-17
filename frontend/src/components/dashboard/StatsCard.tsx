@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/utils/cn";
 
@@ -9,6 +10,7 @@ interface StatsCardProps {
   icon: LucideIcon;
   trend?: { value: number; label: string };
   color?: "slate" | "blue" | "green" | "purple";
+  href?: string;
 }
 
 const colorMap = {
@@ -18,11 +20,11 @@ const colorMap = {
   purple: { bg: "bg-purple-50 dark:bg-purple-950", icon: "text-purple-600 dark:text-purple-400", accent: "text-purple-600 dark:text-purple-400" },
 };
 
-export function StatsCard({ title, value, subtitle, icon: Icon, trend, color = "slate" }: StatsCardProps) {
+export function StatsCard({ title, value, subtitle, icon: Icon, trend, color = "slate", href }: StatsCardProps) {
   const colors = colorMap[color];
 
-  return (
-    <Card className="animate-fade-in">
+  const card = (
+    <Card className={cn("animate-fade-in", href && "cursor-pointer hover:shadow-md transition-shadow")}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div>
@@ -42,4 +44,6 @@ export function StatsCard({ title, value, subtitle, icon: Icon, trend, color = "
       </CardContent>
     </Card>
   );
+
+  return href ? <Link to={href}>{card}</Link> : card;
 }
