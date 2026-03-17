@@ -14,11 +14,8 @@ router = APIRouter()
 
 
 def _assert_can_manage(db: Session, current_user: User, provider_id: int) -> None:
-    """Allow the provider owner OR an active professional at this provider."""
-    if current_user.role == UserRole.PROVIDER_OWNER:
-        from app.modules.salons.services import assert_owner_of_provider
-        assert_owner_of_provider(db, current_user, provider_id)
-    elif current_user.role == UserRole.PROFESSIONAL:
+    """Only active professionals at this provider can manage services."""
+    if current_user.role == UserRole.PROFESSIONAL:
         from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
         prof = db.query(Professional).filter(Professional.user_id == current_user.id).first()
         if not prof:

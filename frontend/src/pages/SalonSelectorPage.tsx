@@ -660,19 +660,23 @@ export function SalonSelectorPage() {
                               </div>
                             )}
 
-                            {/* Book button */}
-                            <a
-                              href={`/book/${selectedProvider.id}`}
-                              style={{
-                                display: "block", textAlign: "center",
-                                background: "#db2777", color: "#fff",
-                                borderRadius: 20, padding: "7px 0",
-                                fontSize: 13, fontWeight: 600,
-                                textDecoration: "none", letterSpacing: "0.01em",
-                              }}
-                            >
-                              {t("providers.book_now")}
-                            </a>
+                            {/* Buttons */}
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <a
+                                href={`/providers/${selectedProvider.id}`}
+                                style={{ flex: 1, textAlign: "center", background: "#f3f4f6", color: "#374151",
+                                  borderRadius: 20, padding: "7px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}
+                              >
+                                Profile
+                              </a>
+                              <a
+                                href={`/book/${selectedProvider.id}`}
+                                style={{ flex: 1, textAlign: "center", background: "#db2777", color: "#fff",
+                                  borderRadius: 20, padding: "7px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}
+                              >
+                                {t("providers.book_now")}
+                              </a>
+                            </div>
                           </div>
                         </InfoWindow>
                       )}
@@ -880,11 +884,18 @@ function ProviderCard({
           </div>
         </div>
 
-        <div className="mt-3">
+        <div className="mt-3 flex gap-2">
+          <Link
+            to={`/providers/${provider.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+          >
+            View Profile
+          </Link>
           <a
             href={`/book/${provider.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center rounded-full bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center rounded-full bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors border border-gray-200"
           >
             {t("providers.book_now")}
           </a>

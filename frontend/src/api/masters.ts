@@ -25,6 +25,11 @@ export const professionalsApi = {
 
   getById: (id: number) => apiClient.get<Professional>(`/professionals/${id}`).then((r) => r.data),
 
+  getStats: (id: number) =>
+    apiClient.get<{ today_sessions: number; week_sessions: number; completed_sessions: number; total_revenue: number }>(
+      `/professionals/${id}/stats`
+    ).then((r) => r.data),
+
   discover: (params?: {
     search?: string;
     nationality?: string;

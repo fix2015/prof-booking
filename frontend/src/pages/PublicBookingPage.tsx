@@ -305,7 +305,7 @@ export function PublicBookingPage() {
           {provider?.address && <p className="text-gray-600 mt-1 text-sm">{provider.address}</p>}
           <div className="flex items-center justify-center gap-3 mt-2">
             <Link
-              to={`/book/${activeProviderId}`}
+              to={`/providers/${activeProviderId}`}
               className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
             >
               <ExternalLink className="h-3 w-3" />

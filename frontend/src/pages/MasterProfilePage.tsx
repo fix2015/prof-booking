@@ -1,11 +1,12 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Star, Clock, Flag, Image } from "lucide-react";
+import { Star, Clock, Flag, Image, CheckCircle2, Calendar, TrendingUp, Building2 } from "lucide-react";
 import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/utils/formatters";
 import type { Review } from "@/types";
 
 export function MasterProfilePage() {
@@ -34,6 +35,12 @@ export function MasterProfilePage() {
   const { data: photos = [] } = useQuery({
     queryKey: ["professional-photos", id],
     queryFn: () => professionalsApi.getPhotos(id),
+    enabled: !!id,
+  });
+
+  const { data: profStats } = useQuery({
+    queryKey: ["professional-stats", id],
+    queryFn: () => professionalsApi.getStats(id),
     enabled: !!id,
   });
 
@@ -96,6 +103,22 @@ export function MasterProfilePage() {
             <p className="mt-2 text-sm leading-relaxed">{professional.description}</p>
           )}
 
+          {/* Linked providers */}
+          {(professional.professional_providers ?? []).length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {professional.professional_providers!.map((pp) => (
+                <Link
+                  key={pp.id}
+                  to={`/providers/${pp.provider_id}`}
+                  className="flex items-center gap-1.5 text-xs bg-pink-50 border border-pink-200 text-pink-700 rounded-full px-3 py-1 hover:bg-pink-100 transition-colors"
+                >
+                  <Building2 className="h-3 w-3" />
+                  {pp.provider?.name ?? `Provider #${pp.provider_id}`}
+                </Link>
+              ))}
+            </div>
+          )}
+
           <div className="mt-4">
             <Link to={`/book?professional_id=${professional.id}`}>
               <Button size="lg" className="bg-gray-900 hover:bg-gray-950">
@@ -105,6 +128,40 @@ export function MasterProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Stats */}
+      {profStats && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex justify-center mb-1"><Calendar className="h-5 w-5 text-blue-500" /></div>
+              <p className="text-2xl font-bold">{profStats.today_sessions}</p>
+              <p className="text-xs text-muted-foreground">Today</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex justify-center mb-1"><TrendingUp className="h-5 w-5 text-purple-500" /></div>
+              <p className="text-2xl font-bold">{profStats.week_sessions}</p>
+              <p className="text-xs text-muted-foreground">This Week</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex justify-center mb-1"><CheckCircle2 className="h-5 w-5 text-green-500" /></div>
+              <p className="text-2xl font-bold">{profStats.completed_sessions}</p>
+              <p className="text-xs text-muted-foreground">Completed</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="flex justify-center mb-1"><Star className="h-5 w-5 text-yellow-500" /></div>
+              <p className="text-2xl font-bold">{formatCurrency(profStats.total_revenue)}</p>
+              <p className="text-xs text-muted-foreground">Revenue</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Photo Gallery */}
       {photos.length > 0 && (
