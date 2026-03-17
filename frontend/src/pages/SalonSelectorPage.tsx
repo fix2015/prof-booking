@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, User, Building2, Scissors } from "lucide-react";
+import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Building2, Scissors } from "lucide-react";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
@@ -74,6 +74,12 @@ export function SalonSelectorPage() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // ── Autocomplete ──────────────────────────────────────────────────────────────
+  const [acQuery, setAcQuery] = useState(() => searchParams.get("q") ?? "");
+  const [acDropdown, setAcDropdown] = useState<{ providers: Provider[]; professionals: Professional[] }>({ providers: [], professionals: [] });
+  const [acOpen, setAcOpen] = useState(false);
+  const acContainerRef = useRef<HTMLDivElement>(null);
+
   const setParam = (key: string, val: string) => {
     setSearchParams(
       (prev) => {
@@ -92,6 +98,9 @@ export function SalonSelectorPage() {
 
   const clearAllFilters = () => {
     setSearchParams(new URLSearchParams(), { replace: true });
+    setAcQuery("");
+    setAcDropdown({ providers: [], professionals: [] });
+    setAcOpen(false);
   };
 
   const search = searchParams.get("q") ?? "";
@@ -237,6 +246,41 @@ export function SalonSelectorPage() {
     requestLocation();
   };
 
+  // Click outside → close autocomplete dropdown
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (acContainerRef.current && !acContainerRef.current.contains(e.target as Node)) {
+        setAcOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Build autocomplete suggestions
+  useEffect(() => {
+    const q = acQuery.trim();
+    if (q.length < 2) {
+      setAcDropdown({ providers: [], professionals: [] });
+      setAcOpen(false);
+      return;
+    }
+    const ql = q.toLowerCase();
+    const matchedProviders = providers
+      .filter((p) => p.name.toLowerCase().includes(ql) || (p.address ?? "").toLowerCase().includes(ql))
+      .slice(0, 5);
+    setAcDropdown((prev) => ({ ...prev, providers: matchedProviders }));
+    if (matchedProviders.length > 0) setAcOpen(true);
+    const timer = setTimeout(async () => {
+      try {
+        const profs = await professionalsApi.discover({ search: q, limit: 5 });
+        setAcDropdown((prev) => ({ ...prev, professionals: profs }));
+        if (profs.length > 0) setAcOpen(true);
+      } catch { /* ignore */ }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [acQuery, providers]);
+
   const handleCardClick = (provider: Provider) => {
     setSelectedProvider(provider);
     const coords = getCoords(provider);
@@ -308,17 +352,88 @@ export function SalonSelectorPage() {
       {/* Controls */}
       <div className="px-4 pb-3 flex flex-col gap-2 max-w-6xl mx-auto w-full">
 
-        {/* Row 1: Provider text search + Search button + View toggles */}
+        {/* Row 1: Unified autocomplete search + Search button + View toggles */}
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div ref={acContainerRef} className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
-              placeholder={t("providers.search_placeholder")}
-              value={search}
-              onChange={(e) => setParam("q", e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="Search salons, professionals or address…"
+              value={acQuery}
+              onChange={(e) => {
+                const val = e.target.value;
+                setAcQuery(val);
+                setParam("q", val);
+                setParam("professional_name", "");
+              }}
+              onFocus={() => { if (acQuery.trim().length >= 2) setAcOpen(true); }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setAcOpen(false);
+                if (e.key === "Enter") { handleSearch(); setAcOpen(false); }
+              }}
               className="pl-9 bg-white"
             />
+            {acOpen && (acDropdown.providers.length > 0 || acDropdown.professionals.length > 0) && (
+              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                {acDropdown.providers.length > 0 && (
+                  <>
+                    <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 border-b">
+                      Providers
+                    </div>
+                    {acDropdown.providers.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className="w-full px-3 py-2.5 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleCardClick(p);
+                          setAcQuery(p.name);
+                          setParam("q", p.name);
+                          setAcOpen(false);
+                        }}
+                      >
+                        <Building2 className="h-4 w-4 text-pink-600 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
+                          {p.address && <p className="text-xs text-gray-500 truncate">{p.address}</p>}
+                        </div>
+                        <span className="ml-auto text-xs text-pink-600 font-medium shrink-0">Provider</span>
+                      </button>
+                    ))}
+                  </>
+                )}
+                {acDropdown.professionals.length > 0 && (
+                  <>
+                    <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 border-b border-t">
+                      Professionals
+                    </div>
+                    {acDropdown.professionals.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className="w-full px-3 py-2.5 text-left hover:bg-gray-50 flex items-center gap-3 last:border-b-0"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setAcQuery(p.name);
+                          setParam("professional_name", p.name);
+                          setParam("q", "");
+                          setAcOpen(false);
+                        }}
+                      >
+                        <Scissors className="h-4 w-4 text-purple-600 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{p.name}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {[p.nationality, p.experience_years != null && `${p.experience_years}y exp`].filter(Boolean).join(" · ")}
+                          </p>
+                        </div>
+                        <span className="ml-auto text-xs text-purple-600 font-medium shrink-0">Professional</span>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <Button
             className="bg-gray-900 hover:bg-gray-950 shrink-0"
@@ -365,18 +480,8 @@ export function SalonSelectorPage() {
           ))}
         </div>
 
-        {/* Row 3: Professional filters */}
+        {/* Row 3: Professional attribute filters (nationality, experience) */}
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t("providers.professional_name")}
-              value={professionalName}
-              onChange={(e) => setParam("professional_name", e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9 bg-white"
-            />
-          </div>
           <div className="flex-1">
             <NationalitySelect
               value={nationality}

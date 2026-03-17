@@ -33,6 +33,35 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
       <div className="w-full max-w-md space-y-4">
+        {/* Register section — shown first so new users see it immediately */}
+        <div className="text-center text-xs text-muted-foreground font-medium uppercase tracking-wide">
+          New here? Create an account
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Link to="/register">
+            <Card className="cursor-pointer hover:shadow-md hover:border-gray-400 transition-all h-full">
+              <CardContent className="flex flex-col items-center justify-center gap-2 py-5 px-3 text-center">
+                <div className="rounded-full bg-gray-100 p-3">
+                  <Building2 className="h-6 w-6 text-gray-700" />
+                </div>
+                <p className="font-semibold text-sm text-gray-800">Register Business</p>
+                <p className="text-xs text-muted-foreground">Salon, spa or studio owner</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/register/professional">
+            <Card className="cursor-pointer hover:shadow-md hover:border-gray-400 transition-all h-full">
+              <CardContent className="flex flex-col items-center justify-center gap-2 py-5 px-3 text-center">
+                <div className="rounded-full bg-pink-50 p-3">
+                  <Scissors className="h-6 w-6 text-pink-600" />
+                </div>
+                <p className="font-semibold text-sm text-gray-800">Join as Professional</p>
+                <p className="text-xs text-muted-foreground">Nail artist, stylist or specialist</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         {/* Sign-in card */}
         <Card className="shadow-lg">
           <CardHeader className="text-center">
@@ -86,35 +115,6 @@ export function LoginPage() {
             </CardFooter>
           </form>
         </Card>
-
-        {/* Register section */}
-        <div className="text-center text-xs text-muted-foreground font-medium uppercase tracking-wide">
-          New here? Create an account
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/register">
-            <Card className="cursor-pointer hover:shadow-md hover:border-gray-400 transition-all h-full">
-              <CardContent className="flex flex-col items-center justify-center gap-2 py-5 px-3 text-center">
-                <div className="rounded-full bg-gray-100 p-3">
-                  <Building2 className="h-6 w-6 text-gray-700" />
-                </div>
-                <p className="font-semibold text-sm text-gray-800">Register Business</p>
-                <p className="text-xs text-muted-foreground">Salon, spa or studio owner</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to="/register/professional">
-            <Card className="cursor-pointer hover:shadow-md hover:border-gray-400 transition-all h-full">
-              <CardContent className="flex flex-col items-center justify-center gap-2 py-5 px-3 text-center">
-                <div className="rounded-full bg-pink-50 p-3">
-                  <Scissors className="h-6 w-6 text-pink-600" />
-                </div>
-                <p className="font-semibold text-sm text-gray-800">Join as Professional</p>
-                <p className="text-xs text-muted-foreground">Nail artist, stylist or specialist</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
 
         <div className="flex justify-center">
           <LanguageSwitcher />

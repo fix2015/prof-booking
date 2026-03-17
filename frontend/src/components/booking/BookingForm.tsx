@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -42,6 +42,7 @@ interface BookingFormProps {
   onMasterChange: (masterId?: number) => void;
   onDateChange: (date: string) => void;
   selectedDate: string;
+  preselectedMasterId?: number;
 }
 
 export function BookingForm({
@@ -54,9 +55,17 @@ export function BookingForm({
   onMasterChange,
   onDateChange,
   selectedDate,
+  preselectedMasterId,
 }: BookingFormProps) {
   const [selectedService, setSelectedService] = useState<number | null>(null);
-  const [selectedMaster, setSelectedMaster] = useState<number | undefined>(undefined);
+  const [selectedMaster, setSelectedMaster] = useState<number | undefined>(preselectedMasterId);
+
+  useEffect(() => {
+    if (preselectedMasterId !== undefined) {
+      onMasterChange(preselectedMasterId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -111,28 +120,30 @@ export function BookingForm({
         </Select>
       </div>
 
-      {/* Professional */}
-      <div className="space-y-1">
-        <Label>Professional (optional)</Label>
-        <Select onValueChange={handleMasterChange} defaultValue="any">
-          <SelectTrigger>
-            <SelectValue placeholder="Any available professional" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="any">Any available professional</SelectItem>
-            {masters.map((m) => {
-              const flag = m.nationality
-                ? (NATIONALITIES.find((n) => n.label === m.nationality)?.flag ?? "")
-                : "";
-              return (
-                <SelectItem key={m.id} value={String(m.id)}>
-                  {flag ? `${flag} ${m.name}` : m.name}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Professional — hidden when pre-selected via URL */}
+      {preselectedMasterId === undefined && (
+        <div className="space-y-1">
+          <Label>Professional (optional)</Label>
+          <Select onValueChange={handleMasterChange} defaultValue="any">
+            <SelectTrigger>
+              <SelectValue placeholder="Any available professional" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any available professional</SelectItem>
+              {masters.map((m) => {
+                const flag = m.nationality
+                  ? (NATIONALITIES.find((n) => n.label === m.nationality)?.flag ?? "")
+                  : "";
+                return (
+                  <SelectItem key={m.id} value={String(m.id)}>
+                    {flag ? `${flag} ${m.name}` : m.name}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Date */}
       <div className="space-y-1">
