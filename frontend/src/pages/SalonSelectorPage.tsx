@@ -10,7 +10,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { cn } from "@/utils/cn";
+import { t } from "@/i18n";
 import type { Provider, Professional } from "@/types";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
@@ -283,9 +285,12 @@ export function SalonSelectorPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex flex-col">
       {/* Header */}
       <div className="px-4 pt-6 pb-4 text-center">
+        <div className="flex justify-end px-2 mb-2">
+          <LanguageSwitcher />
+        </div>
         <div className="text-4xl mb-2">✨</div>
-        <h1 className="text-3xl font-bold text-gray-800">Find Your Provider</h1>
-        <p className="text-gray-700 mt-1">Discover service providers near you</p>
+        <h1 className="text-3xl font-bold text-gray-800">{t("providers.title")}</h1>
+        <p className="text-gray-700 mt-1">{t("providers.subtitle")}</p>
       </div>
 
       {/* Controls */}
@@ -296,7 +301,7 @@ export function SalonSelectorPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name or address…"
+              placeholder={t("providers.search_placeholder")}
               value={search}
               onChange={(e) => setParam("q", e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -313,7 +318,7 @@ export function SalonSelectorPage() {
             ) : (
               <Navigation className="mr-2 h-4 w-4" />
             )}
-            Search Nearby
+            {t("providers.search_nearby")}
           </Button>
           <div className="flex gap-1">
             {(["split", "map", "list"] as const).map((v) => (
@@ -353,7 +358,7 @@ export function SalonSelectorPage() {
           <div className="relative flex-1">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Professional name…"
+              placeholder={t("providers.professional_name")}
               value={professionalName}
               onChange={(e) => setParam("professional_name", e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -364,7 +369,7 @@ export function SalonSelectorPage() {
             <NationalitySelect
               value={nationality}
               onChange={(val) => setParam("nationality", val)}
-              placeholder="Professional nationality…"
+              placeholder={t("providers.nationality")}
               className="bg-white"
             />
           </div>
@@ -372,7 +377,7 @@ export function SalonSelectorPage() {
             <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="number"
-              placeholder="Min years experience"
+              placeholder={t("providers.min_experience")}
               value={minExp}
               onChange={(e) => setParam("min_exp", e.target.value)}
               min={0}
@@ -381,7 +386,7 @@ export function SalonSelectorPage() {
           </div>
           {(search || nationality || minExp || activeType || professionalName) && (
             <Button variant="outline" className="bg-white shrink-0" onClick={clearAllFilters}>
-              Clear all
+              {t("providers.clear_all")}
             </Button>
           )}
         </div>
@@ -522,7 +527,7 @@ export function SalonSelectorPage() {
                                 textDecoration: "none", letterSpacing: "0.01em",
                               }}
                             >
-                              Book Now →
+                              {t("providers.book_now")}
                             </a>
                           </div>
                         </InfoWindow>
@@ -533,7 +538,7 @@ export function SalonSelectorPage() {
                   <div className="flex h-full items-center justify-center bg-gray-100 text-sm text-gray-500 p-6 text-center">
                     <div>
                       <MapPin className="h-10 w-10 mx-auto mb-2 text-gray-400" />
-                      <p className="font-medium">Map unavailable</p>
+                      <p className="font-medium">{t("providers.map_unavailable")}</p>
                       <p className="text-xs mt-1">Set <code>VITE_GOOGLE_MAPS_API_KEY</code> in your <code>.env</code> file to enable the map.</p>
                     </div>
                   </div>
@@ -544,7 +549,7 @@ export function SalonSelectorPage() {
             {showList && (
               <div className={`space-y-3 ${view === "split" ? "lg:w-80 lg:overflow-y-auto lg:max-h-[calc(100vh-340px)]" : ""}`}>
                 {filteredProviders.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No providers found</p>
+                  <p className="text-center text-muted-foreground py-8">{t("providers.no_providers")}</p>
                 ) : (
                   filteredProviders.map((provider) => (
                     <ProviderCard
@@ -565,7 +570,7 @@ export function SalonSelectorPage() {
       {/* Professionals results */}
       {hasProfessionalFilter && (
         <div className="px-4 pb-8 max-w-6xl mx-auto w-full">
-          <h2 className="text-xl font-bold text-gray-800 mb-3">Professionals</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-3">{t("providers.professionals")}</h2>
           {professionalsLoading ? (
             <div className="flex justify-center py-8">
               <Spinner />
@@ -577,7 +582,7 @@ export function SalonSelectorPage() {
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">No professionals found matching your filters</p>
+            <p className="text-center text-muted-foreground py-8">{t("providers.no_professionals")}</p>
           )}
         </div>
       )}
@@ -621,10 +626,10 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
         )}
         <div className="mt-3 flex gap-2">
           <Link to={`/professionals/${professional.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full">View Profile</Button>
+            <Button variant="outline" size="sm" className="w-full">{t("providers.view_profile")}</Button>
           </Link>
           <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
-            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">Book</Button>
+            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">{t("discover.card.book")}</Button>
           </Link>
         </div>
       </CardContent>
@@ -699,7 +704,7 @@ function ProviderCard({
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center rounded-full bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
           >
-            Book Now →
+            {t("providers.book_now")}
           </a>
         </div>
       </CardContent>

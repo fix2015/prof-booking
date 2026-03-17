@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { initials } from "@/utils/formatters";
 
 const roleLabel: Record<string, string> = {
@@ -38,6 +39,8 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
       </div>
 
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
+        <LanguageSwitcher />
+
         <Link to="/notifications">
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5 text-muted-foreground" />

@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { statusColorMap, statusLabel } from "@/utils/formatters";
 import { cn } from "@/utils/cn";
 import { toast } from "@/hooks/useToast";
+import { t } from "@/i18n";
 
 export function MastersPage() {
   const qc = useQueryClient();
@@ -73,7 +74,7 @@ export function MastersPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-xl md:text-2xl font-bold">Professionals</h1>
+        <h1 className="text-xl md:text-2xl font-bold">{t("masters.title")}</h1>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={() => { setShowAddForm(!showAddForm); setShowInviteForm(false); }}>
             <UserPlus className="mr-2 h-4 w-4" />
@@ -81,7 +82,7 @@ export function MastersPage() {
           </Button>
           <Button onClick={() => { setShowInviteForm(!showInviteForm); setShowAddForm(false); }}>
             <Send className="mr-2 h-4 w-4" />
-            Invite Professional
+            {t("masters.invite")}
           </Button>
         </div>
       </div>
@@ -203,7 +204,7 @@ export function MastersPage() {
             />
           ))}
           {professionalProviders.length === 0 && (
-            <p className="col-span-full text-center py-8 text-muted-foreground">No professionals found</p>
+            <p className="col-span-full text-center py-8 text-muted-foreground">{t("masters.no_professionals")}</p>
           )}
         </div>
       )}

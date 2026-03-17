@@ -9,6 +9,7 @@ import { formatDateTime } from "@/utils/dates";
 import { formatCurrency, statusColorMap, statusLabel } from "@/utils/formatters";
 import { cn } from "@/utils/cn";
 import { toast } from "@/hooks/useToast";
+import { t } from "@/i18n";
 
 const STATUS_FILTERS: Array<{ value: SessionStatus | "all"; label: string }> = [
   { value: "all", label: "All" },
@@ -53,7 +54,7 @@ export function SessionsPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">Sessions</h1>
+      <h1 className="text-xl md:text-2xl font-bold">{t("sessions.title")}</h1>
 
       {/* Status filter */}
       <div className="flex gap-1.5 md:gap-2 flex-wrap">
@@ -72,7 +73,7 @@ export function SessionsPage() {
       {isLoading ? (
         <Spinner className="mx-auto mt-12" />
       ) : sessions.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">No sessions found</div>
+        <div className="py-12 text-center text-muted-foreground">{t("sessions.no_sessions")}</div>
       ) : (
         <div className="space-y-3">
           {sessions.map((session) => (

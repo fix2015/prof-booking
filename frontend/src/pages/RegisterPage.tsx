@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { t } from "@/i18n";
 
 const schema = z.object({
   email: z.string().email(),
@@ -38,7 +39,7 @@ export function RegisterPage() {
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
-          <CardTitle className="text-2xl">Register Your Business</CardTitle>
+          <CardTitle className="text-2xl">{t("register.title")}</CardTitle>
           <CardDescription>Create your provider owner account</CardDescription>
         </CardHeader>
 
@@ -52,25 +53,25 @@ export function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email">{t("register.email")} *</Label>
                 <Input id="email" type="email" {...register("email")} placeholder="owner@business.com" />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
               <div className="space-y-1">
-                <Label>Phone *</Label>
+                <Label>{t("register.phone")} *</Label>
                 <Input type="tel" {...register("phone")} placeholder="+1 (555) 000-0000" />
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>Password *</Label>
+              <Label>{t("register.password")} *</Label>
               <Input type="password" {...register("password")} placeholder="At least 8 characters" />
               {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="provider_name">Business Name *</Label>
+              <Label htmlFor="provider_name">{t("register.business_name")} *</Label>
               <Input id="provider_name" {...register("provider_name")} placeholder="My Business" />
               {errors.provider_name && <p className="text-xs text-destructive">{errors.provider_name.message}</p>}
             </div>
@@ -95,12 +96,12 @@ export function RegisterPage() {
           <CardFooter className="flex flex-col gap-3">
             <Button type="submit" className="w-full" disabled={register_.isPending}>
               {register_.isPending ? <Spinner size="sm" className="mr-2" /> : null}
-              Create Account
+              {t("register.submit")}
             </Button>
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/login" className="text-gray-700 hover:underline font-medium">
-                Sign in
+                {t("register.sign_in")}
               </Link>
             </p>
           </CardFooter>

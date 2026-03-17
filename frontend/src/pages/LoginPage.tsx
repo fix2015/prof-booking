@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { CalendarCheck } from "lucide-react";
+import { t } from "@/i18n";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -33,20 +35,20 @@ export function LoginPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
-          <CardTitle className="text-2xl">Service Platform</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardTitle className="text-2xl">{t("login.title")}</CardTitle>
+          <CardDescription>{t("login.sign_in")}</CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit((data) => login.mutate(data))}>
           <CardContent className="space-y-4">
             {login.isError && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                Invalid email or password
+                {t("login.invalid_credentials")}
               </div>
             )}
 
             <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("login.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -57,7 +59,7 @@ export function LoginPage() {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("login.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -71,14 +73,17 @@ export function LoginPage() {
           <CardFooter className="flex flex-col gap-3">
             <Button type="submit" className="w-full" disabled={login.isPending}>
               {login.isPending ? <Spinner size="sm" className="mr-2" /> : null}
-              Sign In
+              {t("login.sign_in")}
             </Button>
             <Link to="/providers" className="w-full">
               <Button variant="outline" className="w-full gap-2">
                 <CalendarCheck className="h-4 w-4" />
-                Book an Appointment
+                {t("login.book_appointment")}
               </Button>
             </Link>
+            <div className="flex justify-center pt-1">
+              <LanguageSwitcher />
+            </div>
           </CardFooter>
         </form>
       </Card>
