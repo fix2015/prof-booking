@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
 import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Building2, Scissors } from "lucide-react";
 import { usePublicProviders } from "@/hooks/useSalon";
@@ -50,6 +50,7 @@ const PRO_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="
 const PRO_PIN_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PRO_PIN_SVG)}`;
 
 export function SalonSelectorPage() {
+  const navigate = useNavigate();
   const { data: providers = [], isLoading } = usePublicProviders();
   const { data: serviceNames = [] } = useQuery({
     queryKey: ["services", "names"],
@@ -110,15 +111,15 @@ export function SalonSelectorPage() {
   const activeType = searchParams.get("type") ?? "";
 
   const { data: professionals = [], isLoading: professionalsLoading } = useQuery({
-    queryKey: ["professionals", "discover", { nationality, minExp, professionalName: searchParams.get("professional_name") ?? "" }],
+    queryKey: ["professionals", "discover", { nationality, minExp, search: search || (searchParams.get("professional_name") ?? "") }],
     queryFn: () =>
       professionalsApi.discover({
         nationality: nationality || undefined,
         min_experience: minExp ? Number(minExp) : undefined,
-        search: searchParams.get("professional_name") || undefined,
+        search: search || searchParams.get("professional_name") || undefined,
         limit: 24,
       }),
-    enabled: !!(nationality || minExp || searchParams.get("professional_name")),
+    enabled: !!(nationality || minExp || search || searchParams.get("professional_name")),
   });
 
   // ── Geocoding ────────────────────────────────────────────────────────────────
@@ -415,10 +416,7 @@ export function SalonSelectorPage() {
                         className="w-full px-3 py-2.5 text-left hover:bg-gray-50 flex items-center gap-3 last:border-b-0"
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          setAcQuery(p.name);
-                          setParam("professional_name", p.name);
-                          setParam("q", "");
-                          setAcOpen(false);
+                          navigate(`/book?professional_id=${p.id}`);
                         }}
                       >
                         <Scissors className="h-4 w-4 text-purple-600 shrink-0" />
