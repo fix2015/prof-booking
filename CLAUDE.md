@@ -33,7 +33,11 @@ REDIS_URL=redis://localhost:6379/0 \
 .venv/bin/pytest tests/ -v
 
 # Run a single test file
-... pytest tests/test_auth.py -v
+APP_SECRET_KEY=test-secret-key-for-ci \
+JWT_SECRET_KEY=test-jwt-secret-for-ci \
+DATABASE_URL=sqlite:///./test.db \
+REDIS_URL=redis://localhost:6379/0 \
+.venv/bin/pytest tests/test_auth.py -v
 
 # Lint
 cd backend && ruff check .
@@ -70,13 +74,12 @@ All routers registered in `main.py` under `/api/v1/`. Each feature module lives 
 
 **17 modules:** auth, users, salons, masters, sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads.
 
-**Naming migration in progress:** modules are named `salons`/`masters` internally, but the primary API prefixes are now `/api/v1/providers` and `/api/v1/professionals`. The old `/api/v1/salons` and `/api/v1/masters` prefixes remain as backward-compat aliases. Frontend uses both old and new names during transition.
+**Naming migration in progress:** modules are named `salons`/`masters` internally, but the primary API prefixes are now `/api/v1/providers` and `/api/v1/professionals`. The old `/api/v1/salons` and `/api/v1/masters` prefixes remain as backward-compat aliases. The same dual-route pattern applies on the frontend (`/providers` primary, `/salons` redirects; `/professionals` primary, `/masters` redirects).
 
 Key files:
-- `config.py` — Pydantic Settings; `APP_SECRET_KEY` and `JWT_SECRET_KEY` are required (no defaults)
+- `config.py` — Pydantic Settings; `APP_SECRET_KEY` and `JWT_SECRET_KEY` are required (no defaults); Swagger UI only enabled when `APP_DEBUG=true`
 - `database.py` — SQLAlchemy 2 engine; SQLite guards for `pool_size`/`max_overflow`
 - `dependencies.py` — JWT auth guards: `get_current_user()`, `require_role()`, `get_current_owner()`
-- API docs (`/docs`, `/redoc`) are only served when `APP_DEBUG=True`
 
 ### Frontend (`frontend/src/`)
 
@@ -84,7 +87,9 @@ Key files:
 - `pages/` — Route-level components
 - `components/` — Shared UI; `components/ui/` contains ShadCN primitives
 - `hooks/` — TanStack Query hooks wrapping the API layer
-- `context/` — Auth context (JWT storage, user state)
+- `context/` — Auth context (JWT storage, user state) + ThemeContext
+- `features/` — Feature-scoped modules (currently `auth/`); preferred location for new feature code
+- `types/` — Shared TypeScript types
 
 Vite dev server proxies `/api/*` to `http://localhost:8000`.
 
