@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, DateTime, Float, Boolean,
+    Column, Integer, String, DateTime, Float, Boolean, Text,
     ForeignKey, Index, JSON, Enum as SAEnum,
 )
 from sqlalchemy.orm import relationship
@@ -41,6 +41,7 @@ class Professional(Base):
     work_slots = relationship("WorkSlot", back_populates="professional")
     photos = relationship("ProfessionalPhoto", back_populates="professional", order_by="ProfessionalPhoto.order")
     reviews = relationship("Review", back_populates="professional")
+    received_invites = relationship("ProviderProfessionalInvite", back_populates="professional")
 
     __table_args__ = (
         Index("ix_professionals_user", "user_id"),
@@ -88,6 +89,33 @@ class ProfessionalPhoto(Base):
 
     __table_args__ = (
         Index("ix_professional_photos_professional", "professional_id"),
+    )
+
+
+class DirectInviteStatus(str, enum.Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+
+
+class ProviderProfessionalInvite(Base):
+    """Provider owner directly invites a professional to join their provider."""
+    __tablename__ = "provider_professional_invites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="CASCADE"), nullable=False)
+    status = Column(SAEnum(DirectInviteStatus), default=DirectInviteStatus.PENDING, nullable=False)
+    message = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    responded_at = Column(DateTime, nullable=True)
+
+    provider = relationship("Provider")
+    professional = relationship("Professional", back_populates="received_invites")
+
+    __table_args__ = (
+        Index("ix_ppi_professional", "professional_id"),
+        Index("ix_ppi_provider", "provider_id"),
     )
 
 

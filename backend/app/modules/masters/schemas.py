@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, List, Dict
 from datetime import datetime
-from app.modules.masters.models import ProfessionalStatus
+from app.modules.masters.models import ProfessionalStatus, DirectInviteStatus
 
 
 class ProfessionalPhotoResponse(BaseModel):
@@ -123,6 +123,28 @@ class ProfessionalPublic(BaseModel):
     photos: List[ProfessionalPhotoResponse] = []
 
     model_config = {"from_attributes": True}
+
+
+class ProviderProfessionalInviteCreate(BaseModel):
+    message: Optional[str] = None
+
+
+class ProviderProfessionalInviteResponse(BaseModel):
+    id: int
+    provider_id: int
+    professional_id: int
+    status: DirectInviteStatus
+    message: Optional[str] = None
+    created_at: datetime
+    responded_at: Optional[datetime] = None
+    provider: Optional[ProviderBasic] = None
+    professional: Optional[ProfessionalBasic] = None
+
+    model_config = {"from_attributes": True}
+
+
+class InviteRespondRequest(BaseModel):
+    status: DirectInviteStatus  # "accepted" or "rejected"
 
 
 # Backward-compat aliases

@@ -4,11 +4,15 @@ from typing import List, Optional
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_owner
-from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus, ProfessionalPhoto
+from app.modules.masters.models import (
+    Professional, ProfessionalProvider, ProfessionalStatus, ProfessionalPhoto,
+    ProviderProfessionalInvite, DirectInviteStatus,
+)
 from app.modules.masters.schemas import (
     ProfessionalResponse, ProfessionalUpdate, ProfessionalProviderResponse,
     ProfessionalApprovalRequest, ProfessionalPublic, ProfessionalPhotoResponse,
-    ProfessionalDirectCreate,
+    ProfessionalDirectCreate, ProviderProfessionalInviteCreate,
+    ProviderProfessionalInviteResponse, InviteRespondRequest,
 )
 from app.modules.masters.services import (
     list_provider_professionals, approve_professional,
@@ -255,6 +259,123 @@ def get_professional_stats(
         "completed_sessions": len(completed),
         "total_revenue": sum(s.price or 0 for s in completed),
     }
+
+
+# ──────────────────────────────────────────────
+# Provider → Professional direct invites
+# ──────────────────────────────────────────────
+
+@router.post("/{professional_id}/invite", response_model=ProviderProfessionalInviteResponse, status_code=201)
+def invite_professional(
+    professional_id: int,
+    data: ProviderProfessionalInviteCreate,
+    current_user: User = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+):
+    """Provider owner invites a professional to work with them."""
+    from app.modules.salons.models import ProviderOwner
+    ownership = db.query(ProviderOwner).filter(ProviderOwner.user_id == current_user.id).first()
+    if not ownership:
+        raise HTTPException(status_code=403, detail="No provider found for this owner")
+    provider_id = ownership.provider_id
+
+    professional = db.query(Professional).filter(Professional.id == professional_id).first()
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional not found")
+
+    # Check not already active or already has a pending invite
+    existing_pp = db.query(ProfessionalProvider).filter(
+        ProfessionalProvider.professional_id == professional_id,
+        ProfessionalProvider.provider_id == provider_id,
+        ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
+    ).first()
+    if existing_pp:
+        raise HTTPException(status_code=409, detail="Professional is already active at your provider")
+
+    existing_invite = db.query(ProviderProfessionalInvite).filter(
+        ProviderProfessionalInvite.professional_id == professional_id,
+        ProviderProfessionalInvite.provider_id == provider_id,
+        ProviderProfessionalInvite.status == DirectInviteStatus.PENDING,
+    ).first()
+    if existing_invite:
+        raise HTTPException(status_code=409, detail="Invite already sent and pending")
+
+    invite = ProviderProfessionalInvite(
+        provider_id=provider_id,
+        professional_id=professional_id,
+        message=data.message,
+    )
+    db.add(invite)
+    db.commit()
+    db.refresh(invite)
+    return invite
+
+
+@router.get("/me/invites", response_model=List[ProviderProfessionalInviteResponse])
+def get_my_invites(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Professional: list all invites received from providers."""
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    return (
+        db.query(ProviderProfessionalInvite)
+        .filter(ProviderProfessionalInvite.professional_id == professional.id)
+        .order_by(ProviderProfessionalInvite.created_at.desc())
+        .all()
+    )
+
+
+@router.patch("/me/invites/{invite_id}/respond", response_model=ProviderProfessionalInviteResponse)
+def respond_to_invite(
+    invite_id: int,
+    data: InviteRespondRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Professional accepts or rejects a provider invite."""
+    from datetime import datetime as dt
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+
+    invite = db.query(ProviderProfessionalInvite).filter(
+        ProviderProfessionalInvite.id == invite_id,
+        ProviderProfessionalInvite.professional_id == professional.id,
+    ).first()
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    if invite.status != DirectInviteStatus.PENDING:
+        raise HTTPException(status_code=409, detail="Invite already responded to")
+
+    if data.status not in (DirectInviteStatus.ACCEPTED, DirectInviteStatus.REJECTED):
+        raise HTTPException(status_code=422, detail="Status must be 'accepted' or 'rejected'")
+
+    invite.status = data.status
+    invite.responded_at = dt.utcnow()
+
+    if data.status == DirectInviteStatus.ACCEPTED:
+        # Create or activate the ProfessionalProvider link
+        pp = db.query(ProfessionalProvider).filter(
+            ProfessionalProvider.professional_id == professional.id,
+            ProfessionalProvider.provider_id == invite.provider_id,
+        ).first()
+        if pp:
+            pp.status = ProfessionalStatus.ACTIVE
+            pp.joined_at = dt.utcnow()
+        else:
+            db.add(ProfessionalProvider(
+                professional_id=professional.id,
+                provider_id=invite.provider_id,
+                status=ProfessionalStatus.ACTIVE,
+                joined_at=dt.utcnow(),
+            ))
+
+    db.commit()
+    db.refresh(invite)
+    return invite
 
 
 @router.get("/{professional_id}", response_model=ProfessionalPublic)
