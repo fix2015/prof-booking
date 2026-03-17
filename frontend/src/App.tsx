@@ -32,7 +32,7 @@ import { BookingManagementPage } from "@/pages/BookingManagementPage";
 function HomeRedirect() {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <FullPageSpinner />;
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/providers"} replace />;
 }
 
 function DashboardRouter() {
