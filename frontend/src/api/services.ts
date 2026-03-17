@@ -9,6 +9,9 @@ export interface ServicePayload {
 }
 
 export const servicesApi = {
+  listNames: () =>
+    apiClient.get<string[]>("/services/names").then((r) => r.data),
+
   listByProvider: (providerId: number) =>
     apiClient.get<Service[]>(`/services/provider/${providerId}`).then((r) => r.data),
 
