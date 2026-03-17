@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { formatDateTime } from "@/utils/dates";
+import { t } from "@/i18n";
 
 interface Notification {
   id: number;
@@ -23,7 +24,7 @@ export function NotificationsPage() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">Notifications</h1>
+      <h1 className="text-xl md:text-2xl font-bold">{t("notifications.title")}</h1>
 
       {isLoading ? (
         <Spinner className="mx-auto" />
@@ -31,7 +32,7 @@ export function NotificationsPage() {
         <Card>
           <CardContent className="p-0">
             {notifications.length === 0 ? (
-              <p className="py-12 text-center text-muted-foreground">No notifications yet</p>
+              <p className="py-12 text-center text-muted-foreground">{t("notifications.empty")}</p>
             ) : (
               <div className="divide-y">
                 {notifications.map((n) => (

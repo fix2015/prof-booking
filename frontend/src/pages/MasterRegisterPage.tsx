@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { t } from "@/i18n";
 
 const schema = z.object({
   email: z.string().email(),
@@ -95,7 +96,7 @@ export function MasterRegisterPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
-          <CardTitle className="text-2xl">Join as a Professional</CardTitle>
+          <CardTitle className="text-2xl">{t("register.pro.title")}</CardTitle>
           <CardDescription>
             {inviteToken
               ? "You've been invited to join a provider"
@@ -118,19 +119,19 @@ export function MasterRegisterPage() {
             )}
 
             <div className="space-y-1">
-              <Label>Full Name *</Label>
+              <Label>{t("register.pro.name")} *</Label>
               <Input {...register("name")} placeholder="Jane Smith" />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-1">
-              <Label>Email *</Label>
+              <Label>{t("register.pro.email")} *</Label>
               <Input type="email" {...register("email")} placeholder="jane@example.com" />
               {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1">
-              <Label>Phone *</Label>
+              <Label>{t("register.pro.phone")} *</Label>
               <Input type="tel" {...register("phone")} placeholder="+1 (555) 000-0000" />
               {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
             </div>
@@ -141,7 +142,7 @@ export function MasterRegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Password *</Label>
+              <Label>{t("register.pro.password")} *</Label>
               <Input type="password" {...register("password")} placeholder="At least 8 characters" />
               {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
@@ -219,12 +220,12 @@ export function MasterRegisterPage() {
           <CardFooter className="flex flex-col gap-3">
             <Button type="submit" className="w-full" disabled={register_.isPending}>
               {register_.isPending ? <Spinner size="sm" className="mr-2" /> : null}
-              Create Account
+              {t("register.pro.submit")}
             </Button>
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/login" className="text-gray-700 hover:underline font-medium">
-                Sign in
+                {t("register.sign_in")}
               </Link>
             </p>
           </CardFooter>

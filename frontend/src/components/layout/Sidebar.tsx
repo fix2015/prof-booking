@@ -7,29 +7,31 @@ import {
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { t } from "@/i18n";
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   roles?: string[];
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Calendar", href: "/calendar", icon: Calendar, roles: ["professional", "provider_owner"] },
-  { label: "Sessions", href: "/sessions", icon: Scissors },
-  { label: "Professionals", href: "/professionals", icon: Users, roles: ["provider_owner", "platform_admin"] },
-  { label: "Services", href: "/services", icon: Settings, roles: ["provider_owner"] },
-  { label: "Reviews", href: "/reviews", icon: Star, roles: ["provider_owner", "platform_admin"] },
-  { label: "Analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
-  { label: "My Analytics", href: "/analytics/professional", icon: TrendingUp, roles: ["professional"] },
-  { label: "Invoices", href: "/invoices", icon: FileText, roles: ["provider_owner", "professional", "platform_admin"] },
-  { label: "Reports", href: "/reports", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
-  { label: "Notifications", href: "/notifications", icon: Bell },
-  { label: "Admin", href: "/admin", icon: Shield, roles: ["platform_admin"] },
-  { label: "My Profile", href: "/profile/professional", icon: User, roles: ["professional"] },
-  { label: "Provider Settings", href: "/profile/provider", icon: Settings2, roles: ["provider_owner"] },
+  { labelKey: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "nav.calendar", href: "/calendar", icon: Calendar, roles: ["professional", "provider_owner"] },
+  { labelKey: "nav.sessions", href: "/sessions", icon: Scissors },
+  { labelKey: "nav.professionals", href: "/professionals", icon: Users, roles: ["provider_owner", "platform_admin"] },
+  { labelKey: "nav.services", href: "/services", icon: Settings, roles: ["provider_owner"] },
+  { labelKey: "nav.reviews", href: "/reviews", icon: Star, roles: ["provider_owner", "platform_admin"] },
+  { labelKey: "nav.analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
+  { labelKey: "nav.analytics", href: "/analytics/professional", icon: TrendingUp, roles: ["professional"] },
+  { labelKey: "nav.invoices", href: "/invoices", icon: FileText, roles: ["provider_owner", "professional", "platform_admin"] },
+  { labelKey: "nav.reports", href: "/reports", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
+  { labelKey: "nav.notifications", href: "/notifications", icon: Bell },
+  { labelKey: "nav.admin", href: "/admin", icon: Shield, roles: ["platform_admin"] },
+  { labelKey: "nav.profile", href: "/profile/professional", icon: User, roles: ["professional"] },
+  { labelKey: "nav.profile", href: "/profile/provider", icon: Settings2, roles: ["provider_owner"] },
 ];
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -74,7 +76,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
                   )}
                 >
                   <Icon className={cn("h-5 w-5 shrink-0", active ? "text-primary-foreground" : "text-muted-foreground")} />
-                  {item.label}
+                  {t(item.labelKey as Parameters<typeof t>[0])}
                 </Link>
               </li>
             );
@@ -90,21 +92,24 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             >
               <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-              Discover Professionals
+              {t("nav.find_providers")}
             </Link>
           </div>
         )}
       </nav>
 
       {/* Logout */}
-      <div className="border-t p-2 md:p-3 shrink-0">
+      <div className="border-t p-2 md:p-3 shrink-0 space-y-2">
+        <div className="flex justify-center">
+          <LanguageSwitcher />
+        </div>
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-muted-foreground"
           onClick={() => { logout(); onClose?.(); }}
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          Sign out
+          {t("nav.sign_out")}
         </Button>
       </div>
     </div>

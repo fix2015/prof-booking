@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { formatCurrency } from "@/utils/formatters";
 import { toast } from "@/hooks/useToast";
+import { t } from "@/i18n";
 
 export function ServicesPage() {
   const qc = useQueryClient();
@@ -51,10 +52,10 @@ export function ServicesPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl md:text-2xl font-bold">Services</h1>
+        <h1 className="text-xl md:text-2xl font-bold">{t("services.title")}</h1>
         <Button onClick={() => { setShowForm(true); setForm({ name: "", description: "", duration_minutes: 60, price: 0 }); }}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Service
+          {t("services.add")}
         </Button>
       </div>
 
@@ -126,7 +127,7 @@ export function ServicesPage() {
           ))}
           {services.length === 0 && (
             <p className="col-span-full text-center py-8 text-muted-foreground">
-              No services yet. Add your first service.
+              {t("services.no_services")}
             </p>
           )}
         </div>
