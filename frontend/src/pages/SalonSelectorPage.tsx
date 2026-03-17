@@ -113,14 +113,24 @@ export function SalonSelectorPage() {
       if (p.latitude != null && p.longitude != null) return;
       if (!p.address) return;
       geocodedIdsRef.current.add(p.id);
-      geocoderRef.current!.geocode({ address: p.address }, (results, status) => {
-        if (status === "OK" && results?.[0]) {
-          const loc = results[0].geometry.location;
-          setGeocodedCoords((prev) => ({
-            ...prev,
-            [p.id]: { lat: loc.lat(), lng: loc.lng() },
-          }));
+      geocoderRef.current!.geocode(
+        { address: p.address, region: "gb", componentRestrictions: { country: "gb" } },
+        (results, status) => {
+        if (status !== "OK" || !results?.[0]) {
+          // Retry without country restriction in case address is not in GB
+          geocoderRef.current!.geocode({ address: p.address }, (r2, s2) => {
+            if (s2 === "OK" && r2?.[0]) {
+              const loc2 = r2[0].geometry.location;
+              setGeocodedCoords((prev) => ({ ...prev, [p.id]: { lat: loc2.lat(), lng: loc2.lng() } }));
+            }
+          });
+          return;
         }
+        const loc = results[0].geometry.location;
+        setGeocodedCoords((prev) => ({
+          ...prev,
+          [p.id]: { lat: loc.lat(), lng: loc.lng() },
+        }));
       });
     });
   }, []);
