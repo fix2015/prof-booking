@@ -90,20 +90,16 @@ export function SalonSelectorPage() {
   const minExp = searchParams.get("min_exp") ?? "";
   const activeType = searchParams.get("type") ?? "";
 
-  const [committed, setCommitted] = useState<{
-    nationality: string; minExp: string; type: string; professionalName: string;
-  } | null>(null);
-
   const { data: professionals = [], isLoading: professionalsLoading } = useQuery({
-    queryKey: ["professionals", "discover", committed],
+    queryKey: ["professionals", "discover", { nationality, minExp, professionalName: searchParams.get("professional_name") ?? "" }],
     queryFn: () =>
       professionalsApi.discover({
-        nationality: committed?.nationality || undefined,
-        min_experience: committed?.minExp ? Number(committed.minExp) : undefined,
-        search: committed?.professionalName || undefined,
+        nationality: nationality || undefined,
+        min_experience: minExp ? Number(minExp) : undefined,
+        search: searchParams.get("professional_name") || undefined,
         limit: 24,
       }),
-    enabled: !!(committed && (committed.nationality || committed.minExp || committed.professionalName)),
+    enabled: !!(nationality || minExp || searchParams.get("professional_name")),
   });
 
   // ── Geocoding ────────────────────────────────────────────────────────────────
@@ -228,11 +224,10 @@ export function SalonSelectorPage() {
 
   const professionalName = searchParams.get("professional_name") ?? "";
 
-  const hasProfessionalFilter = !!committed;
+  const hasProfessionalFilter = !!(professionalName || nationality || minExp);
 
   const handleSearch = () => {
     requestLocation();
-    setCommitted({ nationality, minExp, type: activeType, professionalName });
   };
 
   const handleCardClick = (provider: Provider) => {
