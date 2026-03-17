@@ -151,7 +151,7 @@ def discover_professionals(
 @router.get("/provider/{provider_id}", response_model=List[ProfessionalProviderResponse])
 def get_provider_professionals(
     provider_id: int,
-    status: Optional[ProfessionalStatus] = Query(ProfessionalStatus.ACTIVE),
+    status: Optional[ProfessionalStatus] = Query(None),
     current_user: User = Depends(get_current_owner),
     db: Session = Depends(get_db),
 ):

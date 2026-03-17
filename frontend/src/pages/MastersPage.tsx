@@ -26,8 +26,8 @@ export function MastersPage() {
     bio: "", payment_amount: "",
   });
 
-  const { data: providers } = useQuery({ queryKey: ["providers", "public"], queryFn: () => providersApi.listPublic() });
-  const providerId = providers?.[0]?.id;
+  const { data: myProvider } = useQuery({ queryKey: ["providers", "my"], queryFn: () => providersApi.getMy() });
+  const providerId = myProvider?.id;
 
   const { data: professionalProviders = [], isLoading } = useQuery({
     queryKey: ["professionals", "provider", providerId, statusFilter !== "all" ? statusFilter : undefined],
