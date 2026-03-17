@@ -100,9 +100,6 @@ export function MasterDiscoveryPage() {
           <Link to="/">
             <Button variant="ghost" size="sm">{t("discover.nav.find_salons")}</Button>
           </Link>
-          <Link to="/my-bookings">
-            <Button variant="ghost" size="sm">My Bookings</Button>
-          </Link>
           <Link to="/login">
             <Button size="sm" className="bg-gray-900 hover:bg-gray-950 gap-1.5">
               {t("discover.nav.sign_in")} <ArrowRight className="h-3.5 w-3.5" />

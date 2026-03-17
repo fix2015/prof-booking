@@ -1,7 +1,9 @@
-import { DollarSign, Scissors, Calendar, Clock, Image } from "lucide-react";
+import { DollarSign, Scissors, Calendar, Clock, Image, Search } from "lucide-react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { SessionsList } from "@/components/dashboard/SessionsList";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { MultiImageUpload } from "@/components/ui/MultiImageUpload";
@@ -60,12 +62,17 @@ export function MasterDashboardPage() {
           size={64}
           label="Avatar"
         />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl md:text-2xl font-bold truncate">
             Welcome back, {professional?.name || "Professional"}!
           </h1>
           <p className="text-sm text-muted-foreground">Here's your overview for today.</p>
         </div>
+        <Link to="/find-providers" className="shrink-0 hidden sm:block">
+          <Button variant="outline" size="sm" className="gap-2">
+            <Search className="h-4 w-4" /> Find Providers
+          </Button>
+        </Link>
       </div>
 
       {/* Stats */}

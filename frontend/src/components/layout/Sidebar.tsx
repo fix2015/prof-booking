@@ -84,17 +84,29 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           })}
         </ul>
 
-        {/* Discovery link — only for owners/professionals */}
+        {/* Discovery links — role-specific */}
         {(role === "provider_owner" || role === "professional") && (
-          <div className="mt-4 border-t pt-4">
-            <Link
-              to="/discover"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-            >
-              <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-              {t("nav.find_providers")}
-            </Link>
+          <div className="mt-4 border-t pt-4 space-y-0.5">
+            {role === "professional" && (
+              <Link
+                to="/find-providers"
+                onClick={onClose}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+                Find Providers
+              </Link>
+            )}
+            {role === "provider_owner" && (
+              <Link
+                to="/find-professionals"
+                onClick={onClose}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+                Find Professionals
+              </Link>
+            )}
           </div>
         )}
       </nav>

@@ -1,0 +1,173 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Search, MapPin, Building2, Scissors, SlidersHorizontal, ArrowRight } from "lucide-react";
+import { providersApi } from "@/api/salons";
+import { servicesApi } from "@/api/services";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Card, CardContent } from "@/components/ui/card";
+import type { Provider } from "@/types";
+
+export function FindProvidersPage() {
+  const [search, setSearch] = useState("");
+  const [serviceName, setServiceName] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [applied, setApplied] = useState({ search: "", service_name: "" });
+
+  const { data: serviceNames = [] } = useQuery({
+    queryKey: ["services", "names"],
+    queryFn: () => servicesApi.listNames(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: providers = [], isLoading } = useQuery({
+    queryKey: ["providers", "search", applied],
+    queryFn: () => providersApi.search({ q: applied.search || undefined, service_name: applied.service_name || undefined, limit: 50 }),
+  });
+
+  const apply = () => setApplied({ search, service_name: serviceName });
+  const clear = () => { setSearch(""); setServiceName(""); setApplied({ search: "", service_name: "" }); };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
+        <Link to="/dashboard" className="text-lg font-bold tracking-tight text-gray-900">
+          <span className="font-bold">Pro</span><span className="font-light">Book</span>
+        </Link>
+        <Link to="/login">
+          <Button size="sm" className="bg-gray-900 hover:bg-gray-950 gap-1.5">
+            Sign In <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
+      </header>
+
+      <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Find Providers</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            Discover salons and beauty providers to work with
+          </p>
+        </div>
+
+        {/* Search bar */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search by name or address…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && apply()}
+              className="pl-9"
+            />
+          </div>
+          <Button variant="outline" className="gap-2 shrink-0" onClick={() => setShowFilters((v) => !v)}>
+            <SlidersHorizontal className="h-4 w-4" />
+            <span className="hidden sm:inline">Filters</span>
+          </Button>
+          <Button onClick={apply} className="bg-gray-900 hover:bg-gray-950 shrink-0">Search</Button>
+        </div>
+
+        {/* Filters */}
+        {showFilters && (
+          <div className="rounded-xl border bg-muted/30 p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service offered</label>
+              <select
+                value={serviceName}
+                onChange={(e) => setServiceName(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">All services</option>
+                {serviceNames.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2 flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={clear}>Clear all</Button>
+              <Button size="sm" className="bg-gray-900 hover:bg-gray-950" onClick={apply}>Apply</Button>
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Spinner /></div>
+        ) : providers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+            <div className="text-5xl">🏪</div>
+            <p className="font-semibold text-lg">No providers found</p>
+            <p className="text-sm text-muted-foreground">Try different search terms or clear filters</p>
+            {(applied.search || applied.service_name) && (
+              <Button variant="outline" size="sm" onClick={clear}>Clear filters</Button>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {providers.map((provider) => (
+              <ProviderCard key={provider.id} provider={provider} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProviderCard({ provider }: { provider: Provider }) {
+  return (
+    <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all bg-white flex flex-col">
+      <CardContent className="p-4 flex flex-col flex-1">
+        <div className="flex items-start gap-3 mb-3">
+          {provider.logo_url ? (
+            <img src={provider.logo_url} alt={provider.name}
+              className="w-14 h-14 rounded-xl object-cover border border-gray-200 shrink-0" />
+          ) : (
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center text-2xl font-bold text-pink-800 shrink-0">
+              {provider.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-base leading-tight truncate">{provider.name}</h3>
+            {provider.category && (
+              <span className="inline-flex items-center gap-1 mt-0.5 text-xs font-medium bg-pink-50 text-pink-700 border border-pink-200 rounded-full px-2 py-0.5">
+                <Building2 className="h-3 w-3" /> {provider.category}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {provider.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{provider.description}</p>
+        )}
+
+        <div className="space-y-1 text-xs text-gray-500 mb-3">
+          {provider.address && (
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+              <span className="truncate">{provider.address}</span>
+            </span>
+          )}
+          {(provider as any).professionals_count != null && (
+            <span className="flex items-center gap-1.5">
+              <Scissors className="h-3 w-3 text-gray-400 shrink-0" />
+              {(provider as any).professionals_count} professional{(provider as any).professionals_count !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-auto flex gap-2">
+          <Link to={`/providers/${provider.id}`} className="flex-1">
+            <Button variant="outline" size="sm" className="w-full">View Profile</Button>
+          </Link>
+          <Link to={`/book/${provider.id}`} className="flex-1">
+            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">Book</Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

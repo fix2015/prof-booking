@@ -15,6 +15,9 @@ export const servicesApi = {
   listByProvider: (providerId: number) =>
     apiClient.get<Service[]>(`/services/provider/${providerId}`).then((r) => r.data),
 
+  listByProfessional: (professionalId: number) =>
+    apiClient.get<Service[]>(`/services/professional/${professionalId}`).then((r) => r.data),
+
   create: (providerId: number, data: ServicePayload) =>
     apiClient.post<Service>(`/services/provider/${providerId}`, data).then((r) => r.data),
 

@@ -1,4 +1,4 @@
-import { DollarSign, Scissors, Users, TrendingUp } from "lucide-react";
+import { DollarSign, Scissors, Users, TrendingUp, Search } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { SessionsList } from "@/components/dashboard/SessionsList";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
@@ -6,6 +6,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { reportsApi } from "@/api/reports";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { providersApi } from "@/api/salons";
 import { sessionsApi } from "@/api/sessions";
 import { format, subDays } from "date-fns";
@@ -53,10 +55,15 @@ export function OwnerDashboardPage() {
           size={64}
           label="Provider Logo"
         />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl md:text-2xl font-bold truncate">{provider?.name ?? "Provider Dashboard"}</h1>
           <p className="text-sm text-muted-foreground">Last 30 days performance overview</p>
         </div>
+        <Link to="/find-professionals" className="shrink-0 hidden sm:block">
+          <Button variant="outline" size="sm" className="gap-2">
+            <Search className="h-4 w-4" /> Find Professionals
+          </Button>
+        </Link>
       </div>
 
       {/* Stats */}

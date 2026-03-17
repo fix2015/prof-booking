@@ -602,9 +602,9 @@ export function SalonSelectorPage() {
                           onCloseClick={() => setSelectedProvider(null)}
                           options={{ pixelOffset: new google.maps.Size(0, -42) }}
                         >
-                          <div style={{ fontFamily: "'Segoe UI', sans-serif", minWidth: 220, maxWidth: 270 }}>
+                          <div style={{ fontFamily: "'Segoe UI', sans-serif", minWidth: 240, maxWidth: 290 }}>
                             {/* Logo + name row */}
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                               {selectedProvider.logo_url ? (
                                 <img
                                   src={selectedProvider.logo_url}
@@ -625,9 +625,9 @@ export function SalonSelectorPage() {
                                 <p style={{ fontWeight: 700, fontSize: 14, margin: 0, color: "#111827", lineHeight: 1.3 }}>
                                   {selectedProvider.name}
                                 </p>
-                                {selectedProvider.address && (
-                                  <p style={{ fontSize: 11, color: "#6b7280", margin: "3px 0 0", lineHeight: 1.4 }}>
-                                    📍 {selectedProvider.address}
+                                {selectedProvider.category && (
+                                  <p style={{ fontSize: 11, color: "#db2777", margin: "2px 0 0", fontWeight: 500 }}>
+                                    {selectedProvider.category}
                                   </p>
                                 )}
                               </div>
@@ -644,21 +644,18 @@ export function SalonSelectorPage() {
                               </p>
                             )}
 
-                            {/* Contact */}
-                            {(selectedProvider.phone || selectedProvider.email) && (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 10 }}>
-                                {selectedProvider.phone && (
-                                  <p style={{ fontSize: 12, color: "#374151", margin: 0 }}>
-                                    📞 {selectedProvider.phone}
-                                  </p>
-                                )}
-                                {selectedProvider.email && (
-                                  <p style={{ fontSize: 12, color: "#374151", margin: 0 }}>
-                                    ✉️ {selectedProvider.email}
-                                  </p>
-                                )}
-                              </div>
-                            )}
+                            {/* Address + contact */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 8 }}>
+                              {selectedProvider.address && (
+                                <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>📍 {selectedProvider.address}</p>
+                              )}
+                              {selectedProvider.phone && (
+                                <p style={{ fontSize: 11, color: "#374151", margin: 0 }}>📞 {selectedProvider.phone}</p>
+                              )}
+                              {selectedProvider.email && (
+                                <p style={{ fontSize: 11, color: "#374151", margin: 0 }}>✉️ {selectedProvider.email}</p>
+                              )}
+                            </div>
 
                             {/* Buttons */}
                             <div style={{ display: "flex", gap: 6 }}>
@@ -667,7 +664,7 @@ export function SalonSelectorPage() {
                                 style={{ flex: 1, textAlign: "center", background: "#f3f4f6", color: "#374151",
                                   borderRadius: 20, padding: "7px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}
                               >
-                                Profile
+                                View Profile
                               </a>
                               <a
                                 href={`/book/${selectedProvider.id}`}
@@ -693,21 +690,21 @@ export function SalonSelectorPage() {
                             onCloseClick={() => setSelectedProfessional(null)}
                             options={{ pixelOffset: new google.maps.Size(0, -42) }}
                           >
-                            <div style={{ fontFamily: "'Segoe UI', sans-serif", minWidth: 200, maxWidth: 250 }}>
+                            <div style={{ fontFamily: "'Segoe UI', sans-serif", minWidth: 220, maxWidth: 270 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                                 {selectedProfessional.avatar_url ? (
                                   <img src={selectedProfessional.avatar_url} alt={selectedProfessional.name}
-                                    style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "2px solid #ede9fe", flexShrink: 0 }} />
+                                    style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", border: "2px solid #ede9fe", flexShrink: 0 }} />
                                 ) : (
-                                  <div style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+                                  <div style={{ width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
                                     background: "linear-gradient(135deg, #ddd6fe, #c4b5fd)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>
+                                    fontSize: 22, fontWeight: 700, color: "#7c3aed" }}>
                                     {selectedProfessional.name.charAt(0).toUpperCase()}
                                   </div>
                                 )}
-                                <div>
-                                  <p style={{ fontWeight: 700, fontSize: 13, margin: 0, color: "#111827" }}>{selectedProfessional.name}</p>
+                                <div style={{ minWidth: 0 }}>
+                                  <p style={{ fontWeight: 700, fontSize: 14, margin: 0, color: "#111827" }}>{selectedProfessional.name}</p>
                                   {selectedProfessional.nationality && (
                                     <p style={{ fontSize: 11, color: "#6b7280", margin: "2px 0 0" }}>🌍 {selectedProfessional.nationality}</p>
                                   )}
@@ -716,11 +713,29 @@ export function SalonSelectorPage() {
                                   )}
                                 </div>
                               </div>
-                              <a href={`/professionals/${selectedProfessional.id}`}
-                                style={{ display: "block", textAlign: "center", background: "#7c3aed", color: "#fff",
-                                  borderRadius: 20, padding: "6px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
-                                View Profile →
-                              </a>
+                              {selectedProfessional.bio && (
+                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px", lineHeight: 1.5,
+                                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                  {selectedProfessional.bio}
+                                </p>
+                              )}
+                              {linkedProvider && (
+                                <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 8px" }}>
+                                  🏪 {linkedProvider.name}
+                                </p>
+                              )}
+                              <div style={{ display: "flex", gap: 6 }}>
+                                <a href={`/professionals/${selectedProfessional.id}`}
+                                  style={{ flex: 1, textAlign: "center", background: "#f3f4f6", color: "#374151",
+                                    borderRadius: 20, padding: "7px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+                                  View Profile
+                                </a>
+                                <a href={`/book?professional_id=${selectedProfessional.id}`}
+                                  style={{ flex: 1, textAlign: "center", background: "#7c3aed", color: "#fff",
+                                    borderRadius: 20, padding: "7px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+                                  Book Now
+                                </a>
+                              </div>
                             </div>
                           </InfoWindow>
                         );
