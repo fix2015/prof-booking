@@ -19,21 +19,30 @@ export function PublicBookingPage() {
   const { providerId: paramProviderId, salonId: paramSalonId } = useParams();
   const [searchParams] = useSearchParams();
   const idFromQuery = searchParams.get("id");
-  const providerId = Number(paramProviderId || paramSalonId || idFromQuery);
+  const professionalIdParam = Number(searchParams.get("professional_id")) || undefined;
+  const providerIdFromUrl = Number(paramProviderId || paramSalonId || idFromQuery) || undefined;
 
   const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
   const [isBooking, setIsBooking] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [selectedService, setSelectedService] = useState<number | null>(null);
-  const [selectedProfessional, setSelectedProfessional] = useState<number | undefined>(undefined);
+  const [selectedProfessional, setSelectedProfessional] = useState<number | undefined>(professionalIdParam);
+
+  // If professional_id is in URL, fetch the professional to get their provider
+  const { data: preselectedProfessional, isLoading: profLoading } = useQuery({
+    queryKey: ["professionals", professionalIdParam],
+    queryFn: () => professionalsApi.getById(professionalIdParam!),
+    enabled: !!professionalIdParam && !providerIdFromUrl,
+  });
 
   const { data: providers, isLoading: providersLoading } = useQuery({
     queryKey: ["providers", "public"],
     queryFn: () => providersApi.listPublic(),
   });
 
-  const activeProviderId = providerId || providers?.[0]?.id;
+  const professionalProviderId = preselectedProfessional?.professional_providers?.[0]?.provider_id;
+  const activeProviderId = providerIdFromUrl || professionalProviderId || providers?.[0]?.id;
   const { data: provider } = useQuery({
     queryKey: ["providers", "public", activeProviderId],
     queryFn: () => providersApi.getPublic(activeProviderId!),
@@ -98,7 +107,7 @@ export function PublicBookingPage() {
     }
   };
 
-  if (providersLoading) return <Spinner className="mx-auto mt-20" />;
+  if (providersLoading || (!!professionalIdParam && !providerIdFromUrl && profLoading)) return <Spinner className="mx-auto mt-20" />;
 
   // Show provider selector if no provider selected
   if (!activeProviderId) {
@@ -176,11 +185,21 @@ export function PublicBookingPage() {
                 {bookingError}
               </div>
             )}
+            {/* Show preselected professional name if coming from professional link */}
+            {professionalIdParam && preselectedProfessional && (
+              <div className="mb-4 flex items-center gap-2 rounded-md bg-purple-50 border border-purple-200 px-3 py-2 text-sm text-purple-800">
+                <span className="font-medium">Professional:</span>
+                {preselectedProfessional.avatar_url && (
+                  <img src={preselectedProfessional.avatar_url} alt={preselectedProfessional.name}
+                    className="w-6 h-6 rounded-full object-cover" />
+                )}
+                {preselectedProfessional.name}
+              </div>
+            )}
             <BookingForm
               salonId={activeProviderId}
               services={services}
               masters={professionals}
-               
               onSubmit={handleBooking as any}
               isLoading={isBooking}
               availableSlots={availableSlots}
@@ -188,6 +207,7 @@ export function PublicBookingPage() {
               onMasterChange={(id) => setSelectedProfessional(id)}
               onDateChange={setSelectedDate}
               selectedDate={selectedDate}
+              preselectedMasterId={professionalIdParam}
             />
           </CardContent>
         </Card>
