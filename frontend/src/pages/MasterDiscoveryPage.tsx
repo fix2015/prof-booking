@@ -93,11 +93,11 @@ export function MasterDiscoveryPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       {/* Top nav */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
-        <Link to="/providers" className="text-lg font-bold tracking-tight text-gray-900">
+        <Link to="/" className="text-lg font-bold tracking-tight text-gray-900">
           ProBook
         </Link>
         <div className="flex items-center gap-2">
-          <Link to="/providers">
+          <Link to="/">
             <Button variant="ghost" size="sm">{t("discover.nav.find_salons")}</Button>
           </Link>
           <Link to="/my-bookings">

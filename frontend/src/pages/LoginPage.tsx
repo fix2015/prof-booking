@@ -77,7 +77,7 @@ export function LoginPage() {
                 {login.isPending ? <Spinner size="sm" className="mr-2" /> : null}
                 {t("login.sign_in")}
               </Button>
-              <Link to="/providers" className="w-full">
+              <Link to="/" className="w-full">
                 <Button variant="outline" className="w-full gap-2">
                   <CalendarCheck className="h-4 w-4" />
                   {t("login.book_appointment")}
