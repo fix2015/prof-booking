@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, User } from "lucide-react";
+import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, User, Building2, Scissors } from "lucide-react";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
@@ -45,10 +45,19 @@ const NAIL_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height=
 
 const NAIL_PIN_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(NAIL_PIN_SVG)}`;
 
+// Purple person-pin for professionals on the map
+const PRO_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">
+  <path d="M15 1C8.93 1 4 5.93 4 12c0 8.78 11 26.5 11 26.5S26 20.78 26 12C26 5.93 21.07 1 15 1z" fill="#7c3aed" stroke="white" stroke-width="1.5"/>
+  <circle cx="15" cy="12" r="5.5" fill="white"/>
+  <text x="15" y="16" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="serif">✂</text>
+</svg>`;
+const PRO_PIN_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PRO_PIN_SVG)}`;
+
 export function SalonSelectorPage() {
   const { data: providers = [], isLoading } = usePublicProviders();
 
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -224,8 +233,6 @@ export function SalonSelectorPage() {
 
   const professionalName = searchParams.get("professional_name") ?? "";
 
-  const hasProfessionalFilter = !!(professionalName || nationality || minExp);
-
   const handleSearch = () => {
     requestLocation();
   };
@@ -269,6 +276,16 @@ export function SalonSelectorPage() {
   const providersOnMap = filteredProviders
     .map((p) => ({ provider: p, coords: getCoords(p) }))
     .filter((x): x is { provider: Provider; coords: { lat: number; lng: number } } => x.coords !== null);
+
+  // Unified list: providers first (distance-sorted), then professionals appended
+  type ListItem =
+    | { kind: "provider"; data: Provider }
+    | { kind: "professional"; data: Professional };
+
+  const unifiedList: ListItem[] = [
+    ...filteredProviders.map((p): ListItem => ({ kind: "provider", data: p })),
+    ...professionals.map((p): ListItem => ({ kind: "professional", data: p })),
+  ];
 
   const showMap = view !== "list";
   const showList = view !== "map";
@@ -446,6 +463,32 @@ export function SalonSelectorPage() {
                         />
                       ))}
 
+                      {/* Professional markers — shown at their provider's location */}
+                      {mapsLoaded && professionals.map((pro) => {
+                        const provId = pro.professional_providers?.[0]?.provider_id;
+                        const linkedProvider = provId ? providers.find((p) => p.id === provId) : null;
+                        const coords = linkedProvider ? getCoords(linkedProvider) : null;
+                        if (!coords) return null;
+                        return (
+                          <Marker
+                            key={`pro-${pro.id}`}
+                            position={coords}
+                            title={pro.name}
+                            icon={{
+                              url: PRO_PIN_URL,
+                              scaledSize: new google.maps.Size(28, 38),
+                              anchor: new google.maps.Point(14, 38),
+                            }}
+                            onClick={() => {
+                              setSelectedProfessional(pro);
+                              setSelectedProvider(null);
+                              setMapCenter(coords);
+                              setMapZoom(15);
+                            }}
+                          />
+                        );
+                      })}
+
                       {/* Rich InfoWindow popup */}
                       {mapsLoaded && selectedProvider && selectedCoords && (
                         <InfoWindow
@@ -527,6 +570,51 @@ export function SalonSelectorPage() {
                           </div>
                         </InfoWindow>
                       )}
+
+                      {/* Professional InfoWindow */}
+                      {mapsLoaded && selectedProfessional && (() => {
+                        const provId = selectedProfessional.professional_providers?.[0]?.provider_id;
+                        const linkedProvider = provId ? providers.find((p) => p.id === provId) : null;
+                        const proCoords = linkedProvider ? getCoords(linkedProvider) : null;
+                        if (!proCoords) return null;
+                        return (
+                          <InfoWindow
+                            position={proCoords}
+                            onCloseClick={() => setSelectedProfessional(null)}
+                            options={{ pixelOffset: new google.maps.Size(0, -42) }}
+                          >
+                            <div style={{ fontFamily: "'Segoe UI', sans-serif", minWidth: 200, maxWidth: 250 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                                {selectedProfessional.avatar_url ? (
+                                  <img src={selectedProfessional.avatar_url} alt={selectedProfessional.name}
+                                    style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "2px solid #ede9fe", flexShrink: 0 }} />
+                                ) : (
+                                  <div style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
+                                    background: "linear-gradient(135deg, #ddd6fe, #c4b5fd)",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>
+                                    {selectedProfessional.name.charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                                <div>
+                                  <p style={{ fontWeight: 700, fontSize: 13, margin: 0, color: "#111827" }}>{selectedProfessional.name}</p>
+                                  {selectedProfessional.nationality && (
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "2px 0 0" }}>🌍 {selectedProfessional.nationality}</p>
+                                  )}
+                                  {selectedProfessional.experience_years != null && (
+                                    <p style={{ fontSize: 11, color: "#6b7280", margin: "2px 0 0" }}>⏱ {selectedProfessional.experience_years}y exp</p>
+                                  )}
+                                </div>
+                              </div>
+                              <a href={`/professionals/${selectedProfessional.id}`}
+                                style={{ display: "block", textAlign: "center", background: "#7c3aed", color: "#fff",
+                                  borderRadius: 20, padding: "6px 0", fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+                                View Profile →
+                              </a>
+                            </div>
+                          </InfoWindow>
+                        );
+                      })()}
                     </GoogleMap>
                   </LoadScript>
                 ) : (
@@ -543,44 +631,34 @@ export function SalonSelectorPage() {
             {/* Provider list panel */}
             {showList && (
               <div className={`space-y-3 ${view === "split" ? "lg:w-80 lg:overflow-y-auto lg:max-h-[calc(100vh-340px)]" : ""}`}>
-                {filteredProviders.length === 0 ? (
+                {unifiedList.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">{t("providers.no_providers")}</p>
                 ) : (
-                  filteredProviders.map((provider) => (
-                    <ProviderCard
-                      key={provider.id}
-                      provider={provider}
-                      isSelected={selectedProvider?.id === provider.id}
-                      hasMapPin={getCoords(provider) !== null}
-                      onClick={() => handleCardClick(provider)}
-                    />
-                  ))
+                  unifiedList.map((item) =>
+                    item.kind === "provider" ? (
+                      <ProviderCard
+                        key={`prov-${item.data.id}`}
+                        provider={item.data}
+                        isSelected={selectedProvider?.id === item.data.id}
+                        hasMapPin={getCoords(item.data) !== null}
+                        onClick={() => handleCardClick(item.data)}
+                      />
+                    ) : (
+                      <ProfessionalCard
+                        key={`pro-${item.data.id}`}
+                        professional={item.data}
+                      />
+                    )
+                  )
+                )}
+                {(professionalsLoading) && (
+                  <div className="flex justify-center py-4"><Spinner /></div>
                 )}
               </div>
             )}
           </div>
         )}
       </div>
-
-      {/* Professionals results */}
-      {hasProfessionalFilter && (
-        <div className="px-4 pb-8 max-w-6xl mx-auto w-full">
-          <h2 className="text-xl font-bold text-gray-800 mb-3">{t("providers.professionals")}</h2>
-          {professionalsLoading ? (
-            <div className="flex justify-center py-8">
-              <Spinner />
-            </div>
-          ) : professionals.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {professionals.map((professional) => (
-                <ProfessionalCard key={professional.id} professional={professional} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">{t("providers.no_professionals")}</p>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -588,43 +666,43 @@ export function SalonSelectorPage() {
 function ProfessionalCard({ professional }: { professional: Professional }) {
   const coverImage = professional.avatar_url ?? professional.photos?.[0]?.image_url;
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow group bg-white">
-      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={professional.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl font-bold text-gray-300">
-            {professional.name.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </div>
+    <Card className="hover:shadow-md hover:-translate-y-0.5 transition-all bg-white">
       <CardContent className="p-4">
-        <h3 className="font-semibold text-base truncate">{professional.name}</h3>
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          {professional.nationality && (
-            <span className="flex items-center gap-1">
-              <Flag className="h-3 w-3" />{professional.nationality}
-            </span>
+        <div className="flex items-start gap-3">
+          {coverImage ? (
+            <img src={coverImage} alt={professional.name}
+              className="w-12 h-12 rounded-full object-cover border border-purple-100 shrink-0" />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-violet-300 flex items-center justify-center text-xl font-bold text-purple-700 shrink-0">
+              {professional.name.charAt(0).toUpperCase()}
+            </div>
           )}
-          {professional.experience_years != null && (
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />{professional.experience_years}y exp
-            </span>
-          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-1 flex-wrap">
+              <h2 className="text-base font-semibold text-gray-900 truncate">{professional.name}</h2>
+              <span className="inline-flex items-center gap-1 text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200 rounded-full px-2 py-0.5 shrink-0">
+                <Scissors className="h-3 w-3" /> Professional
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500">
+              {professional.nationality && (
+                <span className="flex items-center gap-1"><Flag className="h-3 w-3 text-gray-400" />{professional.nationality}</span>
+              )}
+              {professional.experience_years != null && (
+                <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-gray-400" />{professional.experience_years}y exp</span>
+              )}
+            </div>
+            {professional.bio && (
+              <p className="mt-1 text-xs text-gray-500 line-clamp-2">{professional.bio}</p>
+            )}
+          </div>
         </div>
-        {professional.bio && (
-          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{professional.bio}</p>
-        )}
         <div className="mt-3 flex gap-2">
           <Link to={`/professionals/${professional.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">{t("providers.view_profile")}</Button>
           </Link>
           <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
-            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">{t("discover.card.book")}</Button>
+            <Button size="sm" className="w-full bg-purple-700 hover:bg-purple-800">{t("providers.book_now").replace(" →", "")}</Button>
           </Link>
         </div>
       </CardContent>
@@ -667,6 +745,9 @@ function ProviderCard({
                 <MapPin className="h-3.5 w-3.5 text-gray-500 shrink-0" />
               )}
             </div>
+            <span className="inline-flex items-center gap-1 text-xs font-medium bg-pink-50 text-pink-700 border border-pink-200 rounded-full px-2 py-0.5 mt-0.5">
+              <Building2 className="h-3 w-3" /> Provider
+            </span>
             {provider.description && (
               <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{provider.description}</p>
             )}
