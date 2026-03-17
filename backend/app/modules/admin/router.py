@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import Optional
 
 from app.database import get_db
@@ -45,10 +46,11 @@ def admin_delete_provider(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ):
-    p = db.query(Provider).filter(Provider.id == provider_id).first()
-    if not p:
+    exists = db.execute(text("SELECT id FROM providers WHERE id = :pid"), {"pid": provider_id}).fetchone()
+    if not exists:
         raise HTTPException(status_code=404, detail="Provider not found")
-    db.delete(p)
+    # Raw SQL DELETE lets PostgreSQL handle ON DELETE CASCADE automatically
+    db.execute(text("DELETE FROM providers WHERE id = :pid"), {"pid": provider_id})
     db.commit()
 
 
@@ -100,7 +102,14 @@ def admin_delete_user(
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
     if u.role == UserRole.PLATFORM_ADMIN:
         raise HTTPException(status_code=403, detail="Cannot delete another platform admin")
-    db.delete(u)
+    # If owner, delete their provider first (cascades sessions, services, etc.)
+    owner_row = db.execute(
+        text("SELECT provider_id FROM provider_owners WHERE user_id = :uid"), {"uid": user_id}
+    ).fetchone()
+    if owner_row:
+        db.execute(text("DELETE FROM providers WHERE id = :pid"), {"pid": owner_row.provider_id})
+    # Delete the user — PostgreSQL cascades to professionals, refresh_tokens, etc.
+    db.execute(text("DELETE FROM users WHERE id = :uid"), {"uid": user_id})
     db.commit()
 
 
