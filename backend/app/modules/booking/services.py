@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
 from app.modules.booking.schemas import PublicBookingRequest, BookingConfirmation, BookingLookupResponse
-from app.modules.sessions.services import create_session, get_session_or_404
+from app.modules.sessions.services import create_session
 from app.modules.sessions.schemas import SessionCreate
 from app.modules.sessions.models import Session as SessionModel, SessionStatus
 from app.modules.salons.services import get_provider_or_404
@@ -13,11 +13,14 @@ from app.modules.services.services import get_service_or_404
 from app.modules.masters.services import get_professional_by_id
 from app.config import settings
 
-_SESSION_JOINS = [
-    joinedload(SessionModel.provider),
-    joinedload(SessionModel.service),
-    joinedload(SessionModel.professional),
-]
+
+def _session_joins():
+    """Return joinedload options lazily to avoid triggering mapper config at import time."""
+    return [
+        joinedload(SessionModel.provider),
+        joinedload(SessionModel.service),
+        joinedload(SessionModel.professional),
+    ]
 
 
 def _generate_confirmation_code(session_id: int) -> str:
@@ -102,7 +105,7 @@ def lookup_bookings_by_phone(db: Session, phone: str) -> List[BookingLookupRespo
     """Look up all bookings for a phone number."""
     sessions = (
         db.query(SessionModel)
-        .options(*_SESSION_JOINS)
+        .options(*_session_joins())
         .filter(SessionModel.client_phone == phone.strip())
         .order_by(SessionModel.starts_at.desc())
         .limit(20)
@@ -115,7 +118,7 @@ def cancel_booking(db: Session, session_id: int, confirmation_code: str, phone: 
     """Cancel a booking after verifying confirmation code + phone."""
     session = (
         db.query(SessionModel)
-        .options(*_SESSION_JOINS)
+        .options(*_session_joins())
         .filter(SessionModel.id == session_id)
         .first()
     )
@@ -136,5 +139,5 @@ def cancel_booking(db: Session, session_id: int, confirmation_code: str, phone: 
     db.refresh(session)
     # Re-fetch with joins after refresh clears the instance state
     return _session_to_lookup_response(
-        db.query(SessionModel).options(*_SESSION_JOINS).filter(SessionModel.id == session_id).first()
+        db.query(SessionModel).options(*_session_joins()).filter(SessionModel.id == session_id).first()
     )
