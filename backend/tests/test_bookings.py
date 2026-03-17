@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from fastapi.testclient import TestClient
 
 
-def test_public_booking_flow(client: TestClient, owner_headers: dict):
+def test_public_booking_flow(client: TestClient, owner_headers: dict, professional_headers: dict):
     # Get provider
     providers_resp = client.get("/api/v1/providers/public")
     assert providers_resp.status_code == 200
@@ -14,10 +14,10 @@ def test_public_booking_flow(client: TestClient, owner_headers: dict):
     svc_resp = client.get(f"/api/v1/services/provider/{provider_id}")
     assert svc_resp.status_code == 200
 
-    # Create a service first
+    # Create a service as professional (only professionals can manage services)
     svc_create = client.post(
         f"/api/v1/services/provider/{provider_id}",
-        headers=owner_headers,
+        headers=professional_headers,
         json={"name": "Gel Manicure", "duration_minutes": 60, "price": 45.0},
     )
     assert svc_create.status_code == 201
@@ -50,13 +50,13 @@ def test_booking_requires_name(client: TestClient):
     assert resp.status_code == 422
 
 
-def test_get_services(client: TestClient, owner_headers: dict):
+def test_get_services(client: TestClient, owner_headers: dict, professional_headers: dict):
     providers = client.get("/api/v1/providers/public").json()
     provider_id = providers[0]["id"]
 
     client.post(
         f"/api/v1/services/provider/{provider_id}",
-        headers=owner_headers,
+        headers=professional_headers,
         json={"name": "Manicure", "duration_minutes": 60, "price": 30.0},
     )
     resp = client.get(f"/api/v1/services/provider/{provider_id}")
