@@ -3,6 +3,8 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { servicesApi } from "@/api/services";
 import { providersApi } from "@/api/salons";
+import { professionalsApi } from "@/api/masters";
+import { useAuthContext } from "@/context/AuthContext";
 import { Service } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +17,27 @@ import { t } from "@/i18n";
 
 export function ServicesPage() {
   const qc = useQueryClient();
+  const { role } = useAuthContext();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [form, setForm] = useState({ name: "", description: "", duration_minutes: 60, price: 0 });
 
-  const { data: providers } = useQuery({ queryKey: ["providers", "public"], queryFn: () => providersApi.listPublic() });
-  const providerId = providers?.[0]?.id;
+  // Owner: use their own provider. Professional: use their linked provider.
+  const { data: myProvider } = useQuery({
+    queryKey: ["providers", "my"],
+    queryFn: () => providersApi.getMy(),
+    enabled: role === "provider_owner",
+  });
+  const { data: myProfessional } = useQuery({
+    queryKey: ["professionals", "me"],
+    queryFn: () => professionalsApi.getMe(),
+    enabled: role === "professional",
+  });
+
+  const providerId =
+    role === "provider_owner"
+      ? myProvider?.id
+      : myProfessional?.professional_providers?.[0]?.provider_id;
 
   const { data: services = [], isLoading } = useQuery({
     queryKey: ["services", providerId],
