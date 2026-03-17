@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { CalendarCheck } from "lucide-react";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -72,24 +73,12 @@ export function LoginPage() {
               {login.isPending ? <Spinner size="sm" className="mr-2" /> : null}
               Sign In
             </Button>
-            <p className="text-sm text-muted-foreground">
-              New provider?{" "}
-              <Link to="/register" className="text-gray-700 hover:underline font-medium">
-                Register your business
-              </Link>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Client booking?{" "}
-              <Link to="/providers" className="text-gray-700 hover:underline font-medium">
-                Book appointment
-              </Link>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Are you a professional?{" "}
-              <Link to="/register/professional" className="text-gray-700 hover:underline font-medium">
-                Join as a Professional
-              </Link>
-            </p>
+            <Link to="/providers" className="w-full">
+              <Button variant="outline" className="w-full gap-2">
+                <CalendarCheck className="h-4 w-4" />
+                Book an Appointment
+              </Button>
+            </Link>
           </CardFooter>
         </form>
       </Card>

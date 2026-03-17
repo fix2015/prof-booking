@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag } from "lucide-react";
+import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, User } from "lucide-react";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { useQuery } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
@@ -89,7 +89,7 @@ export function SalonSelectorPage() {
   const activeType = searchParams.get("type") ?? "";
 
   const [committed, setCommitted] = useState<{
-    nationality: string; minExp: string; type: string;
+    nationality: string; minExp: string; type: string; professionalName: string;
   } | null>(null);
 
   const { data: professionals = [], isLoading: professionalsLoading } = useQuery({
@@ -98,10 +98,10 @@ export function SalonSelectorPage() {
       professionalsApi.discover({
         nationality: committed?.nationality || undefined,
         min_experience: committed?.minExp ? Number(committed.minExp) : undefined,
-        search: committed?.type || undefined,
+        search: committed?.professionalName || undefined,
         limit: 24,
       }),
-    enabled: !!(committed && (committed.nationality || committed.minExp || committed.type)),
+    enabled: !!(committed && (committed.nationality || committed.minExp || committed.professionalName)),
   });
 
   // ── Geocoding ────────────────────────────────────────────────────────────────
@@ -224,11 +224,13 @@ export function SalonSelectorPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const professionalName = searchParams.get("professional_name") ?? "";
+
   const hasProfessionalFilter = !!committed;
 
   const handleSearch = () => {
     requestLocation();
-    setCommitted({ nationality, minExp, type: activeType });
+    setCommitted({ nationality, minExp, type: activeType, professionalName });
   };
 
   const handleCardClick = (provider: Provider) => {
@@ -348,6 +350,16 @@ export function SalonSelectorPage() {
 
         {/* Row 3: Professional filters */}
         <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Professional name…"
+              value={professionalName}
+              onChange={(e) => setParam("professional_name", e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="pl-9 bg-white"
+            />
+          </div>
           <div className="flex-1">
             <NationalitySelect
               value={nationality}
@@ -367,7 +379,7 @@ export function SalonSelectorPage() {
               className="pl-9 bg-white"
             />
           </div>
-          {(search || nationality || minExp || activeType) && (
+          {(search || nationality || minExp || activeType || professionalName) && (
             <Button variant="outline" className="bg-white shrink-0" onClick={clearAllFilters}>
               Clear all
             </Button>
@@ -384,9 +396,12 @@ export function SalonSelectorPage() {
         ) : (
           <div className={`flex gap-4 ${view === "split" ? "flex-col lg:flex-row" : "flex-col"}`}>
 
-            {/* Map panel */}
-            {showMap && (
-              <div className={`rounded-xl overflow-hidden shadow-md bg-white ${view === "split" ? "lg:flex-1 h-80 lg:h-[calc(100vh-340px)]" : "h-[60vh]"}`}>
+            {/* Map panel — always mounted to avoid LoadScript unmount/remount crashes */}
+            <div className={cn(
+              "rounded-xl overflow-hidden shadow-md bg-white",
+              view === "split" ? "lg:flex-1 h-80 lg:h-[calc(100vh-340px)]" : "h-[60vh]",
+              !showMap && "hidden",
+            )}>
                 {GOOGLE_MAPS_API_KEY ? (
                   <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
                     <GoogleMap
@@ -524,7 +539,6 @@ export function SalonSelectorPage() {
                   </div>
                 )}
               </div>
-            )}
 
             {/* Provider list panel */}
             {showList && (

@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import { FullPageSpinner } from "@/components/ui/spinner";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -26,6 +28,12 @@ import { InvoicesPage } from "@/pages/InvoicesPage";
 import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
 import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
 import { BookingManagementPage } from "@/pages/BookingManagementPage";
+
+function HomeRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <FullPageSpinner />;
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
 
 function DashboardRouter() {
   const { role } = useAuthContext();
@@ -80,7 +88,7 @@ function AppRoutes() {
         <Route path="/profile/salon" element={<SalonProfileEditPage />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<HomeRedirect />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
