@@ -1,12 +1,12 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Star, Clock, Flag, Image, CheckCircle2, Calendar, TrendingUp, Building2 } from "lucide-react";
+
 import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/utils/formatters";
 import type { Review } from "@/types";
 
 export function MasterProfilePage() {
@@ -131,7 +131,7 @@ export function MasterProfilePage() {
 
       {/* Stats */}
       {profStats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="flex justify-center mb-1"><Calendar className="h-5 w-5 text-blue-500" /></div>
@@ -151,13 +151,6 @@ export function MasterProfilePage() {
               <div className="flex justify-center mb-1"><CheckCircle2 className="h-5 w-5 text-green-500" /></div>
               <p className="text-2xl font-bold">{profStats.completed_sessions}</p>
               <p className="text-xs text-muted-foreground">Completed</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex justify-center mb-1"><Star className="h-5 w-5 text-yellow-500" /></div>
-              <p className="text-2xl font-bold">{formatCurrency(profStats.total_revenue)}</p>
-              <p className="text-xs text-muted-foreground">Revenue</p>
             </CardContent>
           </Card>
         </div>
