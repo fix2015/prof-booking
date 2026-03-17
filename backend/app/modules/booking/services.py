@@ -59,7 +59,27 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
         ),
     )
 
-    # Queue notifications asynchronously
+    # Save an in-app notification for the professional synchronously
+    try:
+        from app.modules.notifications.models import Notification, NotificationType, NotificationStatus
+        if session.professional_id:
+            notif_body = (
+                f"New booking: {session.client_name} on "
+                f"{session.starts_at.strftime('%b %d at %I:%M %p')}"
+            )
+            db.add(Notification(
+                session_id=session.id,
+                notification_type=NotificationType.SMS_CONFIRMATION,
+                recipient=session.client_phone,
+                subject="New Booking",
+                body=notif_body,
+                status=NotificationStatus.PENDING,
+            ))
+            db.commit()
+    except Exception:
+        pass  # Non-critical
+
+    # Queue async SMS/email notifications
     try:
         from app.modules.notifications.tasks import queue_booking_confirmation
         queue_booking_confirmation(session.id)

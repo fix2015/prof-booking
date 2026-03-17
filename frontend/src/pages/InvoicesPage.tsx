@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileText, Plus, Calendar } from "lucide-react";
 import { invoicesApi } from "@/api/invoices";
 import { providersApi } from "@/api/salons";
+import type { ProfessionalProvider } from "@/types";
 import { professionalsApi } from "@/api/masters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,12 +34,12 @@ export function InvoicesPage() {
   });
   const [periodEnd, setPeriodEnd] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const { data: providers = [] } = useQuery({
-    queryKey: ["providers", "public"],
-    queryFn: () => providersApi.listPublic(),
+  const { data: myProvider } = useQuery({
+    queryKey: ["providers", "my"],
+    queryFn: () => providersApi.getMy(),
     enabled: isOwner,
   });
-  const providerId = providers[0]?.id;
+  const providerId = myProvider?.id;
 
   const { data: professionalProviders = [] } = useQuery({
     queryKey: ["professionals", "provider", providerId],
@@ -112,9 +113,9 @@ export function InvoicesPage() {
                 className="border rounded px-3 py-2 text-sm w-full"
               >
                 <option value="">Select professional…</option>
-                {professionalProviders.map((pp: any) => (
+                {professionalProviders.map((pp: ProfessionalProvider) => (
                   <option key={pp.professional_id} value={pp.professional_id}>
-                    Professional #{pp.professional_id}
+                    {pp.professional?.name ?? `Professional #${pp.professional_id}`}
                   </option>
                 ))}
               </select>

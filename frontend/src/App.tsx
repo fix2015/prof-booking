@@ -26,6 +26,7 @@ import { InvoicesPage } from "@/pages/InvoicesPage";
 import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
 import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
 import { BookingManagementPage } from "@/pages/BookingManagementPage";
+import { ProviderProfilePage } from "@/pages/ProviderProfilePage";
 
 function DashboardRouter() {
   const { role } = useAuthContext();
@@ -50,6 +51,7 @@ function AppRoutes() {
       <Route path="/providers" element={<Navigate to="/" replace />} />
       <Route path="/salons" element={<Navigate to="/" replace />} />
       <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
+      <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
       {/* Backward-compat: old /masters/:masterId route */}
       <Route path="/masters/:masterId" element={<MasterProfilePage />} />
       <Route path="/discover" element={<MasterDiscoveryPage />} />

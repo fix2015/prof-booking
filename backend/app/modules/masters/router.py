@@ -217,6 +217,46 @@ def approve_or_reject_professional(
 # Individual professional (public)
 # ──────────────────────────────────────────────
 
+@router.get("/{professional_id}/stats")
+def get_professional_stats(
+    professional_id: int,
+    db: Session = Depends(get_db),
+):
+    """Public: session stats for a professional profile page."""
+    from datetime import date, timedelta
+    from app.modules.sessions.models import Session as SessionModel, SessionStatus
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    from datetime import datetime
+    today_start = datetime.combine(today, datetime.min.time())
+    today_end = datetime.combine(today, datetime.max.time())
+    week_start_dt = datetime.combine(week_start, datetime.min.time())
+
+    today_count = db.query(SessionModel).filter(
+        SessionModel.professional_id == professional_id,
+        SessionModel.starts_at >= today_start,
+        SessionModel.starts_at <= today_end,
+    ).count()
+
+    week_count = db.query(SessionModel).filter(
+        SessionModel.professional_id == professional_id,
+        SessionModel.starts_at >= week_start_dt,
+        SessionModel.starts_at <= today_end,
+    ).count()
+
+    completed = db.query(SessionModel).filter(
+        SessionModel.professional_id == professional_id,
+        SessionModel.status == SessionStatus.COMPLETED,
+    ).all()
+
+    return {
+        "today_sessions": today_count,
+        "week_sessions": week_count,
+        "completed_sessions": len(completed),
+        "total_revenue": sum(s.price or 0 for s in completed),
+    }
+
+
 @router.get("/{professional_id}", response_model=ProfessionalPublic)
 def get_professional(
     professional_id: int,

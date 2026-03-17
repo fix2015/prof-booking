@@ -30,6 +30,8 @@ def owner_workers_analytics(
         date_from = datetime(datetime.utcnow().year, datetime.utcnow().month, 1)
     if not date_to:
         date_to = datetime.utcnow()
+    else:
+        date_to = date_to.replace(hour=23, minute=59, second=59, microsecond=999999)
 
     # Get active professionals for this provider
     professional_providers = (
@@ -87,6 +89,8 @@ def professional_own_analytics(
         date_from = datetime(datetime.utcnow().year, datetime.utcnow().month, 1)
     if not date_to:
         date_to = datetime.utcnow()
+    else:
+        date_to = date_to.replace(hour=23, minute=59, second=59, microsecond=999999)
 
     q = db.query(SessionModel).filter(
         SessionModel.professional_id == professional.id,

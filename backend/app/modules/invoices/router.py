@@ -139,6 +139,57 @@ def generate_invoice(
     return invoice
 
 
+# ── Backward-compat aliases using /salon/ prefix ─────────────────────────────
+
+@router.get("/salon/{provider_id}", response_model=List[InvoiceResponse])
+def list_salon_invoices(
+    provider_id: int,
+    master_id: Optional[int] = Query(None),
+    current_user: User = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+):
+    assert_owner_of_provider(db, current_user, provider_id)
+    q = db.query(Invoice).filter(Invoice.provider_id == provider_id)
+    if master_id:
+        q = q.filter(Invoice.professional_id == master_id)
+    return q.order_by(Invoice.period_start.desc()).all()
+
+
+@router.post("/salon/{provider_id}/generate", response_model=InvoiceResponse, status_code=201)
+def generate_invoice_compat(
+    provider_id: int,
+    data: InvoiceCreate,
+    current_user: User = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+):
+    return generate_invoice(provider_id, data, current_user, db)
+
+
+@router.get("/splits/salon/{provider_id}", response_model=List[EarningsSplitResponse])
+def list_splits_compat(
+    provider_id: int,
+    current_user: User = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+):
+    assert_owner_of_provider(db, current_user, provider_id)
+    return db.query(EarningsSplit).filter(EarningsSplit.provider_id == provider_id).all()
+
+
+@router.post("/splits/salon/{provider_id}", response_model=EarningsSplitResponse, status_code=201)
+def create_split_compat(
+    provider_id: int,
+    data: EarningsSplitCreate,
+    current_user: User = Depends(get_current_owner),
+    db: Session = Depends(get_db),
+):
+    assert_owner_of_provider(db, current_user, provider_id)
+    split = EarningsSplit(provider_id=provider_id, **data.model_dump())
+    db.add(split)
+    db.commit()
+    db.refresh(split)
+    return split
+
+
 @router.patch("/{invoice_id}/status", response_model=InvoiceResponse)
 def update_invoice_status(
     invoice_id: int,

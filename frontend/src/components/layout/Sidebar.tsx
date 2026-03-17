@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
   { labelKey: "nav.calendar", href: "/calendar", icon: Calendar, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.sessions", href: "/sessions", icon: Scissors, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.professionals", href: "/professionals", icon: Users, roles: ["provider_owner"] },
-  { labelKey: "nav.services", href: "/services", icon: Settings, roles: ["provider_owner", "professional"] },
+  { labelKey: "nav.services", href: "/services", icon: Settings, roles: ["professional"] },
   { labelKey: "nav.reviews", href: "/reviews", icon: Star, roles: ["provider_owner"] },
   { labelKey: "nav.analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner"] },
   { labelKey: "nav.analytics", href: "/analytics/professional", icon: TrendingUp, roles: ["professional"] },
