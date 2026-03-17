@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -10,6 +10,7 @@ class ReviewCreate(BaseModel):
     client_phone: Optional[str] = None
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
+    images: Optional[List[str]] = None  # up to 3 image URLs
     session_id: Optional[int] = None
 
 
@@ -22,6 +23,7 @@ class ReviewResponse(BaseModel):
     client_phone: Optional[str]
     rating: int
     comment: Optional[str]
+    images: Optional[List[str]] = None
     is_published: bool
     created_at: datetime
 

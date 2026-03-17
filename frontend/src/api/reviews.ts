@@ -6,12 +6,13 @@ export const reviewsApi = {
     apiClient.get<Review[]>("/reviews/", { params }),
 
   create: (data: {
-    master_id: number;
-    salon_id: number;
+    professional_id: number;
+    provider_id: number;
     client_name: string;
     client_phone?: string;
     rating: number;
     comment?: string;
+    images?: string[];
     session_id?: number;
   }) => apiClient.post<Review>("/reviews/", data),
 

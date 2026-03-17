@@ -60,6 +60,15 @@ export const professionalsApi = {
   detachFromProvider: (providerId: number) =>
     apiClient.delete(`/professionals/me/providers/${providerId}`),
 
+  sendInvite: (professionalId: number, message?: string) =>
+    apiClient.post(`/professionals/${professionalId}/invite`, { message }).then((r) => r.data),
+
+  getMyInvites: () =>
+    apiClient.get("/professionals/me/invites").then((r) => r.data),
+
+  respondToInvite: (inviteId: number, status: "accepted" | "rejected") =>
+    apiClient.patch(`/professionals/me/invites/${inviteId}/respond`, { status }).then((r) => r.data),
+
   createDirect: (
     providerId: number,
     data: {

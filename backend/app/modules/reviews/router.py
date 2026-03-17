@@ -31,6 +31,7 @@ def create_review(
         client_phone=data.client_phone,
         rating=data.rating,
         comment=data.comment,
+        images=(data.images or [])[:3],  # cap at 3
     )
     db.add(review)
     db.commit()

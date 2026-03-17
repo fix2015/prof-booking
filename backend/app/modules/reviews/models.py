@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime,
-    ForeignKey, Index, Text,
+    ForeignKey, Index, Text, JSON,
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -19,6 +19,7 @@ class Review(Base):
     client_phone = Column(String(30), nullable=True)
     rating = Column(Integer, nullable=False)   # 1-5
     comment = Column(Text, nullable=True)
+    images = Column(JSON, default=list, nullable=True)  # up to 3 image URLs
     is_published = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
