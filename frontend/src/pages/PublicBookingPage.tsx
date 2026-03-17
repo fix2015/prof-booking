@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Star, Instagram, ExternalLink, CheckCircle2, Users } from "lucide-react";
 import { providersApi } from "@/api/salons";
 import { servicesApi } from "@/api/services";
 import { professionalsApi } from "@/api/masters";
 import { calendarApi } from "@/api/calendar";
 import { bookingApi } from "@/api/booking";
+import { reviewsApi } from "@/api/reviews";
 import { BookingForm } from "@/components/booking/BookingForm";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,6 +63,28 @@ export function PublicBookingPage() {
     enabled: !!activeProviderId,
   });
 
+  // Professional profile extras (photos, reviews, stats) when preselected
+  const { data: professionalPhotos = [] } = useQuery({
+    queryKey: ["professional-photos", professionalIdParam],
+    queryFn: () => professionalsApi.getPhotos(professionalIdParam!),
+    enabled: !!professionalIdParam,
+  });
+
+  const { data: reviewStats } = useQuery({
+    queryKey: ["review-stats", professionalIdParam],
+    queryFn: () => reviewsApi.masterStats(professionalIdParam!).then((r) => r.data),
+    enabled: !!professionalIdParam,
+  });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews", professionalIdParam],
+    queryFn: () =>
+      reviewsApi.list({ master_id: professionalIdParam }).then((r) =>
+        r.data.filter((rev) => rev.is_published).slice(0, 5)
+      ),
+    enabled: !!professionalIdParam,
+  });
+
   const selectedServiceData = services.find((s) => s.id === selectedService);
 
   const { data: availableSlots = [] } = useQuery({
@@ -77,7 +101,7 @@ export function PublicBookingPage() {
 
   const handleBooking = async (data: {
     service_id: number;
-     
+
     master_id?: number;
     slot: { start_time: string; master_id: number };
     client_name: string;
@@ -168,14 +192,131 @@ export function PublicBookingPage() {
     );
   }
 
+  const instagram = preselectedProfessional?.social_links?.instagram;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <div className="mb-6 text-center">
-          <div className="text-5xl mb-2">✨</div>
-          <h1 className="text-3xl font-bold text-gray-800">{provider?.name}</h1>
-          {provider?.address && <p className="text-gray-700 mt-1">{provider.address}</p>}
+      <div className="mx-auto max-w-2xl space-y-4">
+        {/* Professional profile card */}
+        {preselectedProfessional && (
+          <Card className="shadow-md overflow-hidden">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-4">
+                {preselectedProfessional.avatar_url && (
+                  <img
+                    src={preselectedProfessional.avatar_url}
+                    alt={preselectedProfessional.name}
+                    className="w-20 h-20 rounded-full object-cover flex-shrink-0 border-2 border-purple-200"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">{preselectedProfessional.name}</h2>
+                      {preselectedProfessional.experience_years != null && (
+                        <p className="text-sm text-muted-foreground">{preselectedProfessional.experience_years} yrs experience</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {instagram && (
+                        <a
+                          href={instagram.startsWith("http") ? instagram : `https://instagram.com/${instagram.replace("@", "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-pink-600 hover:text-pink-700 font-medium"
+                        >
+                          <Instagram className="h-3.5 w-3.5" />
+                          Instagram
+                        </a>
+                      )}
+                      <Link
+                        to={`/professionals/${preselectedProfessional.id}`}
+                        className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Full Profile
+                      </Link>
+                    </div>
+                  </div>
+                  {preselectedProfessional.bio && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{preselectedProfessional.bio}</p>
+                  )}
+                  {/* Stats row */}
+                  {reviewStats && (
+                    <div className="flex items-center gap-4 mt-2 flex-wrap">
+                      <div className="flex items-center gap-1 text-sm">
+                        <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                        <span className="font-semibold">{reviewStats.average_rating.toFixed(1)}</span>
+                        <span className="text-muted-foreground">({reviewStats.total_reviews} reviews)</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Photo gallery */}
+              {professionalPhotos.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {professionalPhotos.map((photo) => (
+                      <img
+                        key={photo.id}
+                        src={photo.image_url}
+                        alt={photo.caption ?? "Work photo"}
+                        className="h-24 w-24 flex-shrink-0 rounded-lg object-cover"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Reviews */}
+              {reviews.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recent Reviews</p>
+                  {reviews.map((rev) => (
+                    <div key={rev.id} className="bg-gray-50 rounded-lg px-3 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{rev.client_name}</span>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3 w-3 ${i < rev.rating ? "text-yellow-500 fill-yellow-500" : "text-gray-300"}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {rev.comment && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{rev.comment}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Provider header */}
+        <div className="text-center">
+          <div className="text-4xl mb-2">✨</div>
+          <h1 className="text-2xl font-bold text-gray-800">{provider?.name}</h1>
+          {provider?.address && <p className="text-gray-600 mt-1 text-sm">{provider.address}</p>}
+          <div className="flex items-center justify-center gap-3 mt-2">
+            <Link
+              to={`/book/${activeProviderId}`}
+              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <ExternalLink className="h-3 w-3" />
+              View Provider
+            </Link>
+            <span className="text-gray-300">|</span>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Users className="h-3 w-3" />
+              {professionals.length} professional{professionals.length !== 1 ? "s" : ""}
+            </div>
+          </div>
         </div>
 
         <Card className="shadow-xl">
@@ -188,12 +329,8 @@ export function PublicBookingPage() {
             {/* Show preselected professional name if coming from professional link */}
             {professionalIdParam && preselectedProfessional && (
               <div className="mb-4 flex items-center gap-2 rounded-md bg-purple-50 border border-purple-200 px-3 py-2 text-sm text-purple-800">
-                <span className="font-medium">Professional:</span>
-                {preselectedProfessional.avatar_url && (
-                  <img src={preselectedProfessional.avatar_url} alt={preselectedProfessional.name}
-                    className="w-6 h-6 rounded-full object-cover" />
-                )}
-                {preselectedProfessional.name}
+                <CheckCircle2 className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                <span>Booking with <span className="font-semibold">{preselectedProfessional.name}</span></span>
               </div>
             )}
             <BookingForm

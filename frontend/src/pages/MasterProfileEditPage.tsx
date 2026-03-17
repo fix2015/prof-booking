@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { User, Globe, Clock, FileText, AlignLeft, Phone, Building2, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useMyProfessionalProfile, useUpdateProfessionalProfile, useAttachToProvider } from "@/hooks/useMaster";
+import { useMyProfessionalProfile, useUpdateProfessionalProfile, useAttachToProvider, useDetachFromProvider } from "@/hooks/useMaster";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,7 @@ export function MasterProfileEditPage() {
   void qc;
 
   const attachToProvider = useAttachToProvider();
+  const detachFromProvider = useDetachFromProvider();
   const [providerSearch, setProviderSearch] = useState("");
   const [showProviderPicker, setShowProviderPicker] = useState(false);
 
@@ -287,14 +288,32 @@ export function MasterProfileEditPage() {
                   <p className="text-xs text-muted-foreground">${pp.payment_amount}/session</p>
                 )}
               </div>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                  statusColorMap[pp.status]
-                )}
-              >
-                {statusLabel[pp.status]}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                    statusColorMap[pp.status]
+                  )}
+                >
+                  {statusLabel[pp.status]}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  disabled={detachFromProvider.isPending}
+                  onClick={() => {
+                    if (window.confirm(`Leave ${pp.provider?.name ?? "this provider"}?`)) {
+                      detachFromProvider.mutate(pp.provider_id, {
+                        onSuccess: () => toast({ title: "Unjoined from provider", variant: "success" }),
+                        onError: () => toast({ title: "Failed to unjoin", variant: "destructive" }),
+                      });
+                    }
+                  }}
+                >
+                  Unjoin
+                </Button>
+              </div>
             </div>
           ))}
         </CardContent>

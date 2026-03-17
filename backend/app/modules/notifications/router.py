@@ -33,8 +33,12 @@ def list_notifications(
         else:
             return []
     elif current_user.role == UserRole.PROFESSIONAL:
-        # Filter to notifications for sessions where the professional is assigned
-        query = query.filter(SessionModel.professional_id == current_user.id)
+        # professional_id on Session refers to professionals.id, not users.id
+        from app.modules.masters.models import Professional
+        prof = db.query(Professional).filter(Professional.user_id == current_user.id).first()
+        if not prof:
+            return []
+        query = query.filter(SessionModel.professional_id == prof.id)
     # PLATFORM_ADMIN sees all
 
     if session_id:

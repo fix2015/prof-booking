@@ -21,11 +21,29 @@ from app.modules.loyalty.router import router as loyalty_router
 from app.modules.invoices.router import router as invoices_router
 from app.modules.analytics.router import router as analytics_router
 from app.modules.uploads.router import router as uploads_router
+from app.modules.admin.router import router as admin_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    # Auto-create platform admin account on first boot
+    from app.database import SessionLocal
+    from app.modules.users.models import User, UserRole
+    from app.modules.users.services import get_user_by_email, hash_password
+    db = SessionLocal()
+    try:
+        if not get_user_by_email(db, settings.FIRST_ADMIN_EMAIL):
+            db.add(User(
+                email=settings.FIRST_ADMIN_EMAIL.lower(),
+                hashed_password=hash_password(settings.FIRST_ADMIN_PASSWORD),
+                role=UserRole.PLATFORM_ADMIN,
+                is_active=True,
+                is_verified=True,
+            ))
+            db.commit()
+    finally:
+        db.close()
     yield
 
 
@@ -71,6 +89,7 @@ app.include_router(loyalty_router, prefix=f"{API_PREFIX}/loyalty", tags=["loyalt
 app.include_router(invoices_router, prefix=f"{API_PREFIX}/invoices", tags=["invoices"])
 app.include_router(analytics_router, prefix=f"{API_PREFIX}/analytics", tags=["analytics"])
 app.include_router(uploads_router, prefix=f"{API_PREFIX}/upload", tags=["upload"])
+app.include_router(admin_router, prefix=f"{API_PREFIX}/admin", tags=["admin"])
 
 
 @app.get(f"{API_PREFIX}/health")

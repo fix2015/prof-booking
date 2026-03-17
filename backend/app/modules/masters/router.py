@@ -66,6 +66,26 @@ def attach_to_provider(
     return pp
 
 
+@router.delete("/me/providers/{provider_id}", status_code=204)
+def detach_from_provider(
+    provider_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Professional unjoins from a provider."""
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    pp = db.query(ProfessionalProvider).filter(
+        ProfessionalProvider.professional_id == professional.id,
+        ProfessionalProvider.provider_id == provider_id,
+    ).first()
+    if not pp:
+        raise HTTPException(status_code=404, detail="Not attached to this provider")
+    db.delete(pp)
+    db.commit()
+
+
 @router.patch("/me", response_model=ProfessionalResponse)
 def update_my_professional_profile(
     data: ProfessionalUpdate,
