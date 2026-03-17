@@ -19,13 +19,14 @@ import { SalonSelectorPage } from "@/pages/SalonSelectorPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { MasterProfilePage } from "@/pages/MasterProfilePage";
 import { MasterDiscoveryPage } from "@/pages/MasterDiscoveryPage";
+import { FindProvidersPage } from "@/pages/FindProvidersPage";
+import { FindProfessionalsPage } from "@/pages/FindProfessionalsPage";
 import { ReviewsPage } from "@/pages/ReviewsPage";
 import { OwnerAnalyticsPage } from "@/pages/OwnerAnalyticsPage";
 import { MasterAnalyticsPage } from "@/pages/MasterAnalyticsPage";
 import { InvoicesPage } from "@/pages/InvoicesPage";
 import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
 import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
-import { BookingManagementPage } from "@/pages/BookingManagementPage";
 import { ProviderProfilePage } from "@/pages/ProviderProfilePage";
 
 function DashboardRouter() {
@@ -55,7 +56,8 @@ function AppRoutes() {
       {/* Backward-compat: old /masters/:masterId route */}
       <Route path="/masters/:masterId" element={<MasterProfilePage />} />
       <Route path="/discover" element={<MasterDiscoveryPage />} />
-      <Route path="/my-bookings" element={<BookingManagementPage />} />
+      <Route path="/find-providers" element={<FindProvidersPage />} />
+      <Route path="/find-professionals" element={<FindProfessionalsPage />} />
 
       {/* Authenticated app routes */}
       <Route element={<AppLayout />}>

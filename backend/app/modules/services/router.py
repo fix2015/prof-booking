@@ -52,6 +52,22 @@ def get_service_names(db: Session = Depends(get_db)):
     return names
 
 
+@router.get("/professional/{professional_id}", response_model=List[ServiceResponse])
+def get_services_by_professional(professional_id: int, db: Session = Depends(get_db)):
+    """Public: returns services from the professional's active provider."""
+    from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
+    prof = db.query(Professional).filter(Professional.id == professional_id).first()
+    if not prof:
+        raise HTTPException(status_code=404, detail="Professional not found")
+    pp = db.query(ProfessionalProvider).filter(
+        ProfessionalProvider.professional_id == prof.id,
+        ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
+    ).first()
+    if not pp:
+        return []
+    return list_services(db, pp.provider_id)
+
+
 @router.get("/provider/{provider_id}", response_model=List[ServiceResponse])
 def get_services(provider_id: int, db: Session = Depends(get_db)):
     """Public endpoint for listing provider services."""

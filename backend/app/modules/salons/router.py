@@ -14,6 +14,35 @@ from app.modules.users.models import User
 router = APIRouter()
 
 
+@router.get("/search", response_model=List[ProviderPublic])
+def search_providers(
+    q: Optional[str] = Query(None, description="Search by name or address"),
+    address: Optional[str] = Query(None),
+    service_name: Optional[str] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(24, le=100),
+    db: Session = Depends(get_db),
+):
+    """Public: search providers by name, address, and/or service offered."""
+    from app.modules.salons.models import Provider
+    from app.modules.services.models import Service
+
+    query = db.query(Provider).filter(Provider.is_active == True)  # noqa: E712
+    search_term = q or address
+    if search_term:
+        query = query.filter(
+            (Provider.name.ilike(f"%{search_term}%")) |
+            (Provider.address.ilike(f"%{search_term}%"))
+        )
+    if service_name:
+        provider_ids_sub = db.query(Service.provider_id).filter(
+            Service.name.ilike(f"%{service_name}%"),
+            Service.is_active == True,  # noqa: E712
+        ).subquery()
+        query = query.filter(Provider.id.in_(provider_ids_sub))
+    return query.offset(skip).limit(limit).all()
+
+
 @router.get("/public", response_model=List[ProviderPublic])
 def get_public_providers(
     skip: int = Query(0, ge=0),

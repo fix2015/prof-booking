@@ -52,9 +52,12 @@ export function PublicBookingPage() {
   });
 
   const { data: services = [] } = useQuery({
-    queryKey: ["services", activeProviderId],
-    queryFn: () => servicesApi.listByProvider(activeProviderId!),
-    enabled: !!activeProviderId,
+    queryKey: ["services", activeProviderId, professionalIdParam],
+    queryFn: () =>
+      professionalIdParam
+        ? servicesApi.listByProfessional(professionalIdParam)
+        : servicesApi.listByProvider(activeProviderId!),
+    enabled: !!professionalIdParam || !!activeProviderId,
   });
 
   const { data: professionals = [] } = useQuery({

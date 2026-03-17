@@ -20,6 +20,9 @@ export const providersApi = {
 
   create: (data: Partial<Provider>) =>
     apiClient.post<Provider>("/providers/", data).then((r) => r.data),
+
+  search: (params: { q?: string; address?: string; service_name?: string; skip?: number; limit?: number }) =>
+    apiClient.get<Provider[]>("/providers/search", { params }).then((r) => r.data),
 };
 
 // Backward-compat alias
