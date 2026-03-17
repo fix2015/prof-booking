@@ -1,15 +1,23 @@
 import hashlib
 import hmac
-from sqlalchemy.orm import Session
+from typing import List
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
-from app.modules.booking.schemas import PublicBookingRequest, BookingConfirmation
-from app.modules.sessions.services import create_session
+from app.modules.booking.schemas import PublicBookingRequest, BookingConfirmation, BookingLookupResponse
+from app.modules.sessions.services import create_session, get_session_or_404
 from app.modules.sessions.schemas import SessionCreate
+from app.modules.sessions.models import Session as SessionModel, SessionStatus
 from app.modules.salons.services import get_provider_or_404
 from app.modules.services.services import get_service_or_404
 from app.modules.masters.services import get_professional_by_id
 from app.config import settings
+
+_SESSION_JOINS = [
+    joinedload(SessionModel.provider),
+    joinedload(SessionModel.service),
+    joinedload(SessionModel.professional),
+]
 
 
 def _generate_confirmation_code(session_id: int) -> str:
@@ -68,4 +76,65 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
         ends_at=session.ends_at,
         price=session.price,
         confirmation_code=confirmation_code,
+    )
+
+
+def _session_to_lookup_response(session: SessionModel) -> BookingLookupResponse:
+    confirmation_code = _generate_confirmation_code(session.id)
+    return BookingLookupResponse(
+        session_id=session.id,
+        client_name=session.client_name,
+        client_phone=session.client_phone,
+        provider_name=session.provider.name if session.provider else "",
+        service_name=session.service.name if session.service else None,
+        professional_name=session.professional.name if session.professional else None,
+        starts_at=session.starts_at,
+        ends_at=session.ends_at,
+        price=session.price,
+        status=session.status.value,
+        cancellation_reason=session.cancellation_reason,
+        confirmation_code=confirmation_code,
+        created_at=session.created_at,
+    )
+
+
+def lookup_bookings_by_phone(db: Session, phone: str) -> List[BookingLookupResponse]:
+    """Look up all bookings for a phone number."""
+    sessions = (
+        db.query(SessionModel)
+        .options(*_SESSION_JOINS)
+        .filter(SessionModel.client_phone == phone.strip())
+        .order_by(SessionModel.starts_at.desc())
+        .limit(20)
+        .all()
+    )
+    return [_session_to_lookup_response(s) for s in sessions]
+
+
+def cancel_booking(db: Session, session_id: int, confirmation_code: str, phone: str, reason: str | None) -> BookingLookupResponse:
+    """Cancel a booking after verifying confirmation code + phone."""
+    session = (
+        db.query(SessionModel)
+        .options(*_SESSION_JOINS)
+        .filter(SessionModel.id == session_id)
+        .first()
+    )
+    if not session:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    # Check both credentials together to avoid leaking which one failed
+    expected_code = _generate_confirmation_code(session.id)
+    if session.client_phone.strip() != phone.strip() or confirmation_code.upper() != expected_code:
+        raise HTTPException(status_code=403, detail="Invalid phone or confirmation code")
+
+    if session.status in (SessionStatus.CANCELLED, SessionStatus.COMPLETED, SessionStatus.NO_SHOW):
+        raise HTTPException(status_code=409, detail=f"Booking cannot be cancelled (status: {session.status.value})")
+
+    session.status = SessionStatus.CANCELLED
+    session.cancellation_reason = reason
+    db.commit()
+    db.refresh(session)
+    # Re-fetch with joins after refresh clears the instance state
+    return _session_to_lookup_response(
+        db.query(SessionModel).options(*_SESSION_JOINS).filter(SessionModel.id == session_id).first()
     )

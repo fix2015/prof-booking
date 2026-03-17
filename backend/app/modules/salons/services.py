@@ -47,8 +47,13 @@ def get_owner_provider(db: Session, user: User) -> Optional[Provider]:
     return ownership.provider
 
 
-def list_providers(db: Session, skip: int = 0, limit: int = 50) -> List[Provider]:
-    return db.query(Provider).filter(Provider.is_active == True).offset(skip).limit(limit).all()  # noqa: E712
+def list_providers(db: Session, skip: int = 0, limit: int = 50, search: Optional[str] = None) -> List[Provider]:
+    q = db.query(Provider).filter(Provider.is_active == True)  # noqa: E712
+    if search:
+        q = q.filter(
+            (Provider.name.ilike(f"%{search}%")) | (Provider.category.ilike(f"%{search}%"))
+        )
+    return q.offset(skip).limit(limit).all()
 
 
 def update_provider(db: Session, provider: Provider, data: ProviderUpdate) -> Provider:

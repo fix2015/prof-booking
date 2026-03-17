@@ -68,22 +68,27 @@ docker compose down
 
 All routers registered in `main.py` under `/api/v1/`. Each feature module lives in `modules/<name>/` and follows the pattern: `models.py` → `schemas.py` → `services.py` → `router.py`.
 
-**17 modules:** auth, users, salons (aliased as providers), masters (aliased as professionals), sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads.
+**17 modules:** auth, users, salons, masters, sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads.
+
+**Naming migration in progress:** modules are named `salons`/`masters` internally, but the primary API prefixes are now `/api/v1/providers` and `/api/v1/professionals`. The old `/api/v1/salons` and `/api/v1/masters` prefixes remain as backward-compat aliases. Frontend uses both old and new names during transition.
 
 Key files:
 - `config.py` — Pydantic Settings; `APP_SECRET_KEY` and `JWT_SECRET_KEY` are required (no defaults)
 - `database.py` — SQLAlchemy 2 engine; SQLite guards for `pool_size`/`max_overflow`
 - `dependencies.py` — JWT auth guards: `get_current_user()`, `require_role()`, `get_current_owner()`
+- API docs (`/docs`, `/redoc`) are only served when `APP_DEBUG=True`
 
 ### Frontend (`frontend/src/`)
 
 - `api/` — Typed Axios layer, one file per domain (mirrors backend modules)
-- `pages/` — Route-level components (24 pages)
+- `pages/` — Route-level components
 - `components/` — Shared UI; `components/ui/` contains ShadCN primitives
 - `hooks/` — TanStack Query hooks wrapping the API layer
 - `context/` — Auth context (JWT storage, user state)
 
 Vite dev server proxies `/api/*` to `http://localhost:8000`.
+
+**Routing:** Public routes (no auth) render standalone. Authenticated routes are wrapped in `<AppLayout>`. `DashboardRouter` dispatches to the correct dashboard page based on role (`provider_owner` → `OwnerDashboardPage`, `platform_admin` → `AdminPanelPage`, else `MasterDashboardPage`).
 
 ### Auth & Multi-tenancy
 
@@ -91,6 +96,23 @@ Vite dev server proxies `/api/*` to `http://localhost:8000`.
 - Roles: `PLATFORM_ADMIN` > `PROVIDER_OWNER` > `PROFESSIONAL` > `CLIENT`
 - Every data table has a `provider_id` FK; all service queries filter by it
 - Route handlers call `assert_owner_of_salon()` to enforce tenant isolation
+
+### Key Flows
+
+**Public booking** (no auth required):
+```
+GET /api/v1/providers/public → list salons
+GET /api/v1/services/salon/:id → services with prices/durations
+GET /api/v1/calendar/availability → available slots
+POST /api/v1/booking/ → create booking → triggers SMS + email via Celery → returns confirmation code
+```
+
+**Stripe payments:**
+```
+POST /api/v1/payments/checkout → create Stripe Checkout Session → return checkout_url
+Client redirects to Stripe hosted page
+POST /api/v1/payments/webhook ← Stripe posts on success/failure → updates session status
+```
 
 ### Async Jobs
 

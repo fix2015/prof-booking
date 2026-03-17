@@ -52,6 +52,7 @@ class ProfessionalCreate(BaseModel):
     nationality: Optional[str] = None
     experience_years: Optional[int] = None
     description: Optional[str] = None
+    is_independent: bool = False
 
 
 class ProfessionalUpdate(BaseModel):
@@ -63,6 +64,7 @@ class ProfessionalUpdate(BaseModel):
     nationality: Optional[str] = None
     experience_years: Optional[int] = None
     description: Optional[str] = None
+    is_independent: Optional[bool] = None
 
 
 class ProfessionalResponse(BaseModel):
@@ -76,6 +78,7 @@ class ProfessionalResponse(BaseModel):
     nationality: Optional[str]
     experience_years: Optional[int]
     description: Optional[str]
+    is_independent: bool = False
     created_at: datetime
     professional_providers: List[ProfessionalProviderResponse] = []
     photos: List[ProfessionalPhotoResponse] = []
@@ -116,6 +119,7 @@ class ProfessionalPublic(BaseModel):
     nationality: Optional[str]
     experience_years: Optional[int]
     description: Optional[str]
+    is_independent: bool = False
     photos: List[ProfessionalPhotoResponse] = []
 
     model_config = {"from_attributes": True}

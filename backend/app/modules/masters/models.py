@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, DateTime, Float,
+    Column, Integer, String, DateTime, Float, Boolean,
     ForeignKey, Index, JSON, Enum as SAEnum,
 )
 from sqlalchemy.orm import relationship
@@ -30,6 +30,7 @@ class Professional(Base):
     nationality = Column(String(100), nullable=True)
     experience_years = Column(Integer, nullable=True)
     description = Column(String(2000), nullable=True)
+    is_independent = Column(Boolean, default=False, nullable=False, server_default="false")
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

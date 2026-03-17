@@ -2,7 +2,8 @@ import apiClient from "./client";
 import { Provider } from "@/types";
 
 export const providersApi = {
-  listPublic: () => apiClient.get<Provider[]>("/providers/public").then((r) => r.data),
+  listPublic: (search?: string) =>
+    apiClient.get<Provider[]>("/providers/public", { params: search ? { search } : undefined }).then((r) => r.data),
 
   getPublic: (id: number) =>
     apiClient.get<Provider>(`/providers/public/${id}`).then((r) => r.data),

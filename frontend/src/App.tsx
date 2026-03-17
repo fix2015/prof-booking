@@ -25,6 +25,7 @@ import { MasterAnalyticsPage } from "@/pages/MasterAnalyticsPage";
 import { InvoicesPage } from "@/pages/InvoicesPage";
 import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
 import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
+import { BookingManagementPage } from "@/pages/BookingManagementPage";
 
 function DashboardRouter() {
   const { role } = useAuthContext();
@@ -51,6 +52,7 @@ function AppRoutes() {
       {/* Backward-compat: old /masters/:masterId route */}
       <Route path="/masters/:masterId" element={<MasterProfilePage />} />
       <Route path="/discover" element={<MasterDiscoveryPage />} />
+      <Route path="/my-bookings" element={<BookingManagementPage />} />
 
       {/* Authenticated app routes */}
       <Route element={<AppLayout />}>
