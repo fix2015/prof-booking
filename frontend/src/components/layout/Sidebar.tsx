@@ -18,18 +18,19 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { labelKey: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { labelKey: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.calendar", href: "/calendar", icon: Calendar, roles: ["professional", "provider_owner"] },
-  { labelKey: "nav.sessions", href: "/sessions", icon: Scissors },
-  { labelKey: "nav.professionals", href: "/professionals", icon: Users, roles: ["provider_owner", "platform_admin"] },
+  { labelKey: "nav.sessions", href: "/sessions", icon: Scissors, roles: ["professional", "provider_owner"] },
+  { labelKey: "nav.professionals", href: "/professionals", icon: Users, roles: ["provider_owner"] },
   { labelKey: "nav.services", href: "/services", icon: Settings, roles: ["provider_owner", "professional"] },
-  { labelKey: "nav.reviews", href: "/reviews", icon: Star, roles: ["provider_owner", "platform_admin"] },
-  { labelKey: "nav.analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
+  { labelKey: "nav.reviews", href: "/reviews", icon: Star, roles: ["provider_owner"] },
+  { labelKey: "nav.analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner"] },
   { labelKey: "nav.analytics", href: "/analytics/professional", icon: TrendingUp, roles: ["professional"] },
-  { labelKey: "nav.invoices", href: "/invoices", icon: FileText, roles: ["provider_owner", "professional", "platform_admin"] },
-  { labelKey: "nav.reports", href: "/reports", icon: BarChart2, roles: ["provider_owner", "platform_admin"] },
-  { labelKey: "nav.notifications", href: "/notifications", icon: Bell },
+  { labelKey: "nav.invoices", href: "/invoices", icon: FileText, roles: ["provider_owner", "professional"] },
+  { labelKey: "nav.reports", href: "/reports", icon: BarChart2, roles: ["provider_owner"] },
+  { labelKey: "nav.notifications", href: "/notifications", icon: Bell, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.admin", href: "/admin", icon: Shield, roles: ["platform_admin"] },
+  { labelKey: "nav.analytics", href: "/analytics/owner", icon: BarChart2, roles: ["platform_admin"] },
   { labelKey: "nav.profile", href: "/profile/professional", icon: User, roles: ["professional"] },
   { labelKey: "nav.profile", href: "/profile/provider", icon: Settings2, roles: ["provider_owner"] },
 ];
@@ -83,8 +84,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           })}
         </ul>
 
-        {/* Discovery link — hidden from professionals */}
-        {role !== "professional" && (
+        {/* Discovery link — only for owners/professionals */}
+        {(role === "provider_owner" || role === "professional") && (
           <div className="mt-4 border-t pt-4">
             <Link
               to="/discover"
