@@ -20,16 +20,49 @@ const STATUS_FILTERS: Array<{ value: SessionStatus | "all"; label: string }> = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
+type DateFilter = "all" | "today" | "week" | "month";
+
+const DATE_FILTERS: Array<{ value: DateFilter; label: string }> = [
+  { value: "all", label: "All time" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "This week" },
+  { value: "month", label: "This month" },
+];
+
+function matchesDateFilter(session: Session, filter: DateFilter): boolean {
+  if (filter === "all" || !session.starts_at) return true;
+  const date = new Date(session.starts_at);
+  const now = new Date();
+  if (filter === "today") {
+    return date.toDateString() === now.toDateString();
+  }
+  if (filter === "week") {
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+    return date >= weekStart && date < weekEnd;
+  }
+  if (filter === "month") {
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  }
+  return true;
+}
+
 export function SessionsPage() {
   const { role } = useAuthContext();
   const isOwner = role === "provider_owner";
   const [statusFilter, setStatusFilter] = useState<SessionStatus | "all">("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [earningsModal, setEarningsModal] = useState<Session | null>(null);
   const [earningsAmount, setEarningsAmount] = useState("");
 
-  const { data: sessions = [], isLoading } = useSessions(
+  const { data: allSessions = [], isLoading } = useSessions(
     statusFilter !== "all" ? { status: statusFilter } : {}
   );
+
+  const sessions = allSessions.filter((s) => matchesDateFilter(s, dateFilter));
 
   const updateSession = useUpdateSession();
   const recordEarnings = useRecordEarnings();
@@ -70,6 +103,24 @@ export function SessionsPage() {
           >
             {f.label}
           </Button>
+        ))}
+      </div>
+
+      {/* Date filter */}
+      <div className="flex gap-1.5 md:gap-2 flex-wrap">
+        {DATE_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setDateFilter(f.value)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+              dateFilter === f.value
+                ? "bg-gray-900 border-gray-700 text-white"
+                : "bg-white border-gray-200 text-gray-700 hover:border-gray-400"
+            )}
+          >
+            {f.label}
+          </button>
         ))}
       </div>
 
@@ -114,15 +165,6 @@ export function SessionsPage() {
                           </Button>
                         )}
                         {session.status === "confirmed" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleStatusChange(session, "in_progress")}
-                          >
-                            Start
-                          </Button>
-                        )}
-                        {["confirmed", "in_progress"].includes(session.status) && (
                           <Button
                             size="sm"
                             onClick={() => {
