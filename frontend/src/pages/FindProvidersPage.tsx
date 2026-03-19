@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Search, MapPin, Building2, Scissors, SlidersHorizontal, ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Search, MapPin, Building2, Scissors, SlidersHorizontal, ArrowRight, UserPlus, CheckCircle2 } from "lucide-react";
 import { providersApi } from "@/api/salons";
 import { servicesApi } from "@/api/services";
+import { professionalsApi } from "@/api/masters";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuthContext } from "@/context/AuthContext";
+import { toast } from "@/hooks/useToast";
 import type { Provider } from "@/types";
 
 export function FindProvidersPage() {
+  const { role } = useAuthContext();
+  const navigate = useNavigate();
+  const isProfessional = role === "professional";
   const [search, setSearch] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -110,7 +116,7 @@ export function FindProvidersPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {providers.map((provider) => (
-              <ProviderCard key={provider.id} provider={provider} />
+              <ProviderCard key={provider.id} provider={provider} isProfessional={isProfessional} onLoginRequired={() => navigate("/login")} />
             ))}
           </div>
         )}
@@ -119,7 +125,25 @@ export function FindProvidersPage() {
   );
 }
 
-function ProviderCard({ provider }: { provider: Provider }) {
+function ProviderCard({ provider, isProfessional, onLoginRequired }: {
+  provider: Provider;
+  isProfessional: boolean;
+  onLoginRequired: () => void;
+}) {
+  const [requested, setRequested] = useState(false);
+
+  const requestMutation = useMutation({
+    mutationFn: () => professionalsApi.attachToProvider(provider.id),
+    onSuccess: () => {
+      setRequested(true);
+      toast({ title: "Request sent!", description: `${provider.name} will review your application.` });
+    },
+    onError: (e: any) => {
+      const msg = e?.response?.data?.detail ?? "Something went wrong.";
+      toast({ title: "Failed to send request", description: msg, variant: "destructive" });
+    },
+  });
+
   return (
     <Card className="hover:shadow-md transition-all bg-white flex flex-col">
       <CardContent className="p-3 sm:p-4 flex flex-col flex-1">
@@ -165,9 +189,29 @@ function ProviderCard({ provider }: { provider: Provider }) {
           <Link to={`/providers/${provider.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm">View Profile</Button>
           </Link>
-          <Link to={`/book/${provider.id}`} className="flex-1">
-            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950 text-xs sm:text-sm">Book</Button>
-          </Link>
+          {isProfessional ? (
+            <Button
+              size="sm"
+              className="flex-1 gap-1.5 text-xs sm:text-sm bg-purple-700 hover:bg-purple-800"
+              disabled={requested || requestMutation.isPending}
+              onClick={() => requestMutation.mutate()}
+            >
+              {requested
+                ? <><CheckCircle2 className="h-3.5 w-3.5" /> Requested</>
+                : requestMutation.isPending
+                  ? <Spinner size="sm" />
+                  : <><UserPlus className="h-3.5 w-3.5" /> Request to Work</>}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 text-xs sm:text-sm gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50"
+              onClick={onLoginRequired}
+            >
+              <UserPlus className="h-3.5 w-3.5" /> Request to Work
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
