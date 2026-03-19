@@ -4,12 +4,10 @@ from typing import List
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Query
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from PIL import Image
 
 from app.config import settings
-from app.dependencies import get_current_user
-from app.modules.users.models import User
 
 router = APIRouter()
 
@@ -89,7 +87,6 @@ async def upload_image(
     file: UploadFile = File(...),
     max_size: int = Query(default=1200, ge=64, le=4096,
                           description="Max width/height in px (256 for logos)"),
-    current_user: User = Depends(get_current_user),
 ):
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail="Only JPEG, PNG, WebP, GIF images are allowed")
@@ -105,7 +102,6 @@ async def upload_images(
     files: List[UploadFile] = File(...),
     max_size: int = Query(default=1200, ge=64, le=4096,
                           description="Max width/height in px"),
-    current_user: User = Depends(get_current_user),
 ):
     if len(files) > 10:
         raise HTTPException(status_code=400, detail="Maximum 10 images per upload")
