@@ -1134,11 +1134,27 @@ const translations = {
 export type Locale = keyof typeof translations;
 export type TranslationKey = keyof typeof translations.en;
 
-let currentLocale: Locale = (localStorage.getItem("locale") as Locale) || "en";
+const VALID_LOCALES = new Set(Object.keys(translations) as Locale[]);
+const COOKIE_KEY = "app_locale";
+
+function readLocaleCookie(): Locale {
+  const match = document.cookie.match(/(?:^|;\s*)app_locale=([^;]+)/);
+  const val = match?.[1] as Locale | undefined;
+  return val && VALID_LOCALES.has(val) ? val : "en";
+}
+
+function writeLocaleCookie(locale: Locale) {
+  const maxAge = 60 * 60 * 24 * 365; // 1 year
+  document.cookie = `${COOKIE_KEY}=${locale};max-age=${maxAge};path=/;SameSite=Lax`;
+  // keep localStorage in sync for SSR/hydration compatibility
+  localStorage.setItem(COOKIE_KEY, locale);
+}
+
+let currentLocale: Locale = readLocaleCookie();
 
 export function setLocale(locale: Locale) {
   currentLocale = locale;
-  localStorage.setItem("locale", locale);
+  writeLocaleCookie(locale);
 }
 
 export function getLocale(): Locale {
