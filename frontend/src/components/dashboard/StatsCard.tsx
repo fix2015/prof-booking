@@ -24,26 +24,26 @@ export function StatsCard({ title, value, subtitle, icon: Icon, trend, color = "
   const colors = colorMap[color];
 
   const card = (
-    <Card className={cn("animate-fade-in", href && "cursor-pointer hover:shadow-md transition-shadow")}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="mt-2 text-3xl font-bold">{value}</p>
-            {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-            {trend && (
-              <p className={cn("mt-1 text-xs font-medium", trend.value >= 0 ? "text-green-600" : "text-red-600")}>
-                {trend.value >= 0 ? "↑" : "↓"} {Math.abs(trend.value)}% {trend.label}
-              </p>
-            )}
+    <Card className={cn("animate-fade-in h-full", href && "cursor-pointer hover:shadow-md transition-shadow")}>
+      <CardContent className="p-4 md:p-6 h-full flex flex-col justify-between">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">{title}</p>
+          <div className={cn("rounded-lg p-2 md:p-3 shrink-0", colors.bg)}>
+            <Icon className={cn("h-4 w-4 md:h-6 md:w-6", colors.icon)} />
           </div>
-          <div className={cn("rounded-lg p-3", colors.bg)}>
-            <Icon className={cn("h-6 w-6", colors.icon)} />
-          </div>
+        </div>
+        <div className="mt-2">
+          <p className="text-xl md:text-3xl font-bold truncate">{value}</p>
+          {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
+          {trend && (
+            <p className={cn("mt-1 text-xs font-medium", trend.value >= 0 ? "text-green-600" : "text-red-600")}>
+              {trend.value >= 0 ? "↑" : "↓"} {Math.abs(trend.value)}% {trend.label}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
   );
 
-  return href ? <Link to={href}>{card}</Link> : card;
+  return href ? <Link to={href} className="h-full block">{card}</Link> : card;
 }
