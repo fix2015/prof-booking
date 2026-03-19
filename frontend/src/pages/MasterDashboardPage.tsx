@@ -76,7 +76,7 @@ export function MasterDashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 items-stretch">
         <StatsCard
           title="Today's Sessions"
           value={todaySessions?.length ?? 0}
