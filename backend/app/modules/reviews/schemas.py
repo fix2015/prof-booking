@@ -5,7 +5,7 @@ from datetime import datetime
 
 class ReviewCreate(BaseModel):
     professional_id: int
-    provider_id: int
+    provider_id: Optional[int] = None
     client_name: str
     client_phone: Optional[str] = None
     rating: int = Field(..., ge=1, le=5)

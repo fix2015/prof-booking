@@ -33,7 +33,7 @@ export function MasterProfilePage() {
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["reviews", "professional", id],
-    queryFn: () => reviewsApi.list({ master_id: id }).then((r) => r.data),
+    queryFn: () => reviewsApi.list({ professional_id: id }).then((r) => r.data),
     enabled: !!id,
   });
 
@@ -283,7 +283,7 @@ export function MasterProfilePage() {
       {reviewOpen && (
         <ReviewModal
           professionalId={professional.id}
-          providerId={professional.professional_providers?.[0]?.provider_id ?? 0}
+          providerId={professional.professional_providers?.[0]?.provider_id}
           professionalName={professional.name}
           onClose={() => setReviewOpen(false)}
           onSuccess={() => {
@@ -305,7 +305,7 @@ function ReviewModal({
   onSuccess,
 }: {
   professionalId: number;
-  providerId: number;
+  providerId?: number;
   professionalName: string;
   onClose: () => void;
   onSuccess: () => void;
