@@ -132,6 +132,12 @@ function ProviderCard({ provider, isProfessional, onLoginRequired }: {
 }) {
   const [requested, setRequested] = useState(false);
 
+  const { data: services = [] } = useQuery({
+    queryKey: ["services", "provider", provider.id],
+    queryFn: () => servicesApi.listByProvider(provider.id),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const requestMutation = useMutation({
     mutationFn: () => professionalsApi.attachToProvider(provider.id),
     onSuccess: () => {
@@ -184,6 +190,20 @@ function ProviderCard({ provider, isProfessional, onLoginRequired }: {
             </span>
           )}
         </div>
+
+        {services.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {services.slice(0, 4).map((s) => (
+              <span key={s.id} className="inline-flex items-center text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">
+                {s.name}
+                {s.price ? <span className="ml-1 font-medium text-gray-800">£{s.price}</span> : null}
+              </span>
+            ))}
+            {services.length > 4 && (
+              <span className="text-xs text-muted-foreground px-1">+{services.length - 4} more</span>
+            )}
+          </div>
+        )}
 
         <div className="mt-auto flex gap-2">
           <Link to={`/providers/${provider.id}`} className="flex-1">
