@@ -137,17 +137,17 @@ export function MasterProfilePage() {
             </div>
           )}
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link to={`/book?professional_id=${professional.id}`}>
-              <Button size="lg" className="bg-gray-900 hover:bg-gray-950">
+          <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-2">
+            <Link to={`/book?professional_id=${professional.id}`} className="w-full sm:w-auto">
+              <Button size="sm" className="w-full sm:w-auto sm:text-base sm:px-5 sm:py-2.5 bg-gray-900 hover:bg-gray-950">
                 Book Appointment
               </Button>
             </Link>
             {role === "provider_owner" && (
               <Button
-                size="lg"
+                size="sm"
                 variant="outline"
-                className="gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+                className="w-full sm:w-auto sm:text-base sm:px-5 sm:py-2.5 gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
                 disabled={inviteMutation.isPending || inviteMutation.isSuccess}
                 onClick={() => inviteMutation.mutate()}
               >
@@ -156,9 +156,9 @@ export function MasterProfilePage() {
               </Button>
             )}
             <Button
-              size="lg"
+              size="sm"
               variant="outline"
-              className="gap-2"
+              className="w-full sm:w-auto sm:text-base sm:px-5 sm:py-2.5 gap-2"
               onClick={() => setReviewOpen(true)}
             >
               <MessageSquare className="h-4 w-4" />
