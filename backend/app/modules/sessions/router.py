@@ -47,6 +47,12 @@ def get_sessions(
     if current_user.role == UserRole.PROFESSIONAL:
         professional = get_professional_by_user_id(db, current_user.id)
         professional_id = professional.id if professional else None
+    # Owners can only see sessions for their own provider
+    elif current_user.role == UserRole.PROVIDER_OWNER:
+        from app.modules.salons.models import ProviderOwner
+        ownership = db.query(ProviderOwner).filter(ProviderOwner.user_id == current_user.id).first()
+        if ownership:
+            provider_id = ownership.provider_id
     return list_sessions(db, provider_id, professional_id, status, date_from, date_to, skip, limit)
 
 
