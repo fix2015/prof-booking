@@ -2,6 +2,8 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Star, Clock, Flag, Image, CheckCircle2, Calendar, TrendingUp, Building2, UserPlus, MessageSquare, X, Upload } from "lucide-react";
 import { useState, useRef } from "react";
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
@@ -21,6 +23,7 @@ export function MasterProfilePage() {
   const { role } = useAuthContext();
   const qc = useQueryClient();
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
 
   const { data: professional, isLoading } = useQuery({
     queryKey: ["professional", id],
@@ -202,16 +205,28 @@ export function MasterProfilePage() {
             <Image className="h-5 w-5" /> Portfolio
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
-            {photos.map((photo) => (
-              <div key={photo.id} className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+            {photos.map((photo, i) => (
+              <button
+                key={photo.id}
+                type="button"
+                className="aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-gray-400"
+                onClick={() => setLightboxIndex(i)}
+              >
                 <img
                   src={photo.image_url}
                   alt={photo.caption ?? "Portfolio photo"}
                   className="h-full w-full object-cover hover:scale-105 transition-transform duration-200"
                 />
-              </div>
+              </button>
             ))}
           </div>
+
+          <Lightbox
+            open={lightboxIndex >= 0}
+            index={lightboxIndex}
+            close={() => setLightboxIndex(-1)}
+            slides={photos.map((p) => ({ src: p.image_url, alt: p.caption ?? "" }))}
+          />
         </div>
       )}
 
