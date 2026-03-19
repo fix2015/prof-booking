@@ -82,7 +82,7 @@ export function PublicBookingPage() {
   const { data: reviews = [] } = useQuery({
     queryKey: ["reviews", professionalIdParam],
     queryFn: () =>
-      reviewsApi.list({ master_id: professionalIdParam }).then((r) =>
+      reviewsApi.list({ professional_id: professionalIdParam }).then((r) =>
         r.data.filter((rev) => rev.is_published).slice(0, 5)
       ),
     enabled: !!professionalIdParam,

@@ -7,6 +7,7 @@ from app.dependencies import get_current_owner
 from app.modules.reviews.models import Review
 from app.modules.reviews.schemas import ReviewCreate, ReviewResponse, ReviewStats
 from app.modules.users.models import User
+from app.modules.masters.models import ProfessionalProvider, ProfessionalStatus
 
 router = APIRouter()
 
@@ -23,10 +24,22 @@ def create_review(
         if existing:
             raise HTTPException(status_code=409, detail="Review already submitted for this session")
 
+    # Resolve provider_id from the professional's active provider if not supplied
+    provider_id = data.provider_id
+    if not provider_id:
+        pp = db.query(ProfessionalProvider).filter(
+            ProfessionalProvider.professional_id == data.professional_id,
+            ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
+        ).first()
+        if pp:
+            provider_id = pp.provider_id
+        else:
+            raise HTTPException(status_code=400, detail="Cannot determine provider for this professional")
+
     review = Review(
         session_id=data.session_id,
         professional_id=data.professional_id,
-        provider_id=data.provider_id,
+        provider_id=provider_id,
         client_name=data.client_name,
         client_phone=data.client_phone,
         rating=data.rating,
