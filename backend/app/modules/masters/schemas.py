@@ -120,7 +120,9 @@ class ProfessionalPublic(BaseModel):
     experience_years: Optional[int]
     description: Optional[str]
     is_independent: bool = False
+    social_links: Optional[Dict] = {}
     photos: List[ProfessionalPhotoResponse] = []
+    professional_providers: List[ProfessionalProviderResponse] = []
 
     model_config = {"from_attributes": True}
 
