@@ -51,7 +51,7 @@ def owner_workers_analytics(
 
         completed = [s for s in sessions if s.status == SessionStatus.COMPLETED]
         total_minutes = sum(s.duration_minutes for s in completed)
-        total_revenue = sum(s.price or 0 for s in completed)
+        total_revenue = sum(s.earnings_amount or s.earnings_amount or s.price or 0 for s in completed)
         professional_pct = pp.payment_amount or 70.0  # treat as percentage if <= 100
         professional_earnings = total_revenue * professional_pct / 100 if professional_pct <= 100 else professional_pct * len(completed)
 
@@ -103,7 +103,7 @@ def professional_own_analytics(
     sessions = q.all()
     completed = [s for s in sessions if s.status == SessionStatus.COMPLETED]
     total_minutes = sum(s.duration_minutes for s in completed)
-    total_revenue = sum(s.price or 0 for s in completed)
+    total_revenue = sum(s.earnings_amount or s.price or 0 for s in completed)
 
     # Per-provider breakdown
     provider_breakdown: dict = {}
@@ -112,7 +112,7 @@ def professional_own_analytics(
         if pid not in provider_breakdown:
             provider_breakdown[pid] = {"sessions": 0, "revenue": 0.0, "hours": 0.0}
         provider_breakdown[pid]["sessions"] += 1
-        provider_breakdown[pid]["revenue"] += s.price or 0
+        provider_breakdown[pid]["revenue"] += s.earnings_amount or s.price or 0
         provider_breakdown[pid]["hours"] += s.duration_minutes / 60
 
     # Monthly breakdown
@@ -122,7 +122,7 @@ def professional_own_analytics(
         if key not in monthly:
             monthly[key] = {"sessions": 0, "revenue": 0.0}
         monthly[key]["sessions"] += 1
-        monthly[key]["revenue"] += s.price or 0
+        monthly[key]["revenue"] += s.earnings_amount or s.price or 0
 
     return {
         "professional_id": professional.id,

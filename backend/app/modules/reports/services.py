@@ -87,7 +87,7 @@ def get_provider_report(db: Session, provider_id: int, date_from: date, date_to:
 
     completed = [s for s in all_sessions if s.status == SessionStatus.COMPLETED]
     cancelled = [s for s in all_sessions if s.status == SessionStatus.CANCELLED]
-    total_revenue = sum(s.total_paid or 0 for s in completed)
+    total_revenue = sum(s.earnings_amount or s.price or 0 for s in completed)
     total_deposits = sum(s.deposit_paid or 0 for s in all_sessions)
 
     summary = ProviderRevenueSummary(
@@ -111,7 +111,7 @@ def get_provider_report(db: Session, provider_id: int, date_from: date, date_to:
                 service_counts[s.service_id] = {"name": svc.name if svc else "Unknown", "count": 0, "revenue": 0.0}
             service_counts[s.service_id]["count"] += 1
             if s.status == SessionStatus.COMPLETED:
-                service_counts[s.service_id]["revenue"] += s.total_paid or 0
+                service_counts[s.service_id]["revenue"] += s.earnings_amount or s.price or 0
 
     service_popularity = [
         ServicePopularity(
@@ -156,7 +156,7 @@ def get_provider_report(db: Session, provider_id: int, date_from: date, date_to:
         day = s.starts_at.date()
         if day not in daily:
             daily[day] = DailyRevenue(date=day, revenue=0, session_count=0)
-        daily[day].revenue += s.total_paid or 0
+        daily[day].revenue += s.earnings_amount or s.price or 0
         daily[day].session_count += 1
 
     return ProviderReportResponse(

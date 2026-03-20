@@ -70,9 +70,9 @@ def update_session(db: DBSession, session: Session, data: SessionUpdate) -> Sess
 
 
 def record_earnings(db: DBSession, session: Session, data: EarningsInput) -> Session:
-    if session.status not in (SessionStatus.COMPLETED, SessionStatus.IN_PROGRESS):
+    if session.status not in (SessionStatus.COMPLETED, SessionStatus.IN_PROGRESS, SessionStatus.CONFIRMED):
         raise HTTPException(
-            status_code=400, detail="Can only record earnings for completed/in-progress sessions"
+            status_code=400, detail="Can only record earnings for confirmed or completed sessions"
         )
     session.earnings_amount = data.earnings_amount
     session.earnings_recorded_at = datetime.utcnow()
