@@ -78,7 +78,7 @@ export function MasterProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 py-4 md:py-6">
+    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 py-4 md:py-6 px-4">
       {/* Hero */}
       <div className="flex flex-col sm:flex-row gap-4 md:gap-6 items-start">
         <div className="flex-shrink-0">
