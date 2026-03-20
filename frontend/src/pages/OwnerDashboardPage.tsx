@@ -17,12 +17,11 @@ export function OwnerDashboardPage() {
   const today = format(new Date(), "yyyy-MM-dd");
   const monthAgo = format(subDays(new Date(), 30), "yyyy-MM-dd");
 
-  const { data: providers } = useQuery({
-    queryKey: ["providers", "public"],
-    queryFn: () => providersApi.listPublic(),
+  const { data: provider } = useQuery({
+    queryKey: ["providers", "my"],
+    queryFn: () => providersApi.getMy(),
   });
 
-  const provider = providers?.[0];
   const providerId = provider?.id;
 
   const qc = useQueryClient();
