@@ -90,7 +90,7 @@ export function MasterDiscoveryPage() {
   const hasActiveFilters = !!(filters.search || activeFilterCount);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col overflow-x-hidden">
       {/* Top nav */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
         <Link to="/" className="text-lg font-bold tracking-tight text-gray-900">

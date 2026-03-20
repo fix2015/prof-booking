@@ -48,7 +48,7 @@ export function FindProvidersPage() {
   const clear = () => { setSearch(""); setServiceName(""); setApplied({ search: "", service_name: "" }); };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col overflow-x-hidden">
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
         <Link to="/dashboard" className="text-lg font-bold tracking-tight text-gray-900">
           <span className="font-bold">Pro</span><span className="font-light">Book</span>
@@ -194,9 +194,9 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
           <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{provider.description}</p>
         )}
 
-        <div className="space-y-1 text-xs text-gray-500 mb-3">
+        <div className="space-y-1 text-xs text-gray-500 mb-3 min-w-0">
           {provider.address && (
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 min-w-0">
               <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
               <span className="truncate">{provider.address}</span>
             </span>

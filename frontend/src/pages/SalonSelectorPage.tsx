@@ -340,7 +340,7 @@ export function SalonSelectorPage() {
   const selectedCoords = selectedProvider ? getCoords(selectedProvider) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex flex-col overflow-x-hidden">
       {/* Header */}
       <div className="px-4 pt-6 pb-4 text-center">
         <div className="flex justify-end px-2 mb-2">
@@ -878,7 +878,7 @@ function ProviderCard({
             )}
             <div className="flex flex-col gap-0.5 mt-1.5 text-xs text-gray-500">
               {provider.address && (
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 min-w-0">
                   <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
                   <span className="truncate">{provider.address}</span>
                 </span>
@@ -890,7 +890,7 @@ function ProviderCard({
                 </span>
               )}
               {provider.email && (
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 min-w-0">
                   <Mail className="h-3 w-3 text-gray-400 shrink-0" />
                   <span className="truncate">{provider.email}</span>
                 </span>
