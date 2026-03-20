@@ -35,7 +35,7 @@ export function MasterAnalyticsPage() {
           <p className="text-muted-foreground text-sm">Your performance overview</p>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm flex-wrap">
           <input
             type="date"
             value={dateFrom}

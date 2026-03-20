@@ -144,7 +144,7 @@ export function CalendarPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-xl md:text-2xl font-bold">{isOwner ? "Provider Calendar" : "My Calendar"}</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-xs sm:text-sm">
             {isOwner ? "View sessions across your team" : "Manage your work slots and view bookings"}
           </p>
         </div>
@@ -153,7 +153,7 @@ export function CalendarPage() {
             <select
               value={filterProfessionalId ?? ""}
               onChange={(e) => setFilterProfessionalId(e.target.value ? Number(e.target.value) : undefined)}
-              className="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="border rounded-md px-2 py-1.5 text-xs sm:text-sm max-w-[180px] sm:max-w-none focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="">All professionals</option>
               {providerProfessionals.map((pp: any) => (

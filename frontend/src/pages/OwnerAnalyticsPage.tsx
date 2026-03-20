@@ -107,37 +107,37 @@ export function OwnerAnalyticsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="px-4 py-3">Professional</th>
-                  <th className="px-4 py-3 text-right">Sessions</th>
-                  <th className="px-4 py-3 text-right">Hours</th>
-                  <th className="px-4 py-3 text-right">Revenue</th>
-                  <th className="px-4 py-3 text-right">Professional Earns</th>
-                  <th className="px-4 py-3 text-right">Provider Earns</th>
-                  <th className="px-4 py-3 text-right">Split</th>
+                <tr className="border-b text-left text-muted-foreground text-xs">
+                  <th className="px-3 py-2 whitespace-nowrap">Professional</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Sessions</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Hours</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Revenue</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Pro Earns</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Prov Earns</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Split</th>
                 </tr>
               </thead>
               <tbody>
                 {workers.map((w: WorkerAnalytics) => (
-                  <tr key={w.professional_id} className="border-b hover:bg-muted/40">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                  <tr key={w.professional_id} className="border-b hover:bg-muted/40 text-xs sm:text-sm">
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
                         {w.avatar_url ? (
-                          <img src={w.avatar_url} alt={w.professional_name} className="h-7 w-7 rounded-full object-cover" />
+                          <img src={w.avatar_url} alt={w.professional_name} className="h-6 w-6 rounded-full object-cover shrink-0" />
                         ) : (
-                          <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-700">
+                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-700 shrink-0">
                             {w.professional_name.charAt(0)}
                           </div>
                         )}
-                        {w.professional_name}
+                        <span className="truncate max-w-[100px] sm:max-w-none">{w.professional_name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right">{w.completed_sessions}</td>
-                    <td className="px-4 py-3 text-right">{w.total_hours}h</td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(w.total_revenue)}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{formatCurrency(w.professional_earnings)}</td>
-                    <td className="px-4 py-3 text-right text-blue-600">{formatCurrency(w.provider_earnings)}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">{w.professional_percentage}%</td>
+                    <td className="px-3 py-2 text-right">{w.completed_sessions}</td>
+                    <td className="px-3 py-2 text-right">{w.total_hours}h</td>
+                    <td className="px-3 py-2 text-right">{formatCurrency(w.total_revenue)}</td>
+                    <td className="px-3 py-2 text-right text-green-600">{formatCurrency(w.professional_earnings)}</td>
+                    <td className="px-3 py-2 text-right text-blue-600">{formatCurrency(w.provider_earnings)}</td>
+                    <td className="px-3 py-2 text-right text-muted-foreground">{w.professional_percentage}%</td>
                   </tr>
                 ))}
               </tbody>

@@ -201,12 +201,12 @@ function InvoiceRow({
                 {invoice.status.toUpperCase()}
               </span>
             </div>
-            <div className="flex flex-wrap gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] sm:text-xs md:text-sm text-muted-foreground">
               <span>{invoice.total_sessions} sessions</span>
               <span>Revenue: {formatCurrency(invoice.total_revenue)}</span>
-              <span className="text-green-600">Professional: {formatCurrency(professionalEarnings)}</span>
-              <span className="text-blue-600">Provider: {formatCurrency(providerEarnings)}</span>
-              <span>{professionalPct}% split</span>
+              <span className="text-green-600">Pro: {formatCurrency(professionalEarnings)}</span>
+              <span className="text-blue-600">Prov: {formatCurrency(providerEarnings)}</span>
+              <span>{professionalPct}%</span>
             </div>
           </div>
 

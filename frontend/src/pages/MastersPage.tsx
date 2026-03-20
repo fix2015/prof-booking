@@ -77,12 +77,12 @@ export function MastersPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-xl md:text-2xl font-bold">{t("masters.title")}</h1>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => { setShowAddForm(!showAddForm); setShowInviteForm(false); }}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Professional
+          <Button variant="outline" size="sm" onClick={() => { setShowAddForm(!showAddForm); setShowInviteForm(false); }}>
+            <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+            Add
           </Button>
-          <Button onClick={() => { setShowInviteForm(!showInviteForm); setShowAddForm(false); }}>
-            <Send className="mr-2 h-4 w-4" />
+          <Button size="sm" onClick={() => { setShowInviteForm(!showInviteForm); setShowAddForm(false); }}>
+            <Send className="mr-1.5 h-3.5 w-3.5" />
             {t("masters.invite")}
           </Button>
         </div>
@@ -156,7 +156,7 @@ export function MastersPage() {
             <p className="text-sm font-medium text-muted-foreground">
               Send an invite link — professional registers and you approve them.
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Input
                 type="email"
                 placeholder="professional@example.com"
@@ -164,11 +164,13 @@ export function MastersPage() {
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="flex-1"
               />
-              <Button onClick={() => inviteMutation.mutate()} disabled={!inviteEmail || inviteMutation.isPending}>
-                {inviteMutation.isPending ? <Spinner size="sm" className="mr-2" /> : null}
-                Send Invite
-              </Button>
-              <Button variant="outline" onClick={() => setShowInviteForm(false)}>Cancel</Button>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => inviteMutation.mutate()} disabled={!inviteEmail || inviteMutation.isPending} className="flex-1 sm:flex-none">
+                  {inviteMutation.isPending ? <Spinner size="sm" className="mr-2" /> : null}
+                  Send
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setShowInviteForm(false)} className="flex-1 sm:flex-none">Cancel</Button>
+              </div>
             </div>
           </CardContent>
         </Card>
