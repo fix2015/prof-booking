@@ -16,11 +16,11 @@ export function OwnerAnalyticsPage() {
   });
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
 
-  const { data: providers = [] } = useQuery({
-    queryKey: ["providers", "public"],
-    queryFn: () => providersApi.listPublic(),
+  const { data: provider } = useQuery({
+    queryKey: ["providers", "my"],
+    queryFn: () => providersApi.getMy(),
   });
-  const providerId = providers[0]?.id;
+  const providerId = provider?.id;
 
   const { data: workers = [], isLoading } = useQuery({
     queryKey: ["analytics", "workers", providerId, dateFrom, dateTo],

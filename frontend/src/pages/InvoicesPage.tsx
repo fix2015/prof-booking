@@ -63,11 +63,10 @@ export function InvoicesPage() {
   const generateMutation = useMutation({
     mutationFn: () =>
       invoicesApi.generate(providerId!, {
-         
         professional_id: Number(selectedProfessionalId),
         period_start: periodStart,
         period_end: periodEnd,
-      } as any),
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"] });
       setShowGenerate(false);
