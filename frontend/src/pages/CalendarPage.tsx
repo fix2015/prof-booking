@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/useToast";
 import { Session } from "@/types";
+import { useAuthContext } from "@/context/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { professionalsApi } from "@/api/masters";
+import { providersApi } from "@/api/salons";
 
 function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -30,17 +34,33 @@ function endOfYear(d: Date): Date {
 }
 
 export function CalendarPage() {
+  const { role } = useAuthContext();
+  const isOwner = role === "provider_owner" || role === "platform_admin";
+
   const { data: professional, isLoading: professionalLoading } = useMyProfessionalProfile();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [filterProfessionalId, setFilterProfessionalId] = useState<number | undefined>(undefined);
 
-  // Fetch a 6-week window centred on the current calendar date (±3 weeks)
+  // Owner: fetch their provider + professionals list
+  const { data: myProvider } = useQuery({
+    queryKey: ["providers", "my"],
+    queryFn: () => providersApi.getMy(),
+    enabled: isOwner,
+  });
+  const { data: providerProfessionals = [] } = useQuery({
+    queryKey: ["professionals", "provider", myProvider?.id, "active"],
+    queryFn: () => professionalsApi.getProviderProfessionals(myProvider!.id, "active"),
+    enabled: isOwner && !!myProvider?.id,
+  });
+
+  // Fetch a 6-week window centred on the current calendar date
   const rangeStart = toISODateString(addDays(getWeekStart(currentDate), -7));
   const rangeEnd   = toISODateString(addDays(getWeekStart(currentDate), 35));
 
   const { data: workSlots = [] } = useMyWorkSlots(rangeStart, rangeEnd);
 
   const { data: sessions = [] } = useSessions({
-    professional_id: professional?.id,
+    professional_id: isOwner ? filterProfessionalId : professional?.id,
     date_from: rangeStart,
     date_to: rangeEnd,
   });
@@ -51,8 +71,8 @@ export function CalendarPage() {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [showCopyPanel, setShowCopyPanel] = useState(false);
 
-  if (professionalLoading) return <Spinner className="mx-auto mt-20" />;
-  if (!professional) {
+  if (!isOwner && professionalLoading) return <Spinner className="mx-auto mt-20" />;
+  if (!isOwner && !professional) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Professional profile not found.</p>
@@ -60,7 +80,9 @@ export function CalendarPage() {
     );
   }
 
-  const providerId = professional.professional_providers?.[0]?.provider_id;
+  const providerId = isOwner
+    ? myProvider?.id
+    : professional?.professional_providers?.[0]?.provider_id;
 
   const handleAddSlot = async (date: Date, start: string, end: string) => {
     if (!providerId) {
@@ -121,17 +143,37 @@ export function CalendarPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">My Calendar</h1>
-          <p className="text-muted-foreground">Manage your work slots and view bookings</p>
+          <h1 className="text-xl md:text-2xl font-bold">{isOwner ? "Provider Calendar" : "My Calendar"}</h1>
+          <p className="text-muted-foreground">
+            {isOwner ? "View sessions across your team" : "Manage your work slots and view bookings"}
+          </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setShowCopyPanel(!showCopyPanel)}>
-          <Copy className="mr-2 h-4 w-4" />
-          Copy Schedule
-        </Button>
+        <div className="flex gap-2 items-center flex-wrap">
+          {isOwner && providerProfessionals.length > 0 && (
+            <select
+              value={filterProfessionalId ?? ""}
+              onChange={(e) => setFilterProfessionalId(e.target.value ? Number(e.target.value) : undefined)}
+              className="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">All professionals</option>
+              {providerProfessionals.map((pp: any) => (
+                <option key={pp.professional_id} value={pp.professional_id}>
+                  {pp.professional?.name ?? `#${pp.professional_id}`}
+                </option>
+              ))}
+            </select>
+          )}
+          {!isOwner && (
+            <Button variant="outline" size="sm" onClick={() => setShowCopyPanel(!showCopyPanel)}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Schedule
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Copy schedule panel */}
-      {showCopyPanel && (
+      {/* Copy schedule panel — only for professionals */}
+      {!isOwner && showCopyPanel && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Copy Schedule</CardTitle>
@@ -172,8 +214,8 @@ export function CalendarPage() {
       <BookingCalendar
         workSlots={workSlots}
         sessions={sessions}
-        onAddSlot={handleAddSlot}
-        onRemoveSlot={handleRemoveSlot}
+        onAddSlot={isOwner ? undefined : handleAddSlot}
+        onRemoveSlot={isOwner ? undefined : handleRemoveSlot}
         onSessionClick={setSelectedSession}
         onDateChange={setCurrentDate}
       />

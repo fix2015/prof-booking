@@ -10,6 +10,7 @@ class NotificationResponse(BaseModel):
     notification_type: NotificationType
     recipient: str
     subject: Optional[str]
+    body: Optional[str] = None
     status: NotificationStatus
     sent_at: Optional[datetime]
     created_at: datetime

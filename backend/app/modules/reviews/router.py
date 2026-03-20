@@ -49,6 +49,26 @@ def create_review(
     db.add(review)
     db.commit()
     db.refresh(review)
+
+    # Create in-app notification for the professional and provider
+    try:
+        from app.modules.notifications.models import Notification, NotificationType, NotificationStatus
+        stars = "★" * review.rating + "☆" * (5 - review.rating)
+        body = f"{review.client_name} left a {review.rating}/5 review: {stars}"
+        if review.comment:
+            body += f' — "{review.comment[:100]}"'
+        db.add(Notification(
+            session_id=data.session_id,
+            notification_type=NotificationType.SMS_CONFIRMATION,
+            recipient=review.client_phone or "app",
+            subject="New Review",
+            body=body,
+            status=NotificationStatus.SENT,
+        ))
+        db.commit()
+    except Exception:
+        pass  # Non-critical
+
     return review
 
 
