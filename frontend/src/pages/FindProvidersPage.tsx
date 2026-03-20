@@ -33,6 +33,17 @@ export function FindProvidersPage() {
     queryFn: () => providersApi.search({ q: applied.search || undefined, service_name: applied.service_name || undefined, limit: 50 }),
   });
 
+  const { data: myProfile } = useQuery({
+    queryKey: ["professionals", "me"],
+    queryFn: () => professionalsApi.getMe(),
+    enabled: isProfessional,
+  });
+
+  // Set of provider IDs the professional is already linked to (any status)
+  const linkedProviderIds = new Set(
+    myProfile?.professional_providers?.map((pp) => pp.provider_id) ?? []
+  );
+
   const apply = () => setApplied({ search, service_name: serviceName });
   const clear = () => { setSearch(""); setServiceName(""); setApplied({ search: "", service_name: "" }); };
 
@@ -116,7 +127,13 @@ export function FindProvidersPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {providers.map((provider) => (
-              <ProviderCard key={provider.id} provider={provider} isProfessional={isProfessional} onLoginRequired={() => navigate("/login")} />
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                isProfessional={isProfessional}
+                alreadyLinked={linkedProviderIds.has(provider.id)}
+                onLoginRequired={() => navigate("/login")}
+              />
             ))}
           </div>
         )}
@@ -125,9 +142,10 @@ export function FindProvidersPage() {
   );
 }
 
-function ProviderCard({ provider, isProfessional, onLoginRequired }: {
+function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired }: {
   provider: Provider;
   isProfessional: boolean;
+  alreadyLinked: boolean;
   onLoginRequired: () => void;
 }) {
   const [requested, setRequested] = useState(false);
@@ -210,18 +228,24 @@ function ProviderCard({ provider, isProfessional, onLoginRequired }: {
             <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm">View Profile</Button>
           </Link>
           {isProfessional ? (
-            <Button
-              size="sm"
-              className="flex-1 gap-1.5 text-xs sm:text-sm bg-purple-700 hover:bg-purple-800"
-              disabled={requested || requestMutation.isPending}
-              onClick={() => requestMutation.mutate()}
-            >
-              {requested
-                ? <><CheckCircle2 className="h-3.5 w-3.5" /> Requested</>
-                : requestMutation.isPending
-                  ? <Spinner size="sm" />
-                  : <><UserPlus className="h-3.5 w-3.5" /> Request to Work</>}
-            </Button>
+            alreadyLinked ? (
+              <Button size="sm" variant="outline" disabled className="flex-1 gap-1.5 text-xs sm:text-sm border-green-300 text-green-700">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Already Working
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="flex-1 gap-1.5 text-xs sm:text-sm bg-purple-700 hover:bg-purple-800"
+                disabled={requested || requestMutation.isPending}
+                onClick={() => requestMutation.mutate()}
+              >
+                {requested
+                  ? <><CheckCircle2 className="h-3.5 w-3.5" /> Requested</>
+                  : requestMutation.isPending
+                    ? <Spinner size="sm" />
+                    : <><UserPlus className="h-3.5 w-3.5" /> Request to Work</>}
+              </Button>
+            )
           ) : (
             <Button
               size="sm"
