@@ -26,6 +26,7 @@ const navItems: NavItem[] = [
   { labelKey: "nav.reviews", href: "/reviews", icon: Star, roles: ["provider_owner"] },
   { labelKey: "nav.analytics", href: "/analytics/owner", icon: BarChart2, roles: ["provider_owner"] },
   { labelKey: "nav.analytics", href: "/analytics/professional", icon: TrendingUp, roles: ["professional"] },
+  { labelKey: "nav.reviews", href: "/reviews", icon: Star, roles: ["professional"] },
   { labelKey: "nav.invoices", href: "/invoices", icon: FileText, roles: ["provider_owner", "professional"] },
   { labelKey: "nav.reports", href: "/reports", icon: BarChart2, roles: ["provider_owner"] },
   { labelKey: "nav.notifications", href: "/notifications", icon: Bell, roles: ["professional", "provider_owner"] },
