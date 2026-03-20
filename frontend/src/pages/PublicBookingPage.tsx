@@ -30,8 +30,9 @@ export function PublicBookingPage() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [selectedProfessional, setSelectedProfessional] = useState<number | undefined>(professionalIdParam);
+  const [chosenProviderId, setChosenProviderId] = useState<number | null>(null);
 
-  // If professional_id is in URL, fetch the professional to get their provider
+  // If professional_id is in URL, fetch the professional to get their provider(s)
   const { data: preselectedProfessional, isLoading: profLoading } = useQuery({
     queryKey: ["professionals", professionalIdParam],
     queryFn: () => professionalsApi.getById(professionalIdParam!),
@@ -43,7 +44,15 @@ export function PublicBookingPage() {
     queryFn: () => providersApi.listPublic(),
   });
 
-  const professionalProviderId = preselectedProfessional?.professional_providers?.[0]?.provider_id;
+  // Active providers the professional works at
+  const linkedActiveProviders = (preselectedProfessional?.professional_providers ?? [])
+    .filter((pp) => pp.status === "active");
+
+  const professionalProviderId =
+    linkedActiveProviders.length === 1
+      ? linkedActiveProviders[0].provider_id
+      : chosenProviderId ?? undefined;
+
   const activeProviderId = providerIdFromUrl || professionalProviderId || providers?.[0]?.id;
   const { data: provider } = useQuery({
     queryKey: ["providers", "public", activeProviderId],
@@ -135,6 +144,83 @@ export function PublicBookingPage() {
   };
 
   if (providersLoading || (!!professionalIdParam && !providerIdFromUrl && profLoading)) return <Spinner className="mx-auto mt-20" />;
+
+  // Show provider picker when professional works at multiple providers and none chosen yet
+  if (
+    professionalIdParam &&
+    !providerIdFromUrl &&
+    linkedActiveProviders.length > 1 &&
+    !chosenProviderId
+  ) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4 md:p-6">
+        <div className="mx-auto max-w-lg space-y-5">
+          {/* Professional mini-header */}
+          {preselectedProfessional && (
+            <div className="flex items-center gap-3">
+              {preselectedProfessional.avatar_url ? (
+                <img
+                  src={preselectedProfessional.avatar_url}
+                  alt={preselectedProfessional.name}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-violet-300 flex items-center justify-center text-xl font-bold text-purple-700 shrink-0">
+                  {preselectedProfessional.name.charAt(0)}
+                </div>
+              )}
+              <div>
+                <p className="font-semibold text-gray-900">{preselectedProfessional.name}</p>
+                <p className="text-xs text-muted-foreground">works at {linkedActiveProviders.length} locations</p>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">Choose a location</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Where would you like to book your appointment?
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {linkedActiveProviders.map((pp) => {
+              const pub = providers?.find((p) => p.id === pp.provider_id);
+              const name = pub?.name ?? pp.provider?.name ?? `Location #${pp.provider_id}`;
+              const address = pub?.address;
+              const logo = pub?.logo_url;
+              return (
+                <button
+                  key={pp.provider_id}
+                  onClick={() => setChosenProviderId(pp.provider_id)}
+                  className="w-full text-left"
+                >
+                  <Card className="hover:shadow-md hover:border-purple-300 transition-all cursor-pointer active:scale-[0.99]">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      {logo ? (
+                        <img src={logo} alt={name} className="w-12 h-12 rounded-xl object-cover border border-gray-200 shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-200 to-rose-300 flex items-center justify-center text-xl font-bold text-pink-800 shrink-0">
+                          {name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900">{name}</p>
+                        {address && (
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{address}</p>
+                        )}
+                      </div>
+                      <span className="text-muted-foreground">›</span>
+                    </CardContent>
+                  </Card>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show provider selector if no provider selected
   if (!activeProviderId) {
@@ -306,6 +392,15 @@ export function PublicBookingPage() {
           <div className="text-4xl mb-2">✨</div>
           <h1 className="text-2xl font-bold text-gray-800">{provider?.name}</h1>
           {provider?.address && <p className="text-gray-600 mt-1 text-sm">{provider.address}</p>}
+          {/* Back link when user chose from multiple providers */}
+          {linkedActiveProviders.length > 1 && chosenProviderId && (
+            <button
+              onClick={() => setChosenProviderId(null)}
+              className="mt-2 text-xs text-purple-600 hover:text-purple-700 underline"
+            >
+              ← Change location
+            </button>
+          )}
           <div className="flex items-center justify-center gap-3 mt-2">
             <Link
               to={`/providers/${activeProviderId}`}
