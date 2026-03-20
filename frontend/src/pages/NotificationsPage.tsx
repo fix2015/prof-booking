@@ -16,6 +16,7 @@ interface Notification {
   notification_type: string;
   recipient: string;
   subject?: string;
+  body?: string;
   status: string;
   sent_at?: string;
   created_at: string;
@@ -168,9 +169,9 @@ export function NotificationsPage() {
                   {notifications.map((n) => (
                     <div key={n.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 md:p-4">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium">{n.notification_type.replace(/_/g, " ")}</p>
-                        <p className="text-xs text-muted-foreground truncate">{n.recipient}</p>
-                        {n.subject && <p className="text-xs text-muted-foreground truncate">{n.subject}</p>}
+                        <p className="text-sm font-medium">{n.subject || n.notification_type.replace(/_/g, " ")}</p>
+                        {n.body && <p className="text-sm text-gray-700 mt-0.5">{n.body}</p>}
+                        <p className="text-xs text-muted-foreground mt-0.5">{n.recipient}</p>
                       </div>
                       <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 shrink-0">
                         <Badge variant={n.status === "sent" ? "success" : n.status === "failed" ? "destructive" : "secondary"}>
