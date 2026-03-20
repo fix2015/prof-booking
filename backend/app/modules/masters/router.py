@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 
 from app.database import get_db
@@ -384,7 +384,15 @@ def get_professional(
     db: Session = Depends(get_db),
 ):
     """Public: get one professional's full profile."""
-    professional = db.query(Professional).filter(Professional.id == professional_id).first()
+    professional = (
+        db.query(Professional)
+        .options(
+            joinedload(Professional.professional_providers).joinedload(ProfessionalProvider.provider),
+            joinedload(Professional.photos),
+        )
+        .filter(Professional.id == professional_id)
+        .first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional not found")
     return professional
