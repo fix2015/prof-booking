@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { UserCheck, UserX, Send, UserPlus } from "lucide-react";
+import { UserCheck, UserX, Send, UserPlus, Settings2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { professionalsApi } from "@/api/masters";
 import { invitesApi } from "@/api/invites";
 import { providersApi } from "@/api/salons";
@@ -197,6 +198,7 @@ export function MastersPage() {
             <ProfessionalCard
               key={pp.id}
               professionalProvider={pp}
+              providerId={providerId!}
               onApprove={() => approveMutation.mutate({ professionalId: pp.professional_id, status: "active" })}
               onReject={() => approveMutation.mutate({ professionalId: pp.professional_id, status: "rejected" })}
               onDeactivate={() => approveMutation.mutate({ professionalId: pp.professional_id, status: "inactive" })}
@@ -214,12 +216,14 @@ export function MastersPage() {
 
 function ProfessionalCard({
   professionalProvider,
+  providerId,
   onApprove,
   onReject,
   onDeactivate,
   isLoading,
 }: {
   professionalProvider: ProfessionalProvider;
+  providerId: number;
   onApprove: () => void;
   onReject: () => void;
   onDeactivate: () => void;
@@ -261,7 +265,7 @@ function ProfessionalCard({
           </span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {professionalProvider.status === "pending" && (
             <>
               <Button size="sm" className="flex-1" onClick={onApprove} disabled={isLoading}>
@@ -275,15 +279,20 @@ function ProfessionalCard({
             </>
           )}
           {professionalProvider.status === "active" && (
-            <Button size="sm" variant="outline" className="w-full" onClick={onDeactivate} disabled={isLoading}>
+            <Button size="sm" variant="outline" className="flex-1" onClick={onDeactivate} disabled={isLoading}>
               Deactivate
             </Button>
           )}
           {professionalProvider.status === "inactive" && (
-            <Button size="sm" className="w-full" onClick={onApprove} disabled={isLoading}>
+            <Button size="sm" className="flex-1" onClick={onApprove} disabled={isLoading}>
               Re-activate
             </Button>
           )}
+          <Link to={`/professionals/${professionalProvider.professional_id}/split?provider_id=${providerId}`}>
+            <Button size="sm" variant="outline" className="gap-1">
+              <Settings2 className="h-3.5 w-3.5" /> Edit Split
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

@@ -27,6 +27,7 @@ import { MasterAnalyticsPage } from "@/pages/MasterAnalyticsPage";
 import { InvoicesPage } from "@/pages/InvoicesPage";
 import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
 import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
+import { ProfessionalSplitPage } from "@/pages/ProfessionalSplitPage";
 import { ProviderProfilePage } from "@/pages/ProviderProfilePage";
 
 function DashboardRouter() {
@@ -52,6 +53,7 @@ function AppRoutes() {
       <Route path="/providers" element={<Navigate to="/" replace />} />
       <Route path="/salons" element={<Navigate to="/" replace />} />
       <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
+      <Route path="/professionals/:professionalId/split" element={<ProfessionalSplitPage />} />
       <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
       {/* Backward-compat: old /masters/:masterId route */}
       <Route path="/masters/:masterId" element={<MasterProfilePage />} />

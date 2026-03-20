@@ -223,37 +223,37 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
           </div>
         )}
 
-        <div className="mt-auto flex gap-2">
+        <div className="mt-auto flex flex-col gap-2 sm:flex-row">
           <Link to={`/providers/${provider.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm">View Profile</Button>
+            <Button variant="outline" size="sm" className="w-full text-xs">View Profile</Button>
           </Link>
           {isProfessional ? (
             alreadyLinked ? (
-              <Button size="sm" variant="outline" disabled className="flex-1 gap-1.5 text-xs sm:text-sm border-green-300 text-green-700">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Already Working
+              <Button size="sm" variant="outline" disabled className="flex-1 gap-1 text-xs border-green-300 text-green-700">
+                <CheckCircle2 className="h-3 w-3" /> Already Working
               </Button>
             ) : (
               <Button
                 size="sm"
-                className="flex-1 gap-1.5 text-xs sm:text-sm bg-purple-700 hover:bg-purple-800"
+                className="flex-1 gap-1 text-xs bg-purple-700 hover:bg-purple-800"
                 disabled={requested || requestMutation.isPending}
                 onClick={() => requestMutation.mutate()}
               >
                 {requested
-                  ? <><CheckCircle2 className="h-3.5 w-3.5" /> Requested</>
+                  ? <><CheckCircle2 className="h-3 w-3" /> Requested</>
                   : requestMutation.isPending
                     ? <Spinner size="sm" />
-                    : <><UserPlus className="h-3.5 w-3.5" /> Request to Work</>}
+                    : <><UserPlus className="h-3 w-3" /> Request to Work</>}
               </Button>
             )
           ) : (
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 text-xs sm:text-sm gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50"
+              className="flex-1 text-xs gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
               onClick={onLoginRequired}
             >
-              <UserPlus className="h-3.5 w-3.5" /> Request to Work
+              <UserPlus className="h-3 w-3" /> Request to Work
             </Button>
           )}
         </div>
