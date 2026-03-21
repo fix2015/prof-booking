@@ -29,7 +29,7 @@ class Invoice(Base):
     professional_earnings = Column(Float, default=0.0, nullable=False)
     provider_earnings = Column(Float, default=0.0, nullable=False)
     professional_percentage = Column(Float, default=70.0, nullable=False)
-    status = Column(SAEnum(InvoiceStatus), default=InvoiceStatus.DRAFT, nullable=False)
+    status = Column(SAEnum(InvoiceStatus, values_callable=lambda x: [e.value for e in x]), default=InvoiceStatus.DRAFT, nullable=False)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
