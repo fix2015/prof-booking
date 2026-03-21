@@ -2,7 +2,9 @@
 Seed script: 10 providers + 200 professionals near Hemel Hempstead (100-mile radius).
 Run inside backend container: python scripts/seed_mock_data.py
 """
-import os, sys, random, hashlib
+import os
+import sys
+import random
 from datetime import datetime, date, time, timedelta
 
 sys.path.insert(0, "/app")
@@ -270,7 +272,7 @@ def run():
         print(f"  Providers : {len(providers)}")
         print(f"  Professionals: {len(professionals)}")
         print(f"  Slots ~{len(professionals) * 50:,} work slots inserted")
-        print(f"  Credentials : <email> / Password123!")
+        print("  Credentials : <email> / Password123!")
 
     except Exception as e:
         db.rollback()
