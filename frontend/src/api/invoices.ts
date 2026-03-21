@@ -17,6 +17,9 @@ export const invoicesApi = {
   updateStatus: (invoiceId: number, status: InvoiceStatus) =>
     apiClient.patch<Invoice>(`/invoices/${invoiceId}/status`, { status }),
 
+  downloadPdf: (invoiceId: number) =>
+    apiClient.get(`/invoices/${invoiceId}/pdf`, { responseType: "blob" }),
+
   listSplits: (salonId: number) =>
     apiClient.get<EarningsSplit[]>(`/invoices/splits/salon/${salonId}`),
 
