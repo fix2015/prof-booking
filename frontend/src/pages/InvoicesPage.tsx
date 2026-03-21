@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, Calendar } from "lucide-react";
+import { FileText, Plus, Calendar, Download } from "lucide-react";
 import { invoicesApi } from "@/api/invoices";
 import { providersApi } from "@/api/salons";
 import type { ProfessionalProvider } from "@/types";
@@ -184,9 +184,25 @@ function InvoiceRow({
   onStatusChange: (status: InvoiceStatus) => void;
   isLoading: boolean;
 }) {
+  const [downloading, setDownloading] = useState(false);
   const professionalEarnings = (invoice as any).professional_earnings ?? (invoice as any).master_earnings ?? 0;
   const providerEarnings = (invoice as any).provider_earnings ?? (invoice as any).salon_earnings ?? 0;
   const professionalPct = (invoice as any).professional_percentage ?? (invoice as any).master_percentage ?? 0;
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const res = await invoicesApi.downloadPdf(invoice.id);
+      const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${invoice.id}-${invoice.period_start}-${invoice.period_end}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <Card>
@@ -210,19 +226,32 @@ function InvoiceRow({
             </div>
           </div>
 
-          {isOwner && (
-            <select
-              value={invoice.status}
-              onChange={(e) => onStatusChange(e.target.value as InvoiceStatus)}
-              disabled={isLoading}
-              className="border rounded px-2 py-1 text-sm"
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDownload}
+              disabled={downloading}
+              className="gap-1.5"
             >
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-            </select>
-          )}
+              {downloading ? <Spinner size="sm" /> : <Download className="h-4 w-4" />}
+              PDF
+            </Button>
+
+            {isOwner && (
+              <select
+                value={invoice.status}
+                onChange={(e) => onStatusChange(e.target.value as InvoiceStatus)}
+                disabled={isLoading}
+                className="border rounded px-2 py-1 text-sm"
+              >
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
