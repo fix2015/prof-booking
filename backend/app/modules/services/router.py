@@ -34,17 +34,17 @@ def _assert_can_manage(db: Session, current_user: User, provider_id: int) -> Non
 @router.get("/names", response_model=List[str])
 def get_service_names(db: Session = Depends(get_db)):
     """Public: return distinct active service names across all providers."""
-    from sqlalchemy import distinct, func
+    from sqlalchemy import func
     from app.modules.services.models import Service
     rows = (
-        db.query(distinct(func.lower(Service.name)), Service.name)
+        db.query(Service.name)
         .filter(Service.is_active == True)  # noqa: E712
         .order_by(func.lower(Service.name))
         .all()
     )
     seen: set[str] = set()
     names: list[str] = []
-    for _, name in rows:
+    for (name,) in rows:
         key = name.lower()
         if key not in seen:
             seen.add(key)
