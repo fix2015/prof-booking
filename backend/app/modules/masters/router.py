@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
+from datetime import date as date_type
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_owner
@@ -114,6 +115,7 @@ def discover_professionals(
     provider_id: Optional[int] = Query(None),
     service_name: Optional[str] = Query(None, description="Filter by service offered at their provider"),
     is_independent: Optional[bool] = Query(None),
+    available_date: Optional[date_type] = Query(None, description="Filter to professionals with available slots on this date"),
     skip: int = Query(0, ge=0),
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
@@ -168,6 +170,20 @@ def discover_professionals(
         q = q.filter(Professional.nationality.ilike(f"%{nationality}%"))
     if min_experience is not None:
         q = q.filter(Professional.experience_years >= min_experience)
+
+    if available_date:
+        from app.modules.calendar.models import WorkSlot
+        professional_ids_with_slots = (
+            db.query(WorkSlot.professional_id)
+            .filter(
+                WorkSlot.slot_date == available_date,
+                WorkSlot.is_available == True,  # noqa: E712
+            )
+            .distinct()
+            .subquery()
+        )
+        q = q.filter(Professional.id.in_(professional_ids_with_slots))
+        needs_distinct = True
 
     if needs_distinct:
         q = q.distinct()
