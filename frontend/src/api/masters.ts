@@ -37,6 +37,7 @@ export const professionalsApi = {
     provider_id?: number;
     service_name?: string;
     is_independent?: boolean;
+    available_date?: string;
     skip?: number;
     limit?: number;
   }) => apiClient.get<Professional[]>("/professionals/discover", { params }).then((r) => r.data),

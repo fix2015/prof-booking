@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Building2, Scissors, ChevronDown } from "lucide-react";
+import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Building2, Scissors, ChevronDown, CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { providersApi } from "@/api/salons";
 import { professionalsApi } from "@/api/masters";
@@ -77,10 +77,11 @@ export function SalonSelectorPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: providers = [], isLoading } = useQuery({
-    queryKey: ["providers", "search", searchParams.get("q") ?? "", searchParams.get("type") ?? ""],
+    queryKey: ["providers", "search", searchParams.get("q") ?? "", searchParams.get("type") ?? "", searchParams.get("date") ?? ""],
     queryFn: () => providersApi.search({
       q: searchParams.get("q") || undefined,
       service_name: searchParams.get("type") || undefined,
+      available_date: searchParams.get("date") || undefined,
       limit: 100,
     }),
     staleTime: 30 * 1000,
@@ -119,17 +120,19 @@ export function SalonSelectorPage() {
   const nationality = searchParams.get("nationality") ?? "";
   const minExp = searchParams.get("min_exp") ?? "";
   const activeType = searchParams.get("type") ?? "";
+  const availableDate = searchParams.get("date") ?? "";
 
   const { data: professionals = [], isLoading: professionalsLoading } = useQuery({
-    queryKey: ["professionals", "discover", { nationality, minExp, search: search || (searchParams.get("professional_name") ?? "") }],
+    queryKey: ["professionals", "discover", { nationality, minExp, search: search || (searchParams.get("professional_name") ?? ""), availableDate }],
     queryFn: () =>
       professionalsApi.discover({
         nationality: nationality || undefined,
         min_experience: minExp ? Number(minExp) : undefined,
         search: search || searchParams.get("professional_name") || undefined,
+        available_date: availableDate || undefined,
         limit: 24,
       }),
-    enabled: !!(nationality || minExp || search || searchParams.get("professional_name")),
+    enabled: !!(nationality || minExp || search || searchParams.get("professional_name") || availableDate),
   });
 
   // ── Geocoding ────────────────────────────────────────────────────────────────
@@ -498,8 +501,19 @@ export function SalonSelectorPage() {
           </div>
         )}
 
-        {/* Row 3: Professional attribute filters (nationality, experience) */}
+        {/* Row 3: Date filter + Professional attribute filters */}
         <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative sm:w-48">
+            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="date"
+              value={availableDate}
+              onChange={(e) => setParam("date", e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+              className="pl-9 bg-white"
+              title="Filter by available date"
+            />
+          </div>
           <div className="flex-1">
             <NationalitySelect
               value={nationality}
@@ -519,7 +533,7 @@ export function SalonSelectorPage() {
               className="pl-9 bg-white"
             />
           </div>
-          {(search || nationality || minExp || activeType || professionalName) && (
+          {(search || nationality || minExp || activeType || professionalName || availableDate) && (
             <Button variant="outline" className="bg-white shrink-0" onClick={clearAllFilters}>
               {t("providers.clear_all")}
             </Button>

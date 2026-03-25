@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from datetime import date as date_type
 
 from app.database import get_db
 from app.dependencies import get_current_owner, get_current_admin
@@ -19,6 +20,7 @@ def search_providers(
     q: Optional[str] = Query(None, description="Search by name or address"),
     address: Optional[str] = Query(None),
     service_name: Optional[str] = Query(None),
+    available_date: Optional[date_type] = Query(None, description="Filter to providers with available slots on this date"),
     skip: int = Query(0, ge=0),
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
@@ -46,6 +48,18 @@ def search_providers(
             .subquery()
         )
         query = query.filter(Provider.id.in_(provider_ids_sub))
+    if available_date:
+        from app.modules.calendar.models import WorkSlot
+        provider_ids_with_slots = (
+            db.query(WorkSlot.provider_id)
+            .filter(
+                WorkSlot.slot_date == available_date,
+                WorkSlot.is_available == True,  # noqa: E712
+            )
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(Provider.id.in_(provider_ids_with_slots))
     return query.offset(skip).limit(limit).all()
 
 
