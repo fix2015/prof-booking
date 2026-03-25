@@ -6,7 +6,7 @@ export interface ServicePayload {
   description?: string;
   duration_minutes: number;
   price: number;
-  provider_id?: number | null;
+  provider_ids?: number[];
 }
 
 export const servicesApi = {

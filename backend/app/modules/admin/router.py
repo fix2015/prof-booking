@@ -170,7 +170,7 @@ def admin_list_services(
 ):
     return (
         db.query(Service)
-        .order_by(Service.provider_id, Service.name)
+        .order_by(Service.name)
         .offset(skip)
         .limit(limit)
         .all()

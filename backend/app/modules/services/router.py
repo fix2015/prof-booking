@@ -14,8 +14,8 @@ from app.modules.users.models import User, UserRole
 router = APIRouter()
 
 
-def _assert_can_manage(db: Session, current_user: User, provider_id: int) -> None:
-    """Professionals (at this provider), provider owners, and admins can manage services."""
+def _assert_can_manage_provider(db: Session, current_user: User, provider_id: int) -> None:
+    """Assert user can manage services for a given provider."""
     if current_user.role == UserRole.PLATFORM_ADMIN:
         return
     if current_user.role == UserRole.PROVIDER_OWNER:
@@ -40,6 +40,34 @@ def _assert_can_manage(db: Session, current_user: User, provider_id: int) -> Non
         if not pp:
             raise HTTPException(status_code=403, detail="Not an active professional at this provider")
         return
+    raise HTTPException(status_code=403, detail="Access denied")
+
+
+def _assert_can_manage_service(db: Session, current_user: User, service: object) -> None:
+    """Assert user can edit/delete this specific service."""
+    if current_user.role == UserRole.PLATFORM_ADMIN:
+        return
+    if current_user.role == UserRole.PROFESSIONAL:
+        from app.modules.masters.models import Professional
+        prof = db.query(Professional).filter(Professional.user_id == current_user.id).first()
+        if prof and service.professional_id == prof.id:
+            return
+        # Allow if linked to any of the service's providers
+        for p in (service.providers or []):
+            try:
+                _assert_can_manage_provider(db, current_user, p.id)
+                return
+            except HTTPException:
+                pass
+        raise HTTPException(status_code=403, detail="Access denied")
+    if current_user.role == UserRole.PROVIDER_OWNER:
+        for p in (service.providers or []):
+            try:
+                _assert_can_manage_provider(db, current_user, p.id)
+                return
+            except HTTPException:
+                pass
+        raise HTTPException(status_code=403, detail="Access denied")
     raise HTTPException(status_code=403, detail="Access denied")
 
 
@@ -70,31 +98,31 @@ def create_service_for_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Create a service. Provider_id in body is optional for professionals."""
+    """Create a service with an optional list of providers."""
     if current_user.role == UserRole.PROFESSIONAL:
         from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
         prof = db.query(Professional).filter(Professional.user_id == current_user.id).first()
         if not prof:
             raise HTTPException(status_code=403, detail="Professional profile not found")
-        provider_id = data.provider_id
-        if provider_id is not None:
-            # Validate the professional is linked to this provider
+        # Validate each provider_id
+        for pid in data.provider_ids:
             pp = db.query(ProfessionalProvider).filter(
                 ProfessionalProvider.professional_id == prof.id,
-                ProfessionalProvider.provider_id == provider_id,
+                ProfessionalProvider.provider_id == pid,
                 ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
             ).first()
             if not pp:
-                raise HTTPException(status_code=403, detail="Not an active professional at this provider")
-        return create_service(db, data, provider_id=provider_id, professional_id=prof.id)
+                raise HTTPException(status_code=403, detail=f"Not an active professional at provider {pid}")
+        return create_service(db, data, professional_id=prof.id)
+
     if current_user.role == UserRole.PROVIDER_OWNER:
         from app.modules.salons.models import Provider
         provider = db.query(Provider).filter(Provider.owner_id == current_user.id).first()
         if not provider:
             raise HTTPException(status_code=404, detail="Provider not found")
-        provider_id = data.provider_id if data.provider_id is not None else provider.id
-        _assert_can_manage(db, current_user, provider_id)
-        return create_service(db, data, provider_id=provider_id)
+        provider_ids = data.provider_ids if data.provider_ids else [provider.id]
+        return create_service(db, data, provider_ids=provider_ids)
+
     raise HTTPException(status_code=403, detail="Access denied")
 
 
@@ -121,18 +149,26 @@ def get_service_names(db: Session = Depends(get_db)):
 
 @router.get("/professional/{professional_id}", response_model=List[ServiceResponse])
 def get_services_by_professional(professional_id: int, db: Session = Depends(get_db)):
-    """Public: returns services from the professional's active provider."""
+    """Public: returns services owned by this professional."""
     from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
     prof = db.query(Professional).filter(Professional.id == professional_id).first()
     if not prof:
         raise HTTPException(status_code=404, detail="Professional not found")
+    # Return personal services + services at their active provider
+    personal = list_services_for_professional(db, prof.id)
     pp = db.query(ProfessionalProvider).filter(
         ProfessionalProvider.professional_id == prof.id,
         ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
     ).first()
-    if not pp:
-        return []
-    return list_services(db, pp.provider_id)
+    provider_services = list_services(db, pp.provider_id) if pp else []
+    # Deduplicate by id
+    seen: set[int] = set()
+    result = []
+    for s in personal + provider_services:
+        if s.id not in seen:
+            seen.add(s.id)
+            result.append(s)
+    return result
 
 
 @router.get("/provider/{provider_id}", response_model=List[ServiceResponse])
@@ -148,28 +184,10 @@ def create_service_endpoint(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    _assert_can_manage(db, current_user, provider_id)
-    return create_service(db, data, provider_id=provider_id)
-
-
-def _assert_can_manage_service(db: Session, current_user: User, service) -> None:
-    """Assert the current user can edit/delete this service."""
-    if current_user.role == UserRole.PLATFORM_ADMIN:
-        return
-    if current_user.role == UserRole.PROFESSIONAL:
-        from app.modules.masters.models import Professional
-        prof = db.query(Professional).filter(Professional.user_id == current_user.id).first()
-        if prof and service.professional_id == prof.id:
-            return
-        # Also allow if they manage it via provider link
-        if service.provider_id is not None:
-            _assert_can_manage(db, current_user, service.provider_id)
-            return
-        raise HTTPException(status_code=403, detail="Access denied")
-    if service.provider_id is not None:
-        _assert_can_manage(db, current_user, service.provider_id)
-        return
-    raise HTTPException(status_code=403, detail="Access denied")
+    _assert_can_manage_provider(db, current_user, provider_id)
+    # Merge provider_id with any ids in body
+    ids = list(set(data.provider_ids + [provider_id]))
+    return create_service(db, data, provider_ids=ids)
 
 
 @router.patch("/{service_id}", response_model=ServiceResponse)

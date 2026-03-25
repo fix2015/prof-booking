@@ -35,10 +35,16 @@ def search_providers(
             (Provider.address.ilike(f"%{search_term}%"))
         )
     if service_name:
-        provider_ids_sub = db.query(Service.provider_id).filter(
-            Service.name.ilike(f"%{service_name}%"),
-            Service.is_active == True,  # noqa: E712
-        ).subquery()
+        from app.modules.services.models import service_providers
+        provider_ids_sub = (
+            db.query(service_providers.c.provider_id)
+            .join(Service, Service.id == service_providers.c.service_id)
+            .filter(
+                Service.name.ilike(f"%{service_name}%"),
+                Service.is_active == True,  # noqa: E712
+            )
+            .subquery()
+        )
         query = query.filter(Provider.id.in_(provider_ids_sub))
     return query.offset(skip).limit(limit).all()
 

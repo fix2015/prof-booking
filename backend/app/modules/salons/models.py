@@ -31,7 +31,7 @@ class Provider(Base):
     # Relations
     owner = relationship("ProviderOwner", back_populates="provider", uselist=False)
     professional_providers = relationship("ProfessionalProvider", back_populates="provider")
-    services = relationship("Service", back_populates="provider")
+    services = relationship("Service", secondary="service_providers")
     sessions = relationship("Session", back_populates="provider")
     invites = relationship("Invite", back_populates="provider")
     reviews = relationship("Review", back_populates="provider")
