@@ -543,11 +543,6 @@ export function SalonSelectorPage() {
 
       {/* Main content: Map + Provider list */}
       <div className="flex-1 px-4 pb-6 max-w-6xl mx-auto w-full">
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Spinner />
-          </div>
-        ) : (
           <div className={`flex gap-4 ${view === "split" ? "flex-col lg:flex-row" : "flex-col"}`}>
 
             {/* Map panel — always mounted to avoid LoadScript unmount/remount crashes */}
@@ -787,7 +782,9 @@ export function SalonSelectorPage() {
             {/* Provider list panel */}
             {showList && (
               <div className={`space-y-3 ${view === "split" ? "lg:w-80 lg:overflow-y-auto lg:max-h-[calc(100vh-340px)]" : ""}`}>
-                {unifiedList.length === 0 ? (
+                {isLoading ? (
+                  <div className="flex justify-center py-12"><Spinner /></div>
+                ) : unifiedList.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">{t("providers.no_providers")}</p>
                 ) : (
                   unifiedList.map((item) =>
@@ -813,7 +810,6 @@ export function SalonSelectorPage() {
               </div>
             )}
           </div>
-        )}
       </div>
     </div>
   );
