@@ -26,7 +26,7 @@ class Service(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    providers = relationship("Provider", secondary=service_providers)
+    providers = relationship("Provider", secondary=service_providers, overlaps="services")
     professional = relationship("Professional", foreign_keys=[professional_id])
     sessions = relationship("Session", back_populates="service")
 
