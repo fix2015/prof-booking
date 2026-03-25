@@ -36,7 +36,7 @@ def _generate_confirmation_code(session_id: int) -> str:
 def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingConfirmation:
     # Validate references
     provider = get_provider_or_404(db, data.provider_id)
-    service = get_service_or_404(db, data.service_id, data.provider_id)
+    service = get_service_or_404(db, data.service_id)
     professional = None
     if data.professional_id:
         professional = get_professional_by_id(db, data.professional_id)
