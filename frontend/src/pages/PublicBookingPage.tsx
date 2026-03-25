@@ -23,13 +23,14 @@ export function PublicBookingPage() {
   const [searchParams] = useSearchParams();
   const idFromQuery = searchParams.get("id");
   const professionalIdParam = Number(searchParams.get("professional_id")) || undefined;
+  const preselectedServiceId = Number(searchParams.get("service_id")) || null;
   const providerIdFromUrl = Number(paramProviderId || paramSalonId || idFromQuery) || undefined;
 
   const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
   const [isBooking, setIsBooking] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [selectedService, setSelectedService] = useState<number | null>(preselectedServiceId);
   const [selectedProfessional, setSelectedProfessional] = useState<number | undefined>(professionalIdParam);
   const [chosenProviderId, setChosenProviderId] = useState<number | null>(null);
 
@@ -445,6 +446,7 @@ export function PublicBookingPage() {
               onDateChange={setSelectedDate}
               selectedDate={selectedDate}
               preselectedMasterId={professionalIdParam}
+              preselectedServiceId={preselectedServiceId ?? undefined}
             />
           </CardContent>
         </Card>

@@ -43,6 +43,7 @@ interface BookingFormProps {
   onDateChange: (date: string) => void;
   selectedDate: string;
   preselectedMasterId?: number;
+  preselectedServiceId?: number;
 }
 
 export function BookingForm({
@@ -56,8 +57,9 @@ export function BookingForm({
   onDateChange,
   selectedDate,
   preselectedMasterId,
+  preselectedServiceId,
 }: BookingFormProps) {
-  const [selectedService, setSelectedService] = useState<number | null>(null);
+  const [selectedService, setSelectedService] = useState<number | null>(preselectedServiceId ?? null);
   const [selectedMaster, setSelectedMaster] = useState<number | undefined>(preselectedMasterId);
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export function BookingForm({
       {/* Service */}
       <div className="space-y-1">
         <Label>Service *</Label>
-        <Select onValueChange={handleServiceChange}>
+        <Select onValueChange={handleServiceChange} defaultValue={preselectedServiceId ? String(preselectedServiceId) : undefined}>
           <SelectTrigger>
             <SelectValue placeholder="Select a service" />
           </SelectTrigger>
