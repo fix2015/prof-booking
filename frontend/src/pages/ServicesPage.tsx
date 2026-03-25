@@ -46,7 +46,10 @@ export function ServicesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => servicesApi.create(providerId!, form),
+    mutationFn: () => {
+      if (!providerId) throw new Error("Provider not loaded yet");
+      return servicesApi.create(providerId, form);
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["services"] }); setShowForm(false); toast({ title: "Service created", variant: "success" }); },
     onError: () => toast({ title: "Failed to create service", variant: "destructive" }),
   });
@@ -70,7 +73,7 @@ export function ServicesPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl md:text-2xl font-bold">{t("services.title")}</h1>
-        <Button onClick={() => { setShowForm(true); setForm({ name: "", description: "", duration_minutes: 60, price: 0 }); }}>
+        <Button disabled={!providerId} onClick={() => { setShowForm(true); setForm({ name: "", description: "", duration_minutes: 60, price: 0 }); }}>
           <Plus className="mr-2 h-4 w-4" />
           {t("services.add")}
         </Button>

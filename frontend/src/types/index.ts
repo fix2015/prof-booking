@@ -362,3 +362,62 @@ export interface PaginationParams {
   skip?: number;
   limit?: number;
 }
+
+// ── Client CRM ──────────────────────────────────────────
+
+export interface ClientNote {
+  id: number;
+  client_id: number;
+  professional_id: number;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ClientPhoto {
+  id: number;
+  client_id: number;
+  professional_id: number;
+  url: string;
+  caption?: string;
+  created_at: string;
+}
+
+export interface ClientSessionSummary {
+  id: number;
+  starts_at: string;
+  service_name?: string;
+  professional_name?: string;
+  status: string;
+  price?: number;
+}
+
+export interface ClientListItem {
+  id: number;
+  phone: string;
+  name: string;
+  email?: string;
+  avatar_url?: string;
+  tags?: string[];
+  total_visits: number;
+  last_visit_at?: string;
+  total_spent: number;
+}
+
+export interface ClientDetail {
+  id: number;
+  phone: string;
+  name: string;
+  email?: string;
+  birth_date?: string;
+  avatar_url?: string;
+  tags?: string[];
+  created_at: string;
+  my_notes: ClientNote[];
+  my_photos: ClientPhoto[];
+  total_visits: number;
+  last_visit_at?: string;
+  total_spent: number;
+  recent_sessions: ClientSessionSummary[];
+}

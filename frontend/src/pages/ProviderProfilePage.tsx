@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Phone, Mail, Clock, Users, Scissors, Star } from "lucide-react";
 import { providersApi } from "@/api/salons";
@@ -35,6 +36,8 @@ export function ProviderProfilePage() {
   if (!provider) return <p className="text-center py-20 text-muted-foreground">Provider not found.</p>;
 
   return (
+    <>
+      <PublicHeader />
     <div className="max-w-4xl mx-auto space-y-6 py-6 px-4">
       {/* Hero */}
       <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -191,5 +194,6 @@ export function ProviderProfilePage() {
         </div>
       )}
     </div>
+    </>
   );
 }

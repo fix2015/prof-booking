@@ -22,6 +22,7 @@ from app.modules.invoices.router import router as invoices_router
 from app.modules.analytics.router import router as analytics_router
 from app.modules.uploads.router import router as uploads_router
 from app.modules.admin.router import router as admin_router
+from app.modules.clients.router import router as clients_router
 
 
 @asynccontextmanager
@@ -90,6 +91,7 @@ app.include_router(invoices_router, prefix=f"{API_PREFIX}/invoices", tags=["invo
 app.include_router(analytics_router, prefix=f"{API_PREFIX}/analytics", tags=["analytics"])
 app.include_router(uploads_router, prefix=f"{API_PREFIX}/upload", tags=["upload"])
 app.include_router(admin_router, prefix=f"{API_PREFIX}/admin", tags=["admin"])
+app.include_router(clients_router, prefix=f"{API_PREFIX}/clients", tags=["clients"])
 
 
 @app.get(f"{API_PREFIX}/health")

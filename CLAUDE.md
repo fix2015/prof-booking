@@ -46,14 +46,15 @@ cd backend && ruff check .
 ### Frontend
 
 ```bash
-cd frontend && npm install
+cd frontend && yarn install   # yarn.lock is the tracked lock file
 
-npm run dev          # Dev server on http://localhost:5174
-npm run typecheck    # tsc --noEmit
-npm run lint         # ESLint (zero warnings allowed)
-npm run build        # TypeScript check + Vite build
-npm run test:e2e     # Playwright headless (auto-starts dev server)
-npm run test:e2e:headed  # With browser visible
+yarn dev             # Dev server on http://localhost:5174
+yarn typecheck       # tsc --noEmit
+yarn lint            # ESLint (zero warnings allowed)
+yarn build           # TypeScript check + Vite build
+yarn test            # Vitest unit tests
+yarn test:e2e        # Playwright headless (auto-starts dev server)
+yarn test:e2e:headed # With browser visible
 ```
 
 ### Full stack via Docker
@@ -72,9 +73,9 @@ docker compose down
 
 All routers registered in `main.py` under `/api/v1/`. Each feature module lives in `modules/<name>/` and follows the pattern: `models.py` → `schemas.py` → `services.py` → `router.py`.
 
-**17 modules:** auth, users, salons, masters, sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads.
+**18 modules:** auth, users, salons, masters, sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads, admin.
 
-**Naming migration in progress:** modules are named `salons`/`masters` internally, but the primary API prefixes are now `/api/v1/providers` and `/api/v1/professionals`. The old `/api/v1/salons` and `/api/v1/masters` prefixes remain as backward-compat aliases. The same dual-route pattern applies on the frontend (`/providers` primary, `/salons` redirects; `/professionals` primary, `/masters` redirects).
+**Naming migration in progress:** modules are named `salons`/`masters` internally, but the primary API prefixes are now `/api/v1/providers` and `/api/v1/professionals`. The old `/api/v1/salons` and `/api/v1/masters` prefixes remain as backward-compat aliases registered in `main.py`. The same dual-route pattern applies on the frontend (`/providers` primary, `/salons` redirects; `/professionals` primary, `/masters` redirects).
 
 Key files:
 - `config.py` — Pydantic Settings; `APP_SECRET_KEY` and `JWT_SECRET_KEY` are required (no defaults); Swagger UI only enabled when `APP_DEBUG=true`
@@ -93,6 +94,12 @@ Key files:
 
 Vite dev server proxies `/api/*` to `http://localhost:8000`.
 
+**Notable frontend deps:**
+- `yet-another-react-lightbox` — portfolio/photo gallery lightbox
+- `@react-google-maps/api` — Google Maps integration
+- `recharts` — analytics charts
+- `react-hook-form` + `zod` — form validation
+
 **Routing:** Public routes (no auth) render standalone. Authenticated routes are wrapped in `<AppLayout>`. `DashboardRouter` dispatches to the correct dashboard page based on role (`provider_owner` → `OwnerDashboardPage`, `platform_admin` → `AdminPanelPage`, else `MasterDashboardPage`).
 
 ### Auth & Multi-tenancy
@@ -100,7 +107,7 @@ Vite dev server proxies `/api/*` to `http://localhost:8000`.
 - JWT: 60-min access tokens + 30-day refresh tokens (stored in DB, rotatable)
 - Roles: `PLATFORM_ADMIN` > `PROVIDER_OWNER` > `PROFESSIONAL` > `CLIENT`
 - Every data table has a `provider_id` FK; all service queries filter by it
-- Route handlers call `assert_owner_of_salon()` to enforce tenant isolation
+- Route handlers call `assert_owner_of_provider()` to enforce tenant isolation
 
 ### Key Flows
 
@@ -111,6 +118,8 @@ GET /api/v1/services/salon/:id → services with prices/durations
 GET /api/v1/calendar/availability → available slots
 POST /api/v1/booking/ → create booking → triggers SMS + email via Celery → returns confirmation code
 ```
+
+**Upload endpoints** (`/api/v1/upload/`) are **public** (no auth required) — image upload to S3/storage is open so clients and professionals can upload photos without a JWT.
 
 **Stripe payments:**
 ```
@@ -127,6 +136,46 @@ Celery workers (backed by Redis) handle SMS (Twilio) and email notifications. Be
 celery -A app.modules.notifications.tasks worker --loglevel=info
 celery -A app.modules.notifications.tasks beat --loglevel=info
 ```
+
+---
+
+## Production Deployment
+
+- **Server**: `3.90.215.126` (AWS EC2, Ubuntu)
+- **SSH**: `ssh -i ~/.ssh/service.pem ubuntu@3.90.215.126`
+- **App dir**: `/opt/prof-booking`
+- **Live URL**: https://probooking.app
+- **Repo**: https://github.com/fix2015/prof-booking
+- **Deploy method**: GitHub Actions → SSH → `docker compose -f docker-compose.prod.yml up -d` (pulls pre-built GHCR images)
+- **Backend startup** (inside container): `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000` — migrations run automatically on every container start
+
+```bash
+# SSH and check containers
+ssh -i ~/.ssh/service.pem ubuntu@3.90.215.126
+sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml ps
+sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --tail=50 backend
+```
+
+---
+
+## Database Migrations (Alembic)
+
+Migration chain in `backend/alembic/versions/`:
+```
+0001 → ec54709d7c95 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 (head)
+```
+| Revision | Description |
+|---|---|
+| `0001` | Initial schema |
+| `ec54709d7c95` | Add master extended fields, photos |
+| `0002` | Rename master/salon to professional/provider |
+| `0003` | Add `is_independent` to professionals |
+| `0004` | Add client_phone index to sessions |
+| `0005` | Add provider-professional invites |
+| `0006` | Add images to reviews |
+| `0007` | Rename `master_percentage` to `professional_percentage` |
+| `0008` | Rename `master_earnings`/`salon_earnings` to `professional_earnings`/`provider_earnings` in invoices |
+| `0009` | Add client CRM tables: `client_profiles`, `client_notes`, `client_photos` |
 
 ---
 

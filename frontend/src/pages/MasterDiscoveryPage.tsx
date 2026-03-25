@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Star, Clock, X, SlidersHorizontal, ArrowRight } from "lucide-react";
+import { Search, Star, Clock, X, SlidersHorizontal } from "lucide-react";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { professionalsApi } from "@/api/masters";
 import { providersApi } from "@/api/salons";
 import { reviewsApi } from "@/api/reviews";
@@ -91,22 +92,7 @@ export function MasterDiscoveryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col overflow-x-hidden">
-      {/* Top nav */}
-      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-lg font-bold tracking-tight text-gray-900">
-          ProBook
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link to="/">
-            <Button variant="ghost" size="sm">{t("discover.nav.find_salons")}</Button>
-          </Link>
-          <Link to="/login">
-            <Button size="sm" className="bg-gray-900 hover:bg-gray-950 gap-1.5">
-              {t("discover.nav.sign_in")} <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <PublicHeader showBack={false} />
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 space-y-6">
         {/* Page header */}
