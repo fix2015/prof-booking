@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Building2, Scissors } from "lucide-react";
-import { usePublicProviders } from "@/hooks/useSalon";
+import { MapPin, Phone, List, Map, Search, Navigation, Clock, Mail, Flag, Building2, Scissors, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { providersApi } from "@/api/salons";
 import { professionalsApi } from "@/api/masters";
 import { servicesApi } from "@/api/services";
 import { NationalitySelect } from "@/components/ui/NationalitySelect";
@@ -51,7 +51,7 @@ const PRO_PIN_URL = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(PRO_P
 
 export function SalonSelectorPage() {
   const navigate = useNavigate();
-  const { data: providers = [], isLoading } = usePublicProviders();
+  const [chipsExpanded, setChipsExpanded] = useState(false);
   const { data: serviceNames = [] } = useQuery({
     queryKey: ["services", "names"],
     queryFn: () => servicesApi.listNames(),
@@ -75,6 +75,16 @@ export function SalonSelectorPage() {
   const autoFocusedRef = useRef(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const { data: providers = [], isLoading } = useQuery({
+    queryKey: ["providers", "search", searchParams.get("q") ?? "", searchParams.get("type") ?? ""],
+    queryFn: () => providersApi.search({
+      q: searchParams.get("q") || undefined,
+      service_name: searchParams.get("type") || undefined,
+      limit: 100,
+    }),
+    staleTime: 30 * 1000,
+  });
 
   // ── Autocomplete ──────────────────────────────────────────────────────────────
   const [acQuery, setAcQuery] = useState(() => searchParams.get("q") ?? "");
@@ -299,15 +309,11 @@ export function SalonSelectorPage() {
   const filteredProviders = providers
     .filter((s) => {
       const q = search.toLowerCase();
-      const matchSearch =
+      return (
         !q ||
         s.name.toLowerCase().includes(q) ||
-        (s.address ?? "").toLowerCase().includes(q);
-      const matchType =
-        !activeType ||
-        s.name.toLowerCase().includes(activeType.toLowerCase()) ||
-        (s.description ?? "").toLowerCase().includes(activeType.toLowerCase());
-      return matchSearch && matchType;
+        (s.address ?? "").toLowerCase().includes(q)
+      );
     })
     .sort((a, b) => {
       const ca = getCoords(a);
@@ -463,21 +469,32 @@ export function SalonSelectorPage() {
 
         {/* Row 2: Service type chips — from DB */}
         {serviceNames.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {serviceNames.map((t) => (
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap gap-1.5">
+              {(chipsExpanded ? serviceNames : serviceNames.slice(0, 12)).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => toggleType(t)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                    activeType === t
+                      ? "bg-gray-900 border-gray-700 text-white"
+                      : "bg-white border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-700"
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            {serviceNames.length > 12 && (
               <button
-                key={t}
-                onClick={() => toggleType(t)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                  activeType === t
-                    ? "bg-gray-900 border-gray-700 text-white"
-                    : "bg-white border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-700"
-                )}
+                onClick={() => setChipsExpanded((v) => !v)}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t}
+                <ChevronDown className={cn("h-3 w-3 transition-transform", chipsExpanded && "rotate-180")} />
+                {chipsExpanded ? "Show less" : `Show all ${serviceNames.length} services`}
               </button>
-            ))}
+            )}
           </div>
         )}
 

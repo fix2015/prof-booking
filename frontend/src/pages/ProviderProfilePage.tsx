@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Phone, Mail, Clock, Users, Scissors, Star } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Users, Scissors, Star, ChevronDown } from "lucide-react";
 import { providersApi } from "@/api/salons";
 import { servicesApi } from "@/api/services";
 import { professionalsApi } from "@/api/masters";
@@ -31,6 +32,9 @@ export function ProviderProfilePage() {
     queryFn: () => professionalsApi.getProviderProfessionalsPublic(id),
     enabled: !!id,
   });
+
+  const [servicesExpanded, setServicesExpanded] = useState(false);
+  const SERVICES_INITIAL = 6; // 3 rows × 2 cols
 
   if (isLoading) return <div className="flex justify-center py-20"><Spinner /></div>;
   if (!provider) return <p className="text-center py-20 text-muted-foreground">Provider not found.</p>;
@@ -127,33 +131,48 @@ export function ProviderProfilePage() {
       </div>
 
       {/* Services */}
-      {services.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-            <Scissors className="h-5 w-5" /> Services
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {services.filter((s) => s.is_active).map((service) => (
-              <Card key={service.id}>
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-sm">{service.name}</p>
-                    {service.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{service.description}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" /> {service.duration_minutes} min
-                    </div>
-                  </div>
-                  <p className="text-base font-bold text-gray-800 ml-3 flex-shrink-0">
-                    {formatCurrency(service.price)}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+      {services.length > 0 && (() => {
+        const active = services.filter((s) => s.is_active);
+        const visible = servicesExpanded ? active : active.slice(0, SERVICES_INITIAL);
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+              <Scissors className="h-5 w-5" /> Services
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {visible.map((service) => (
+                <Link key={service.id} to={`/book/${provider.id}?service_id=${service.id}`}>
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-3 flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm">{service.name}</p>
+                        {service.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-1">{service.description}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" /> {service.duration_minutes} min
+                        </div>
+                      </div>
+                      <p className="text-base font-bold text-gray-800 ml-3 flex-shrink-0">
+                        {formatCurrency(service.price)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            {active.length > SERVICES_INITIAL && (
+              <button
+                onClick={() => setServicesExpanded((v) => !v)}
+                className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
+              >
+                <ChevronDown className={`h-4 w-4 transition-transform ${servicesExpanded ? "rotate-180" : ""}`} />
+                {servicesExpanded ? "Show less" : `Show all ${active.length} services`}
+              </button>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Professionals */}
       {professionals.length > 0 && (
