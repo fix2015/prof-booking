@@ -16,8 +16,18 @@ def seed_default_services(db: Session, provider_id: int) -> None:
     db.commit()
 
 
-def create_service(db: Session, provider_id: int, data: ServiceCreate) -> Service:
-    service = Service(provider_id=provider_id, **data.model_dump())
+def create_service(
+    db: Session,
+    data: ServiceCreate,
+    provider_id: Optional[int] = None,
+    professional_id: Optional[int] = None,
+) -> Service:
+    payload = data.model_dump(exclude={"provider_id"})
+    service = Service(
+        provider_id=provider_id if provider_id is not None else data.provider_id,
+        professional_id=professional_id,
+        **payload,
+    )
     db.add(service)
     db.commit()
     db.refresh(service)
@@ -26,6 +36,13 @@ def create_service(db: Session, provider_id: int, data: ServiceCreate) -> Servic
 
 def list_services(db: Session, provider_id: int, active_only: bool = True) -> List[Service]:
     query = db.query(Service).filter(Service.provider_id == provider_id)
+    if active_only:
+        query = query.filter(Service.is_active == True)  # noqa: E712
+    return query.all()
+
+
+def list_services_for_professional(db: Session, professional_id: int, active_only: bool = True) -> List[Service]:
+    query = db.query(Service).filter(Service.professional_id == professional_id)
     if active_only:
         query = query.filter(Service.is_active == True)  # noqa: E712
     return query.all()

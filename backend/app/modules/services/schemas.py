@@ -8,6 +8,7 @@ class ServiceCreate(BaseModel):
     description: Optional[str] = None
     duration_minutes: int = Field(default=60, gt=0)
     price: float = Field(ge=0)
+    provider_id: Optional[int] = None
 
 
 class ServiceUpdate(BaseModel):
@@ -16,11 +17,13 @@ class ServiceUpdate(BaseModel):
     duration_minutes: Optional[int] = Field(default=None, gt=0)
     price: Optional[float] = Field(default=None, ge=0)
     is_active: Optional[bool] = None
+    provider_id: Optional[int] = None
 
 
 class ServiceResponse(BaseModel):
     id: int
-    provider_id: int
+    provider_id: Optional[int]
+    professional_id: Optional[int]
     name: str
     description: Optional[str]
     duration_minutes: int
