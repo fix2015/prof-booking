@@ -33,7 +33,7 @@ import app.modules.notifications.models  # noqa: F401
 import app.modules.loyalty.models      # noqa: F401
 
 from app.database import SessionLocal
-from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
+from app.modules.masters.models import ProfessionalProvider, ProfessionalStatus
 from app.modules.calendar.models import WorkSlot
 
 WEEKS = int(sys.argv[1]) if len(sys.argv) > 1 else 8
