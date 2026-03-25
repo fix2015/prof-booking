@@ -142,19 +142,21 @@ def get_available_slots(
 
     work_slots = slot_query.all()
 
-    # Get existing bookings for the date
+    # Fetch ALL bookings for the professionals in these slots, across all providers.
+    # This matches create_session's conflict check which is not provider-scoped.
     day_start = datetime.combine(query_date, time.min)
-    day_end = datetime.combine(query_date, time.max)
+    next_day_start = day_start + timedelta(days=1)
+    prof_ids = list({ws.professional_id for ws, _ in work_slots})
     bookings = (
         db.query(BookingSession)
         .filter(
-            BookingSession.provider_id == provider_id,
+            BookingSession.professional_id.in_(prof_ids),
             BookingSession.starts_at >= day_start,
-            BookingSession.ends_at <= day_end,
+            BookingSession.starts_at < next_day_start,
             BookingSession.status.notin_([SessionStatus.CANCELLED, SessionStatus.NO_SHOW]),
         )
         .all()
-    )
+    ) if prof_ids else []
     booked_slots = {(b.professional_id, b.starts_at.time(), b.ends_at.time()) for b in bookings}
 
     available = []
