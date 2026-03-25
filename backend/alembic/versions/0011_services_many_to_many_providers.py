@@ -28,8 +28,8 @@ def upgrade() -> None:
         "SELECT id, provider_id FROM services WHERE provider_id IS NOT NULL"
     )
 
-    # Drop old column
-    op.drop_index("ix_services_provider", table_name="services")
+    # Drop old column (index may not exist on all environments)
+    op.execute("DROP INDEX IF EXISTS ix_services_provider")
     op.drop_column("services", "provider_id")
 
 
