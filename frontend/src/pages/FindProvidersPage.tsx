@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Search, MapPin, Building2, Scissors, SlidersHorizontal, ArrowRight, UserPlus, CheckCircle2 } from "lucide-react";
+import { Search, MapPin, Building2, Scissors, SlidersHorizontal, UserPlus, CheckCircle2 } from "lucide-react";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { providersApi } from "@/api/salons";
 import { servicesApi } from "@/api/services";
 import { professionalsApi } from "@/api/masters";
@@ -49,16 +50,7 @@ export function FindProvidersPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col overflow-x-hidden">
-      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
-        <Link to="/dashboard" className="text-lg font-bold tracking-tight text-gray-900">
-          <span className="font-bold">Pro</span><span className="font-light">Book</span>
-        </Link>
-        <Link to="/login">
-          <Button size="sm" className="bg-gray-900 hover:bg-gray-950 gap-1.5">
-            Sign In <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
-      </header>
+      <PublicHeader />
 
       <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
         <div>

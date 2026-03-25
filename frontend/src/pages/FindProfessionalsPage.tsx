@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Clock, Flag, Star, SlidersHorizontal, ArrowRight } from "lucide-react";
+import { Search, Clock, Flag, Star, SlidersHorizontal } from "lucide-react";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { professionalsApi } from "@/api/masters";
 import { reviewsApi } from "@/api/reviews";
 import { NATIONALITIES } from "@/components/ui/NationalitySelect";
@@ -55,16 +56,7 @@ export function FindProfessionalsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
-      <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b px-4 py-3 flex items-center justify-between">
-        <Link to="/dashboard" className="text-lg font-bold tracking-tight text-gray-900">
-          <span className="font-bold">Pro</span><span className="font-light">Book</span>
-        </Link>
-        <Link to="/login">
-          <Button size="sm" className="bg-gray-900 hover:bg-gray-950 gap-1.5">
-            Sign In <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
-      </header>
+      <PublicHeader />
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 space-y-6">
         <div className="flex items-end justify-between gap-4 flex-wrap">

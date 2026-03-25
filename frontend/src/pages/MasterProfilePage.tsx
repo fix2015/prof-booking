@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Star, Clock, Flag, Image, CheckCircle2, Calendar, TrendingUp, Building2, UserPlus, MessageSquare, X, Upload } from "lucide-react";
 import { useState, useRef } from "react";
@@ -78,7 +79,9 @@ export function MasterProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 py-4 md:py-6 px-4">
+    <>
+      <PublicHeader />
+      <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 py-4 md:py-6 px-4">
       {/* Hero */}
       <div className="flex flex-col sm:flex-row gap-4 md:gap-6 items-start">
         <div className="flex-shrink-0">
@@ -293,7 +296,8 @@ export function MasterProfilePage() {
           }}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

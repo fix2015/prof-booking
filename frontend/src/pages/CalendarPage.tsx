@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Copy } from "lucide-react";
 import { BookingCalendar } from "@/components/calendar/BookingCalendar";
 import { useMyWorkSlots, useCreateWorkSlot, useDeleteWorkSlot, useCopyPeriod, useSessions } from "@/hooks/useBooking";
@@ -35,6 +36,7 @@ function endOfYear(d: Date): Date {
 
 export function CalendarPage() {
   const { role } = useAuthContext();
+  const navigate = useNavigate();
   const isOwner = role === "provider_owner" || role === "platform_admin";
 
   const { data: professional, isLoading: professionalLoading } = useMyProfessionalProfile();
@@ -239,9 +241,21 @@ export function CalendarPage() {
               {selectedSession.client_notes && (
                 <p><span className="font-medium">Notes:</span> {selectedSession.client_notes}</p>
               )}
-              <Button variant="outline" className="w-full mt-4" onClick={() => setSelectedSession(null)}>
-                Close
-              </Button>
+              <div className="flex gap-2 mt-4">
+                <Button
+                  variant="default"
+                  className="flex-1"
+                  onClick={() => {
+                    setSelectedSession(null);
+                    navigate(`/clients?phone=${encodeURIComponent(selectedSession.client_phone)}`);
+                  }}
+                >
+                  View Client Profile
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => setSelectedSession(null)}>
+                  Close
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

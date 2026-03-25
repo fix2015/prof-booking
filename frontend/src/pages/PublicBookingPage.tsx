@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
+import { PublicHeader } from "@/components/layout/PublicHeader";
 import { useQuery } from "@tanstack/react-query";
 import { Star, Instagram, ExternalLink, CheckCircle2, Users } from "lucide-react";
 import { providersApi } from "@/api/salons";
@@ -284,8 +285,9 @@ export function PublicBookingPage() {
   const instagram = preselectedProfessional?.social_links?.instagram;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
-      <div className="mx-auto max-w-2xl space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+      <PublicHeader />
+      <div className="mx-auto max-w-2xl space-y-4 p-4">
         {/* Professional profile card */}
         {preselectedProfessional && (
           <Card className="shadow-md overflow-hidden">
