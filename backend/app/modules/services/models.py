@@ -8,7 +8,8 @@ class Service(Base):
     __tablename__ = "services"
 
     id = Column(Integer, primary_key=True, index=True)
-    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=False)
+    provider_id = Column(Integer, ForeignKey("providers.id", ondelete="CASCADE"), nullable=True)
+    professional_id = Column(Integer, ForeignKey("professionals.id", ondelete="SET NULL"), nullable=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     duration_minutes = Column(Integer, nullable=False, default=60)
@@ -18,11 +19,13 @@ class Service(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     provider = relationship("Provider", back_populates="services")
+    professional = relationship("Professional", foreign_keys=[professional_id])
     sessions = relationship("Session", back_populates="service")
 
     __table_args__ = (
         Index("ix_services_provider", "provider_id"),
         Index("ix_services_active", "is_active"),
+        Index("ix_services_professional", "professional_id"),
     )
 
     def __repr__(self) -> str:

@@ -6,6 +6,7 @@ export interface ServicePayload {
   description?: string;
   duration_minutes: number;
   price: number;
+  provider_id?: number | null;
 }
 
 export const servicesApi = {
@@ -17,6 +18,12 @@ export const servicesApi = {
 
   listByProfessional: (professionalId: number) =>
     apiClient.get<Service[]>(`/services/professional/${professionalId}`).then((r) => r.data),
+
+  listMy: () =>
+    apiClient.get<Service[]>("/services/my").then((r) => r.data),
+
+  createForUser: (data: ServicePayload) =>
+    apiClient.post<Service>("/services/", data).then((r) => r.data),
 
   create: (providerId: number, data: ServicePayload) =>
     apiClient.post<Service>(`/services/provider/${providerId}`, data).then((r) => r.data),

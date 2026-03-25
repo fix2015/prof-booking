@@ -92,7 +92,8 @@ export type MasterSalon = ProfessionalProvider;
 
 export interface Service {
   id: number;
-  provider_id: number;
+  provider_id: number | null;
+  professional_id: number | null;
   name: string;
   description?: string;
   duration_minutes: number;
