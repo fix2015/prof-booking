@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
@@ -99,17 +99,7 @@ export function PublicBookingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  const canProceed = useMemo(() => {
-    if (step === 1) return !!selectedService;
-    if (step === 2) return true;
-    if (step === 3) return !!selectedDate;
-    if (step === 4) return !!selectedSlot;
-    return form.name.trim().length > 0 && form.phone.trim().length > 0;
-  }, [step, selectedService, selectedDate, selectedSlot, form]);
-
-  function handleNext() {
-    if (step < 5) setStep((step + 1) as Step);
-  }
+  const canProceed = form.name.trim().length > 0 && form.phone.trim().length > 0;
 
   function handleBack() {
     if (step > 1) setStep((step - 1) as Step);
