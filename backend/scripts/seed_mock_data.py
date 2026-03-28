@@ -15,18 +15,6 @@ os.environ.setdefault("JWT_SECRET_KEY", os.environ.get("JWT_SECRET_KEY", "seed")
 from app.database import SessionLocal
 
 # Import all modules so SQLAlchemy can resolve every relationship
-import app.modules.salons.models
-import app.modules.masters.models
-import app.modules.users.models
-import app.modules.services.models
-import app.modules.calendar.models
-import app.modules.sessions.models
-import app.modules.payments.models
-import app.modules.invites.models
-import app.modules.reviews.models
-import app.modules.invoices.models
-import app.modules.notifications.models
-import app.modules.loyalty.models
 
 from app.modules.salons.models import Provider
 from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
@@ -349,10 +337,10 @@ def run():
         print(f"  Providers      : {len(providers)}")
         print(f"  Professionals  : {len(professionals)}")
         print(f"  Work slots     : {total_slots:,}")
-        print(f"  Skills/prof    : 5-10 (stored in social_links.skills)")
+        print("  Skills/prof    : 5-10 (stored in social_links.skills)")
         print("  Login password : Password123!")
 
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise
     finally:
