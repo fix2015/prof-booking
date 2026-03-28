@@ -37,3 +37,10 @@ class ProfessionalRegisterRequest(BaseModel):
     social_links: Optional[dict] = {}
     invite_token: Optional[str] = None
     provider_ids: Optional[List[int]] = []
+
+
+class ClientRegisterRequest(BaseModel):
+    email: EmailStr
+    phone: str
+    password: str
+    name: Optional[str] = None

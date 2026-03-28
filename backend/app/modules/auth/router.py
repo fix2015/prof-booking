@@ -5,7 +5,7 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.modules.auth.schemas import (
     LoginRequest, TokenResponse, RefreshRequest,
-    OwnerRegisterRequest, ProfessionalRegisterRequest,
+    OwnerRegisterRequest, ProfessionalRegisterRequest, ClientRegisterRequest,
 )
 from app.modules.auth.services import (
     authenticate_user, create_access_token, create_refresh_token,
@@ -123,6 +123,24 @@ def register_professional(data: ProfessionalRegisterRequest, db: Session = Depen
                 status=ProfessionalStatus.PENDING,
             ))
     db.commit()
+    access_token = create_access_token(user)
+    refresh_token = create_refresh_token(db, user)
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user_id=user.id,
+        role=user.role,
+    )
+
+
+@router.post("/register/client", response_model=TokenResponse, status_code=201)
+def register_client(data: ClientRegisterRequest, db: Session = Depends(get_db)):
+    user = create_user(db, UserCreate(
+        email=data.email,
+        phone=data.phone,
+        password=data.password,
+        role=UserRole.CLIENT,
+    ))
     access_token = create_access_token(user)
     refresh_token = create_refresh_token(db, user)
     return TokenResponse(

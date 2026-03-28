@@ -396,6 +396,11 @@ const translations = {
     "profile.edit": "Edit Profile",
     "profile.sign_in_cta": "Sign In",
     "profile.guest": "Guest",
+    "profile.my_reviews": "My Reviews",
+    "profile.create_account": "Create account",
+    "profile.sign_in_or_register": "Sign in or create account",
+    "profile.guest_bookings_count": "{count} upcoming",
+    "profile.no_bookings": "No upcoming",
 
     // Filters sheet
     "filters.title": "Filters",
@@ -812,6 +817,11 @@ const translations = {
     "profile.edit": "Edytuj profil",
     "profile.sign_in_cta": "Zaloguj",
     "profile.guest": "Gość",
+    "profile.my_reviews": "Moje recenzje",
+    "profile.create_account": "Utwórz konto",
+    "profile.sign_in_or_register": "Zaloguj lub zarejestruj",
+    "profile.guest_bookings_count": "{count} nadchodzących",
+    "profile.no_bookings": "Brak nadchodzących",
 
     // Filters sheet
     "filters.title": "Filtry",
@@ -1228,6 +1238,11 @@ const translations = {
     "profile.edit": "Editează profilul",
     "profile.sign_in_cta": "Conectare",
     "profile.guest": "Oaspete",
+    "profile.my_reviews": "Recenziile mele",
+    "profile.create_account": "Creează cont",
+    "profile.sign_in_or_register": "Conectare sau înregistrare",
+    "profile.guest_bookings_count": "{count} viitoare",
+    "profile.no_bookings": "Niciuna viitoare",
 
     // Filters sheet
     "filters.title": "Filtre",
@@ -1644,6 +1659,11 @@ const translations = {
     "profile.edit": "Редагувати профіль",
     "profile.sign_in_cta": "Увійти",
     "profile.guest": "Гість",
+    "profile.my_reviews": "Мої відгуки",
+    "profile.create_account": "Створити акаунт",
+    "profile.sign_in_or_register": "Увійти або зареєструватись",
+    "profile.guest_bookings_count": "{count} майбутніх",
+    "profile.no_bookings": "Немає",
 
     // Filters sheet
     "filters.title": "Фільтри",
@@ -2060,6 +2080,11 @@ const translations = {
     "profile.edit": "Editar perfil",
     "profile.sign_in_cta": "Iniciar sesión",
     "profile.guest": "Invitado",
+    "profile.my_reviews": "Mis reseñas",
+    "profile.create_account": "Crear cuenta",
+    "profile.sign_in_or_register": "Iniciar sesión o registrarse",
+    "profile.guest_bookings_count": "{count} próximas",
+    "profile.no_bookings": "Sin próximas",
 
     // Filters sheet
     "filters.title": "Filtros",
