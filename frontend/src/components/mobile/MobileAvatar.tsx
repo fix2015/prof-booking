@@ -40,7 +40,7 @@ function pickColor(name: string): AvatarColor {
 export function MobileAvatar({ name, color, size = "md", shape = "circle", imageUrl }: Props) {
   const resolvedColor = color ?? pickColor(name);
   const { container, text } = SIZE_CLASSES[size];
-  const radius = shape === "rounded" ? "rounded-ds-xl" : "rounded-ds-full";
+  const radius = shape === "rounded" ? "rounded-ds-lg" : "rounded-ds-full";
 
   if (imageUrl) {
     return (
