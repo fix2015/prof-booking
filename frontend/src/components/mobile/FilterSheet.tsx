@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { NationalitySelect } from "@/components/ui/NationalitySelect";
+import { DateSelect } from "@/components/mobile/DateSelect";
 import { t } from "@/i18n";
 
 export interface FilterValues {
@@ -112,21 +113,10 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
         {/* Date */}
         <div>
           <p className="ds-label text-ds-text-primary mb-[10px]">{t("filters.date")}</p>
-          <label className="flex items-center gap-[10px] h-[44px] border border-ds-border rounded-ds-xl px-[14px] ds-body text-ds-text-muted w-full cursor-pointer">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="2" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M5 1v2M11 1v2M1 6h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <span className={local.date ? "text-ds-text-primary" : ""}>
-              {local.date || t("filters.date_placeholder")}
-            </span>
-            <input
-              type="date"
-              value={local.date}
-              onChange={(e) => setLocal((prev) => ({ ...prev, date: e.target.value }))}
-              className="absolute opacity-0 w-0 h-0"
-            />
-          </label>
+          <DateSelect
+            value={local.date}
+            onChange={(v) => setLocal((prev) => ({ ...prev, date: v }))}
+          />
         </div>
 
         {/* Divider */}
