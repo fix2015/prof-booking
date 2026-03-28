@@ -3,6 +3,7 @@ import { providersApi } from "@/api/salons";
 
 export interface ProviderSearchParams {
   q?: string;
+  category?: string;
   sort?: string;
   date?: string;
   minPrice?: number;
@@ -17,6 +18,7 @@ export function useSearchProviders(params: ProviderSearchParams) {
     queryFn: () =>
       providersApi.search({
         q: params.q || undefined,
+        category: params.category && params.category !== "All" ? params.category : undefined,
         sort: params.sort || undefined,
         available_date: params.date || undefined,
         min_price: params.minPrice || undefined,

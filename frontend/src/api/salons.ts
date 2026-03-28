@@ -26,6 +26,7 @@ export const providersApi = {
     address?: string;
     service_name?: string;
     available_date?: string;
+    category?: string;
     min_price?: number;
     max_price?: number;
     nationality?: string;
