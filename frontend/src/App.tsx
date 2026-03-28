@@ -8,7 +8,6 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { LoginPage } from "@/pages/public/LoginPage";
 import { RegisterPage } from "@/pages/public/RegisterPage";
 import { MasterRegisterPage } from "@/pages/public/MasterRegisterPage";
-import { ClientRegisterPage } from "@/pages/public/ClientRegisterPage";
 import { MobileLayout } from "@/pages/public/MobileLayout";
 import { SalonSelectorPage } from "@/pages/public/SalonSelectorPage";
 import { MapPage } from "@/pages/public/MapPage";
@@ -56,7 +55,7 @@ function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/register/professional" element={<MasterRegisterPage />} />
       <Route path="/register/master" element={<MasterRegisterPage />} />
-      <Route path="/register/client" element={<ClientRegisterPage />} />
+      <Route path="/register/client" element={<Navigate to="/login" replace />} />
 
       {/* Public discovery — tab layout */}
       <Route element={<MobileLayout />}>

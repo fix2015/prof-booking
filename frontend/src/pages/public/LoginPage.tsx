@@ -1,123 +1,212 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Link, Navigate } from "react-router-dom";
-import { useLogin } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useLogin, useRegisterClient } from "@/hooks/useAuth";
 import { useAuthContext } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
-import { CalendarCheck, Building2, Scissors } from "lucide-react";
+import { useGuestSession } from "@/hooks/useGuestSession";
+import { AppHeader } from "@/components/mobile/AppHeader";
 import { t } from "@/i18n";
 
-const schema = z.object({
-  email: z.string().email("Invalid email"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type FormValues = z.infer<typeof schema>;
+type Tab = "signin" | "register";
 
 export function LoginPage() {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthContext();
-  const login = useLogin();
+  const { guestProfile, clearGuestSession } = useGuestSession();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-  });
+  const login = useLogin();
+  const registerClient = useRegisterClient();
+
+  const [tab, setTab] = useState<Tab>("signin");
+
+  const [signInForm, setSignInForm] = useState({ email: "", password: "" });
+  const [registerForm, setRegisterForm] = useState({ name: "", email: "", phone: "", password: "" });
+
+  // Prefill register form from guest session
+  useEffect(() => {
+    if (guestProfile) {
+      setRegisterForm((f) => ({
+        ...f,
+        name: guestProfile.name || f.name,
+        email: guestProfile.email || f.email,
+        phone: guestProfile.phone || f.phone,
+      }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
+  const canSignIn = signInForm.email.trim() && signInForm.password.trim();
+  const canRegister =
+    registerForm.name.trim() &&
+    registerForm.email.trim() &&
+    registerForm.phone.trim() &&
+    registerForm.password.trim().length >= 6;
+
+  function handleSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSignIn) return;
+    login.mutate({ email: signInForm.email, password: signInForm.password });
+  }
+
+  function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canRegister) return;
+    registerClient.mutate(
+      {
+        email: registerForm.email,
+        phone: registerForm.phone,
+        password: registerForm.password,
+        name: registerForm.name,
+      },
+      {
+        onSuccess: () => {
+          clearGuestSession();
+          navigate("/me");
+        },
+      }
+    );
+  }
+
+  const inputCls =
+    "w-full h-[44px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive";
+  const labelCls = "ds-label text-ds-text-secondary block mb-ds-1";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4">
-      <div className="w-full max-w-md space-y-4">
-        {/* Register section — shown first so new users see it immediately */}
-        <div className="text-center text-xs text-muted-foreground font-medium uppercase tracking-wide">
-          {t("login.new_here")}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/register">
-            <Card className="cursor-pointer hover:shadow-md hover:border-gray-400 transition-all h-full">
-              <CardContent className="flex flex-col items-center justify-center gap-2 py-5 px-3 text-center">
-                <div className="rounded-full bg-gray-100 p-3">
-                  <Building2 className="h-6 w-6 text-gray-700" />
-                </div>
-                <p className="font-semibold text-sm text-gray-800">{t("login.register_business")}</p>
-                <p className="text-xs text-muted-foreground">{t("login.register_business_desc")}</p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link to="/register/professional">
-            <Card className="cursor-pointer hover:shadow-md hover:border-gray-400 transition-all h-full">
-              <CardContent className="flex flex-col items-center justify-center gap-2 py-5 px-3 text-center">
-                <div className="rounded-full bg-pink-50 p-3">
-                  <Scissors className="h-6 w-6 text-pink-600" />
-                </div>
-                <p className="font-semibold text-sm text-gray-800">{t("login.join_professional")}</p>
-                <p className="text-xs text-muted-foreground">{t("login.join_professional_desc")}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
+    <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
+      <AppHeader variant="back-title" title="" onBack={() => navigate(-1)} />
 
-        {/* Sign-in card */}
-        <Card className="shadow-lg">
-          <CardHeader className="text-center">
-            <div className="mb-2 text-4xl">✨</div>
-            <CardTitle className="text-2xl">{t("login.title")}</CardTitle>
-            <CardDescription>{t("login.sign_in")}</CardDescription>
-          </CardHeader>
+      {/* Brand area */}
+      <div className="bg-ds-bg-primary border-b border-ds-border flex flex-col items-center gap-[8px] pt-7 pb-6">
+        <div className="size-[56px] rounded-[10px] bg-ds-avatar-navy flex items-center justify-center">
+          <span className="text-[20px] font-bold text-ds-text-inverse leading-none">PB</span>
+        </div>
+        <p className="text-[20px] font-semibold text-ds-text-primary leading-tight">ProBook</p>
+        <p className="ds-body text-ds-text-secondary">
+          {tab === "signin" ? t("login.sign_in") : t("login.tab_create")}
+        </p>
+      </div>
 
-          <form onSubmit={handleSubmit((data) => login.mutate(data))}>
-            <CardContent className="space-y-4">
-              {login.isError && (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {t("login.invalid_credentials")}
-                </div>
+      {/* Segment tabs */}
+      <div className="bg-ds-bg-primary border-b border-ds-border flex">
+        {(["signin", "register"] as Tab[]).map((value) => {
+          const label = value === "signin" ? t("login.tab_signin") : t("login.tab_create");
+          const isActive = tab === value;
+          return (
+            <button
+              key={value}
+              onClick={() => setTab(value)}
+              className={`flex-1 h-[44px] ds-body-strong transition-colors relative ${
+                isActive ? "text-ds-text-primary" : "text-ds-text-secondary"
+              }`}
+            >
+              {label}
+              {isActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ds-interactive rounded-t-ds-full" />
               )}
+            </button>
+          );
+        })}
+      </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="email">{t("login.email")}</Label>
-                <Input
-                  id="email"
+      {/* Forms */}
+      <div className="flex-1 flex flex-col">
+        {tab === "signin" ? (
+          <form onSubmit={handleSignIn} className="flex-1 flex flex-col">
+            <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
+              {login.isError && (
+                <p className="ds-caption text-ds-feedback-saved text-center">{t("login.invalid_credentials")}</p>
+              )}
+              <div>
+                <label className={labelCls}>{t("login.email")}</label>
+                <input
                   type="email"
                   placeholder="you@example.com"
-                  {...register("email")}
+                  value={signInForm.email}
+                  onChange={(e) => setSignInForm((f) => ({ ...f, email: e.target.value }))}
+                  className={inputCls}
                 />
-                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="password">{t("login.password")}</Label>
-                <Input
-                  id="password"
+              <div>
+                <label className={labelCls}>{t("login.password")}</label>
+                <input
                   type="password"
                   placeholder="••••••••"
-                  {...register("password")}
+                  value={signInForm.password}
+                  onChange={(e) => setSignInForm((f) => ({ ...f, password: e.target.value }))}
+                  className={inputCls}
                 />
-                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
               </div>
-            </CardContent>
-
-            <CardFooter className="flex flex-col gap-3">
-              <Button type="submit" className="w-full" disabled={login.isPending}>
-                {login.isPending ? <Spinner size="sm" className="mr-2" /> : null}
-                {t("login.sign_in")}
-              </Button>
-              <Link to="/" className="w-full">
-                <Button variant="outline" className="w-full gap-2">
-                  <CalendarCheck className="h-4 w-4" />
-                  {t("login.book_appointment")}
-                </Button>
-              </Link>
-            </CardFooter>
+              <button
+                type="submit"
+                disabled={!canSignIn || login.isPending}
+                className={`w-full h-[48px] rounded-ds-2xl ds-body-strong transition-colors ${
+                  canSignIn && !login.isPending
+                    ? "bg-ds-interactive text-ds-text-inverse"
+                    : "bg-ds-bg-secondary text-ds-text-disabled"
+                }`}
+              >
+                {login.isPending ? "Signing in…" : t("login.tab_signin")}
+              </button>
+            </div>
           </form>
-        </Card>
+        ) : (
+          <form onSubmit={handleRegister} className="flex-1 flex flex-col">
+            <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
+              {registerClient.isError && (
+                <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>
+              )}
+              {(
+                [
+                  { key: "name" as const, label: t("login.full_name"), type: "text", placeholder: "Jane Smith" },
+                  { key: "email" as const, label: t("login.email"), type: "email", placeholder: "you@example.com" },
+                  { key: "phone" as const, label: t("login.phone"), type: "tel", placeholder: "+1 (555) 000-0000" },
+                  { key: "password" as const, label: t("login.password"), type: "password", placeholder: t("login.password_hint") },
+                ]
+              ).map(({ key, label, type, placeholder }) => (
+                <div key={key}>
+                  <label className={labelCls}>{label}</label>
+                  <input
+                    type={type}
+                    placeholder={placeholder}
+                    value={registerForm[key]}
+                    onChange={(e) => setRegisterForm((f) => ({ ...f, [key]: e.target.value }))}
+                    className={inputCls}
+                  />
+                </div>
+              ))}
+              <button
+                type="submit"
+                disabled={!canRegister || registerClient.isPending}
+                className={`w-full h-[48px] rounded-ds-2xl ds-body-strong transition-colors ${
+                  canRegister && !registerClient.isPending
+                    ? "bg-ds-interactive text-ds-text-inverse"
+                    : "bg-ds-bg-secondary text-ds-text-disabled"
+                }`}
+              >
+                {registerClient.isPending ? "Creating account…" : t("login.create_account_cta")}
+              </button>
+            </div>
+          </form>
+        )}
 
-        <div className="flex justify-center">
-          <LanguageSwitcher />
+        {/* Footer links */}
+        <div className="flex flex-col items-center gap-ds-3 px-ds-4 py-ds-6">
+          <button
+            onClick={() => navigate("/")}
+            className="ds-body-small text-ds-interactive"
+          >
+            {t("login.guest_link")}
+          </button>
+          <div className="flex items-center gap-[6px]">
+            <span className="ds-caption text-ds-text-muted">{t("login.for_business")}</span>
+            <button
+              onClick={() => navigate("/register")}
+              className="ds-caption text-ds-interactive"
+            >
+              {t("login.register_business")}
+            </button>
+          </div>
         </div>
       </div>
     </div>
