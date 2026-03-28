@@ -21,6 +21,11 @@ def search_providers(
     address: Optional[str] = Query(None),
     service_name: Optional[str] = Query(None),
     available_date: Optional[date_type] = Query(None, description="Filter to providers with available slots on this date"),
+    min_price: Optional[float] = Query(None),
+    max_price: Optional[float] = Query(None),
+    nationality: Optional[str] = Query(None),
+    min_experience: Optional[int] = Query(None),
+    sort: Optional[str] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
@@ -60,6 +65,34 @@ def search_providers(
             .subquery()
         )
         query = query.filter(Provider.id.in_(provider_ids_with_slots))
+    if min_price is not None:
+        query = query.filter(Provider.worker_payment_amount >= min_price)
+    if max_price is not None:
+        query = query.filter(Provider.worker_payment_amount <= max_price)
+    if nationality:
+        from app.modules.masters.models import Professional, ProfessionalProvider
+        provider_ids_nat = (
+            db.query(ProfessionalProvider.provider_id)
+            .join(Professional, Professional.id == ProfessionalProvider.professional_id)
+            .filter(Professional.nationality == nationality)
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(Provider.id.in_(provider_ids_nat))
+    if min_experience is not None:
+        from app.modules.masters.models import Professional, ProfessionalProvider
+        provider_ids_exp = (
+            db.query(ProfessionalProvider.provider_id)
+            .join(Professional, Professional.id == ProfessionalProvider.professional_id)
+            .filter(Professional.experience_years >= min_experience)
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(Provider.id.in_(provider_ids_exp))
+    if sort == "price_asc":
+        query = query.order_by(Provider.worker_payment_amount.asc())
+    elif sort == "price_desc":
+        query = query.order_by(Provider.worker_payment_amount.desc())
     return query.offset(skip).limit(limit).all()
 
 

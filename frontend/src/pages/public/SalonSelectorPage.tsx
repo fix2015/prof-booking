@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePublicProviders } from "@/hooks/useSalon";
+import { useSearchProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
 import { SearchBar } from "@/components/mobile/SearchBar";
+import { FilterBar } from "@/components/mobile/FilterBar";
+import { FilterSheet, FilterValues } from "@/components/mobile/FilterSheet";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { t, TranslationKey } from "@/i18n";
@@ -39,27 +41,49 @@ const CATEGORIES: { value: string; labelKey: TranslationKey }[] = [
 
 export function SalonSelectorPage() {
   const navigate = useNavigate();
-  const { data: providers = [], isLoading } = usePublicProviders();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [saved, setSaved] = useState<number[]>(getSaved);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterValues>({
+    sort: "nearest",
+    date: "",
+    minPrice: "",
+    maxPrice: "",
+    nationality: "",
+    minExperience: 0,
+  });
+
+  const { data: providers = [], isLoading } = useSearchProviders({
+    q: search || undefined,
+    sort: filters.sort || undefined,
+    date: filters.date || undefined,
+    minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
+    maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
+    nationality: filters.nationality || undefined,
+    minExperience: filters.minExperience || undefined,
+  });
 
   const filtered = useMemo(() => {
     return providers.filter((p) => {
-      const matchesSearch =
-        !search ||
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        (p.address ?? "").toLowerCase().includes(search.toLowerCase());
       const matchesCategory =
         activeCategory === "All" ||
         (p.category ?? "").toLowerCase() === activeCategory.toLowerCase();
-      return matchesSearch && matchesCategory;
+      return matchesCategory;
     });
-  }, [providers, search, activeCategory]);
+  }, [providers, activeCategory]);
 
   function handleToggleSave(id: number) {
     setSaved(toggleSaved(id));
   }
+
+  const hasActiveFilters =
+    filters.sort !== "nearest" ||
+    !!filters.date ||
+    !!filters.minPrice ||
+    !!filters.maxPrice ||
+    !!filters.nationality ||
+    !!filters.minExperience;
 
   const HeaderRight = (
     <div className="flex items-center gap-ds-2">
@@ -91,20 +115,19 @@ export function SalonSelectorPage() {
         />
 
         {/* Filter bar */}
-        <div className="flex items-center gap-ds-2 mt-ds-3 overflow-x-auto scrollbar-none pb-[2px]">
-          <Button variant="default" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3 gap-ds-1">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            {t("discover.filters")}
-          </Button>
-          <Button variant="outline" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3">
-            {t("providers.price_filter")}
-          </Button>
-          <Button variant="outline" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3">
-            {t("discover.filter.nationality")}
-          </Button>
-        </div>
+        <FilterBar
+          onOpenFilters={() => setFilterOpen(true)}
+          hasActiveFilters={hasActiveFilters}
+          activeNationality={filters.nationality}
+          activePriceRange={
+            filters.minPrice || filters.maxPrice
+              ? {
+                  min: Number(filters.minPrice) || undefined,
+                  max: Number(filters.maxPrice) || undefined,
+                }
+              : undefined
+          }
+        />
       </div>
 
       {/* Category chips */}
@@ -158,6 +181,14 @@ export function SalonSelectorPage() {
           ))
         )}
       </div>
+
+      <FilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        values={filters}
+        onApply={(v) => { setFilters(v); setFilterOpen(false); }}
+        resultCount={filtered.length}
+      />
     </div>
   );
 }
