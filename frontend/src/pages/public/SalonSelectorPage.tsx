@@ -4,6 +4,8 @@ import { usePublicProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
+import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 const SAVED_KEY = "pb_saved";
 
@@ -48,25 +50,33 @@ export function SalonSelectorPage() {
     setSaved(toggleSaved(id));
   }
 
-  const SignInButton = (
-    <button
-      onClick={() => navigate("/login")}
-      className="px-ds-3 h-[32px] rounded-ds-full border border-ds-border ds-label-small text-ds-text-primary"
-    >
-      Sign In
-    </button>
+  const HeaderRight = (
+    <div className="flex items-center gap-ds-2">
+      <LanguageSwitcher />
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
+        onClick={() => navigate("/login")}
+      >
+        Sign In
+      </Button>
+    </div>
   );
 
   return (
     <div className="flex flex-col min-h-full bg-ds-bg-secondary">
-      <AppHeader variant="brand" rightElement={SignInButton} />
+      <AppHeader variant="brand" rightElement={HeaderRight} />
 
-      {/* Search */}
-      <div className="px-ds-4 pt-ds-4 pb-ds-2">
-        <div className="flex items-center gap-ds-2 bg-ds-bg-primary rounded-ds-xl border border-ds-border px-ds-3 h-[44px]">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-ds-text-secondary">
-            <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      {/* Search section */}
+      <div className="px-ds-4 pt-ds-5 pb-ds-3 bg-ds-bg-primary">
+        <h1 className="ds-h1 text-ds-text-primary mb-ds-3">Find any service nearby</h1>
+
+        {/* Search pill */}
+        <div className="flex items-center bg-ds-bg-secondary rounded-ds-full border border-ds-border px-ds-3 h-[48px] gap-ds-2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-ds-interactive">
+            <circle cx="7" cy="7" r="2" fill="currentColor" />
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2" />
           </svg>
           <input
             className="flex-1 bg-transparent outline-none ds-body text-ds-text-primary placeholder:text-ds-text-disabled"
@@ -74,18 +84,38 @@ export function SalonSelectorPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {search && (
+          {search ? (
             <button onClick={() => setSearch("")} className="text-ds-text-secondary">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
+          ) : (
+            <Button variant="default" size="sm" className="h-[32px] rounded-ds-full px-ds-3">
+              Search
+            </Button>
           )}
+        </div>
+
+        {/* Filter bar */}
+        <div className="flex items-center gap-ds-2 mt-ds-3 overflow-x-auto scrollbar-none pb-[2px]">
+          <Button variant="default" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3 gap-ds-1">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            Filters
+          </Button>
+          <Button variant="outline" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3">
+            Price
+          </Button>
+          <Button variant="outline" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3">
+            Nationality
+          </Button>
         </div>
       </div>
 
       {/* Category chips */}
-      <div className="flex gap-ds-2 px-ds-4 pb-ds-3 overflow-x-auto scrollbar-none">
+      <div className="flex gap-ds-2 px-ds-4 py-ds-3 overflow-x-auto scrollbar-none bg-ds-bg-primary border-b border-ds-border">
         {CATEGORIES.map((cat) => (
           <CategoryChip
             key={cat}
@@ -94,21 +124,26 @@ export function SalonSelectorPage() {
             onClick={() => setActiveCategory(cat)}
           />
         ))}
+        <button className="shrink-0 h-[32px] px-ds-3 rounded-ds-full border border-dashed border-ds-border ds-badge text-ds-text-secondary whitespace-nowrap">
+          +more
+        </button>
       </div>
 
       {/* Results header */}
-      <div className="flex items-center justify-between px-ds-4 pb-ds-2">
+      <div className="flex items-center justify-between px-ds-4 py-ds-2">
         <span className="ds-body-small text-ds-text-secondary">
           {isLoading ? "Loading..." : `${filtered.length} providers`}
         </span>
-        <button className="ds-body-small text-ds-interactive">Sort</button>
+        <Button variant="ghost" size="sm" className="ds-body-small text-ds-interactive h-auto py-0 px-0">
+          Sort
+        </Button>
       </div>
 
       {/* Provider list */}
       <div className="flex flex-col gap-ds-3 px-ds-4 pb-ds-4">
         {isLoading ? (
           Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="h-[200px] bg-ds-bg-primary rounded-ds-2xl border border-ds-border animate-pulse" />
+            <div key={i} className="h-[100px] bg-ds-bg-primary rounded-ds-2xl border border-ds-border animate-pulse" />
           ))
         ) : filtered.length === 0 ? (
           <div className="text-center py-ds-12">
@@ -119,6 +154,7 @@ export function SalonSelectorPage() {
             <ProviderCard
               key={provider.id}
               provider={provider}
+              variant="list"
               saved={saved.includes(provider.id)}
               onToggleSave={handleToggleSave}
               onClick={(id) => navigate(`/providers/${id}`)}

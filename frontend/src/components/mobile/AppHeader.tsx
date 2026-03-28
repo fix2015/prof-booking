@@ -31,14 +31,14 @@ export function AppHeader({ variant, title, onBack, rightElement }: Props) {
     <header className="h-[56px] bg-ds-bg-primary border-b border-ds-border flex items-center px-ds-4 gap-ds-2 sticky top-0 z-10">
       {variant === "brand" && (
         <>
-          <span className="ds-h4 text-ds-text-primary flex-1">ProBook</span>
+          <span className="ds-h3 text-ds-text-primary flex-1">ProBook</span>
           {rightElement}
         </>
       )}
 
       {variant === "title-action" && (
         <>
-          <span className="ds-h4 text-ds-text-primary flex-1">{title}</span>
+          <span className="ds-h3 text-ds-text-primary flex-1">{title}</span>
           {rightElement}
         </>
       )}
@@ -46,14 +46,14 @@ export function AppHeader({ variant, title, onBack, rightElement }: Props) {
       {variant === "back-title" && (
         <>
           <BackButton onBack={onBack} />
-          <span className="ds-h4 text-ds-text-primary flex-1">{title}</span>
+          <span className="ds-h3 text-ds-text-primary flex-1">{title}</span>
         </>
       )}
 
       {variant === "back-title-action" && (
         <>
           <BackButton onBack={onBack} />
-          <span className="ds-h4 text-ds-text-primary flex-1">{title}</span>
+          <span className="ds-h3 text-ds-text-primary flex-1">{title}</span>
           {rightElement}
         </>
       )}

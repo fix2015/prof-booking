@@ -1,10 +1,12 @@
 type AvatarColor = "navy" | "teal" | "purple";
 type AvatarSize = "sm" | "md" | "lg" | "xl";
+type AvatarShape = "circle" | "rounded";
 
 interface Props {
   name: string;
   color?: AvatarColor;
   size?: AvatarSize;
+  shape?: AvatarShape;
   imageUrl?: string;
 }
 
@@ -35,13 +37,14 @@ function pickColor(name: string): AvatarColor {
   return colors[name.charCodeAt(0) % colors.length];
 }
 
-export function MobileAvatar({ name, color, size = "md", imageUrl }: Props) {
+export function MobileAvatar({ name, color, size = "md", shape = "circle", imageUrl }: Props) {
   const resolvedColor = color ?? pickColor(name);
   const { container, text } = SIZE_CLASSES[size];
+  const radius = shape === "rounded" ? "rounded-ds-xl" : "rounded-ds-full";
 
   if (imageUrl) {
     return (
-      <div className={`${container} rounded-ds-full overflow-hidden flex-shrink-0`}>
+      <div className={`${container} ${radius} overflow-hidden flex-shrink-0`}>
         <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
       </div>
     );
@@ -49,7 +52,7 @@ export function MobileAvatar({ name, color, size = "md", imageUrl }: Props) {
 
   return (
     <div
-      className={`${container} ${COLOR_CLASSES[resolvedColor]} rounded-ds-full flex items-center justify-center flex-shrink-0`}
+      className={`${container} ${COLOR_CLASSES[resolvedColor]} ${radius} flex items-center justify-center flex-shrink-0`}
     >
       <span className={`${text} text-ds-text-inverse`}>{getInitials(name)}</span>
     </div>

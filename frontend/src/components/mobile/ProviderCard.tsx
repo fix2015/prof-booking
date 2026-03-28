@@ -4,13 +4,60 @@ import { StarRating } from "./StarRating";
 
 interface Props {
   provider: Provider;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "list";
   saved?: boolean;
   onToggleSave?: (id: number) => void;
   onClick?: (id: number) => void;
 }
 
 export function ProviderCard({ provider, variant = "default", saved = false, onToggleSave, onClick }: Props) {
+  if (variant === "list") {
+    return (
+      <div
+        className="relative bg-ds-bg-primary rounded-ds-2xl border border-ds-border overflow-hidden cursor-pointer active:opacity-90 flex items-center gap-ds-3 px-ds-3 py-ds-3 h-[100px]"
+        onClick={() => onClick?.(provider.id)}
+      >
+        {/* Avatar */}
+        <MobileAvatar
+          name={provider.name}
+          imageUrl={provider.logo_url ?? undefined}
+          size="lg"
+          shape="rounded"
+        />
+
+        {/* Info */}
+        <div className="flex-1 min-w-0 flex flex-col gap-[3px]">
+          <p className="ds-body-strong text-ds-text-primary truncate">{provider.name}</p>
+          {provider.address && (
+            <p className="ds-caption text-ds-text-secondary truncate">{provider.address}</p>
+          )}
+          <div className="flex items-center gap-ds-1 mt-[2px]">
+            <StarRating rating={4} size="sm" />
+            <span className="ds-caption text-ds-text-secondary">4.0</span>
+            {provider.category && (
+              <>
+                <span className="ds-caption text-ds-text-disabled">·</span>
+                <span className="ds-caption text-ds-text-secondary">{provider.category}</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Price pill */}
+        {provider.worker_payment_amount > 0 && (
+          <span className="shrink-0 bg-ds-bg-secondary rounded-ds-full px-ds-2 py-[3px] ds-caption text-ds-text-primary">
+            from ${provider.worker_payment_amount}
+          </span>
+        )}
+
+        {/* Heart */}
+        <div className="absolute top-ds-2 right-ds-2">
+          <HeartButton saved={saved} onToggle={() => onToggleSave?.(provider.id)} />
+        </div>
+      </div>
+    );
+  }
+
   if (variant === "compact") {
     return (
       <div
