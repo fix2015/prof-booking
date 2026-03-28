@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
+import { t } from "@/i18n";
 
 const SAVED_KEY = "pb_saved";
 
@@ -44,20 +45,20 @@ export function SavedPage() {
 
   return (
     <div className="flex flex-col min-h-full bg-ds-bg-secondary">
-      <AppHeader variant="title-action" title="Saved" rightElement={AddButton} />
+      <AppHeader variant="title-action" title={t("saved.title")} rightElement={AddButton} />
 
       {/* Segment tabs */}
       <div className="flex bg-ds-bg-primary border-b border-ds-border">
-        {(["All", "Providers", "Services"] as Tab[]).map((t) => (
+        {(["All", "Providers", "Services"] as Tab[]).map((tabItem) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabItem}
+            onClick={() => setTab(tabItem)}
             className={`flex-1 h-[44px] ds-body-small transition-colors relative ${
-              tab === t ? "text-ds-interactive" : "text-ds-text-secondary"
+              tab === tabItem ? "text-ds-interactive" : "text-ds-text-secondary"
             }`}
           >
-            {t}
-            {tab === t && (
+            {tabItem === "All" ? t("saved.tab.all") : tabItem === "Providers" ? t("saved.tab.providers") : t("saved.tab.services")}
+            {tab === tabItem && (
               <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ds-interactive rounded-t-ds-full" />
             )}
           </button>
@@ -77,16 +78,16 @@ export function SavedPage() {
               </svg>
             </div>
             <div className="text-center">
-              <p className="ds-body-strong text-ds-text-primary">No saved items yet</p>
+              <p className="ds-body-strong text-ds-text-primary">{t("saved.empty_title")}</p>
               <p className="ds-body-small text-ds-text-secondary mt-ds-1">
-                Tap the heart on any provider to save it here
+                {t("saved.empty_subtitle")}
               </p>
             </div>
             <button
               onClick={() => navigate("/")}
               className="px-ds-6 h-[44px] bg-ds-interactive rounded-ds-xl ds-body-strong text-ds-text-inverse"
             >
-              Browse Providers
+              {t("saved.browse")}
             </button>
           </div>
         ) : (

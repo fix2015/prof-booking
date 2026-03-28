@@ -6,6 +6,7 @@ import { useProviderProfessionalsPublic } from "@/hooks/useMaster";
 import { servicesApi } from "@/api/services";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
+import { t } from "@/i18n";
 
 const SAVED_KEY = "pb_saved";
 
@@ -61,7 +62,7 @@ export function ProviderProfilePage() {
   if (isLoading) {
     return (
       <div className="max-w-[390px] mx-auto min-h-screen bg-ds-bg-secondary flex flex-col">
-        <AppHeader variant="back-title" title="Loading..." />
+        <AppHeader variant="back-title" title={t("providers.loading")} />
         <div className="h-[140px] bg-ds-bg-secondary animate-pulse" />
         <div className="p-ds-4 flex flex-col gap-ds-3">
           {Array.from({ length: 3 }, (_, i) => (
@@ -75,9 +76,9 @@ export function ProviderProfilePage() {
   if (!provider) {
     return (
       <div className="max-w-[390px] mx-auto flex flex-col items-center justify-center min-h-[300px] gap-ds-3 p-ds-6">
-        <p className="ds-body text-ds-text-secondary">Provider not found</p>
+        <p className="ds-body text-ds-text-secondary">{t("providers.not_found")}</p>
         <button onClick={() => navigate("/")} className="ds-body-small text-ds-interactive">
-          Back to Discovery
+          {t("providers.back_to_discovery")}
         </button>
       </div>
     );
@@ -115,12 +116,12 @@ export function ProviderProfilePage() {
         <div className="flex gap-ds-6 mt-ds-2">
           <div className="text-center">
             <p className="ds-h2 text-ds-text-primary">{services.length}</p>
-            <p className="ds-caption text-ds-text-secondary">Services</p>
+            <p className="ds-caption text-ds-text-secondary">{t("providers.services_label")}</p>
           </div>
           <div className="w-px bg-ds-border" />
           <div className="text-center">
             <p className="ds-h2 text-ds-text-primary">{professionals.length}</p>
-            <p className="ds-caption text-ds-text-secondary">Professionals</p>
+            <p className="ds-caption text-ds-text-secondary">{t("providers.professionals_label")}</p>
           </div>
         </div>
       </div>
@@ -131,7 +132,7 @@ export function ProviderProfilePage() {
           onClick={() => navigate(`/book/${provider.id}`)}
           className="w-full h-[48px] bg-ds-interactive rounded-ds-2xl ds-body-large text-ds-text-inverse"
         >
-          Book Appointment
+          {t("providers.book_appointment")}
         </button>
       </div>
 
@@ -139,7 +140,7 @@ export function ProviderProfilePage() {
       {services.length > 0 && (
         <div className="bg-ds-bg-primary mt-ds-3 border-t border-ds-border">
           <div className="px-ds-4 pt-ds-4 pb-ds-2">
-            <p className="ds-h4 text-ds-text-primary">Services</p>
+            <p className="ds-h4 text-ds-text-primary">{t("providers.services_section")}</p>
           </div>
           <div>
             {displayedServices.map((service, idx) => (
@@ -151,7 +152,7 @@ export function ProviderProfilePage() {
               >
                 <div className="flex-1">
                   <p className="ds-body text-ds-text-primary">{service.name}</p>
-                  <p className="ds-caption text-ds-text-secondary">{service.duration_minutes} min</p>
+                  <p className="ds-caption text-ds-text-secondary">{t("providers.duration_min", { min: service.duration_minutes })}</p>
                 </div>
                 <p className="ds-body-strong text-ds-text-primary">${service.price}</p>
               </div>
@@ -162,7 +163,7 @@ export function ProviderProfilePage() {
               onClick={() => setShowAllServices((v) => !v)}
               className="w-full py-ds-3 ds-body-small text-ds-interactive border-t border-ds-border"
             >
-              {showAllServices ? "Show less" : `Show all ${services.length} →`}
+              {showAllServices ? t("providers.show_less") : t("providers.show_all", { count: services.length })}
             </button>
           )}
         </div>
@@ -172,7 +173,7 @@ export function ProviderProfilePage() {
       {professionals.length > 0 && (
         <div className="bg-ds-bg-primary mt-ds-3 border-t border-ds-border pb-ds-4">
           <div className="px-ds-4 pt-ds-4 pb-ds-3">
-            <p className="ds-h4 text-ds-text-primary">Our Team</p>
+            <p className="ds-h4 text-ds-text-primary">{t("providers.our_team")}</p>
           </div>
           <div className="flex gap-ds-4 px-ds-4 overflow-x-auto scrollbar-none">
             {professionals.map((pro) => (

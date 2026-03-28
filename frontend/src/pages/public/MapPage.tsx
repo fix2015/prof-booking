@@ -4,6 +4,7 @@ import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { usePublicProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
+import { t } from "@/i18n";
 import { Provider } from "@/types";
 
 const SAVED_KEY = "pb_saved";
@@ -76,7 +77,7 @@ export function MapPage() {
           </GoogleMap>
         ) : (
           <div className="w-full h-full bg-ds-bg-secondary flex items-center justify-center">
-            <p className="ds-body text-ds-text-secondary">Loading map…</p>
+            <p className="ds-body text-ds-text-secondary">{t("map.loading")}</p>
           </div>
         )}
 
@@ -99,13 +100,13 @@ export function MapPage() {
                 onClick={() => navigate(`/providers/${selected.id}`)}
                 className="mt-ds-3 w-full h-[44px] bg-ds-interactive rounded-ds-xl ds-body-strong text-ds-text-inverse"
               >
-                View Provider
+                {t("map.view_provider")}
               </button>
             </div>
           ) : (
             <div className="px-ds-4 pb-ds-4 max-h-[40vh] overflow-y-auto">
               <p className="ds-body-small text-ds-text-secondary mb-ds-3">
-                {geoProviders.length} providers nearby
+                {t("map.providers_nearby", { count: geoProviders.length })}
               </p>
               <div className="flex flex-col gap-ds-2">
                 {providers.map((p) => (

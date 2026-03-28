@@ -3,6 +3,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useLogout } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
+import { t } from "@/i18n";
 
 interface MenuItem {
   label: string;
@@ -24,7 +25,7 @@ export function UserProfilePage() {
   const { user, isAuthenticated } = useAuthContext();
   const logout = useLogout();
 
-  const displayName = isAuthenticated && user ? user.email.split("@")[0] : "Guest";
+  const displayName = isAuthenticated && user ? user.email.split("@")[0] : t("profile.guest");
   const displayEmail = user?.email ?? "";
 
   const SettingsButton = (
@@ -46,7 +47,7 @@ export function UserProfilePage() {
 
   const menuItems: MenuItem[] = [
     {
-      label: "My Bookings",
+      label: t("profile.my_bookings"),
       icon: (
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.4" />
@@ -56,7 +57,7 @@ export function UserProfilePage() {
       onClick: () => navigate("/sessions"),
     },
     {
-      label: "Payment Methods",
+      label: t("profile.payment_methods"),
       icon: (
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <rect x="1" y="4" width="16" height="11" rx="2" stroke="currentColor" strokeWidth="1.4" />
@@ -66,7 +67,7 @@ export function UserProfilePage() {
       onClick: () => {},
     },
     {
-      label: "Notifications",
+      label: t("profile.notifications"),
       icon: (
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path
@@ -80,7 +81,7 @@ export function UserProfilePage() {
       onClick: () => navigate("/notifications"),
     },
     {
-      label: "Help & Support",
+      label: t("profile.help_support"),
       icon: (
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.4" />
@@ -90,7 +91,7 @@ export function UserProfilePage() {
       onClick: () => {},
     },
     {
-      label: "Sign Out",
+      label: t("profile.sign_out"),
       icon: (
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M7 3H3C2.448 3 2 3.448 2 4V14C2 14.552 2.448 15 3 15H7M12 12L16 9L12 6M16 9H7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -103,7 +104,7 @@ export function UserProfilePage() {
 
   return (
     <div className="flex flex-col min-h-full bg-ds-bg-secondary">
-      <AppHeader variant="title-action" title="Profile" rightElement={SettingsButton} />
+      <AppHeader variant="title-action" title={t("profile.page_title")} rightElement={SettingsButton} />
 
       {/* Avatar section */}
       <div className="bg-ds-bg-primary px-ds-4 pt-ds-6 pb-ds-6 flex flex-col items-center gap-ds-3 border-b border-ds-border">
@@ -119,14 +120,14 @@ export function UserProfilePage() {
             onClick={() => navigate("/profile/professional")}
             className="ds-body-small text-ds-interactive border border-ds-interactive rounded-ds-full px-ds-4 h-[30px]"
           >
-            Edit Profile
+            {t("profile.edit")}
           </button>
         ) : (
           <button
             onClick={() => navigate("/login")}
             className="px-ds-6 h-[40px] bg-ds-interactive rounded-ds-xl ds-body-strong text-ds-text-inverse"
           >
-            Sign In
+            {t("profile.sign_in_cta")}
           </button>
         )}
       </div>

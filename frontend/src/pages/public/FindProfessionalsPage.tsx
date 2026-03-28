@@ -9,6 +9,7 @@ import { NATIONALITIES } from "@/components/ui/NationalitySelect";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { t } from "@/i18n";
 import type { Professional } from "@/types";
 
 const flagFor = (nat: string) =>
@@ -61,13 +62,13 @@ export function FindProfessionalsPage() {
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 space-y-6">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Find Professionals</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("professionals.find_title")}</h1>
             <p className="text-muted-foreground text-sm mt-0.5">
-              Browse nail technicians and beauty professionals to join your team
+              {t("professionals.find_subtitle")}
             </p>
           </div>
           {professionals.length > 0 && (
-            <p className="text-sm text-muted-foreground">{professionals.length} found</p>
+            <p className="text-sm text-muted-foreground">{t("professionals.found", { count: professionals.length })}</p>
           )}
         </div>
 
@@ -76,7 +77,7 @@ export function FindProfessionalsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Search by name or specialty…"
+              placeholder={t("professionals.search_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && apply()}
@@ -89,34 +90,34 @@ export function FindProfessionalsPage() {
             onClick={() => setShowFilters((v) => !v)}
           >
             <SlidersHorizontal className="h-4 w-4" />
-            <span className="hidden sm:inline">Filters</span>
+            <span className="hidden sm:inline">{t("discover.filters")}</span>
             {activeFilterCount > 0 && (
               <span className="ml-0.5 inline-flex items-center justify-center h-4 w-4 rounded-full bg-gray-900 text-white text-[10px] font-bold">
                 {activeFilterCount}
               </span>
             )}
           </Button>
-          <Button onClick={apply} className="bg-gray-900 hover:bg-gray-950 shrink-0">Search</Button>
+          <Button onClick={apply} className="bg-gray-900 hover:bg-gray-950 shrink-0">{t("common.search")}</Button>
         </div>
 
         {/* Filters */}
         {showFilters && (
           <div className="rounded-xl border bg-muted/30 p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nationality</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("professionals.filter_nationality")}</label>
               <select
                 value={nationality}
                 onChange={(e) => setNationality(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">All nationalities</option>
+                <option value="">{t("discover.filter.all_nationalities")}</option>
                 {NATIONALITIES.map((n) => (
                   <option key={n.label} value={n.label}>{n.flag} {n.label}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Min experience (years)</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("professionals.filter_min_experience")}</label>
               <Input
                 type="number"
                 placeholder="e.g. 2"
@@ -126,7 +127,7 @@ export function FindProfessionalsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("professionals.filter_service")}</label>
               <Input
                 placeholder="e.g. Gel Manicure"
                 value={serviceName}
@@ -135,8 +136,8 @@ export function FindProfessionalsPage() {
               />
             </div>
             <div className="sm:col-span-3 flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={clear}>Clear all</Button>
-              <Button size="sm" className="bg-gray-900 hover:bg-gray-950" onClick={apply}>Apply</Button>
+              <Button variant="ghost" size="sm" onClick={clear}>{t("discover.filter.clear_all")}</Button>
+              <Button size="sm" className="bg-gray-900 hover:bg-gray-950" onClick={apply}>{t("discover.filter.apply")}</Button>
             </div>
           </div>
         )}
@@ -147,10 +148,10 @@ export function FindProfessionalsPage() {
         ) : professionals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
             <div className="text-5xl">🔍</div>
-            <p className="font-semibold text-lg">No professionals found</p>
-            <p className="text-sm text-muted-foreground">Try different filters or clear your search</p>
+            <p className="font-semibold text-lg">{t("professionals.no_title")}</p>
+            <p className="text-sm text-muted-foreground">{t("professionals.no_subtitle")}</p>
             {(applied.search || activeFilterCount > 0) && (
-              <Button variant="outline" size="sm" onClick={clear}>Clear filters</Button>
+              <Button variant="outline" size="sm" onClick={clear}>{t("discover.empty.clear")}</Button>
             )}
           </div>
         ) : (
@@ -218,10 +219,10 @@ function ProfessionalCard({ professional }: { professional: Professional }) {
 
         <div className="mt-auto flex gap-2">
           <Link to={`/professionals/${professional.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full">View Profile</Button>
+            <Button variant="outline" size="sm" className="w-full">{t("professionals.view_profile")}</Button>
           </Link>
           <Link to={`/book?professional_id=${professional.id}`} className="flex-1">
-            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">Book</Button>
+            <Button size="sm" className="w-full bg-gray-900 hover:bg-gray-950">{t("professionals.book")}</Button>
           </Link>
         </div>
       </div>
