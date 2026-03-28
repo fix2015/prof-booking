@@ -3,6 +3,20 @@ import { calendarApi } from "@/api/calendar";
 import { bookingApi, PublicBookingPayload } from "@/api/booking";
 import { sessionsApi, SessionFilters } from "@/api/sessions";
 
+export function useAvailableDates(
+  providerId: number,
+  dateFrom: string,
+  dateTo: string,
+  durationMinutes: number,
+  professionalId?: number
+) {
+  return useQuery({
+    queryKey: ["available-dates", providerId, dateFrom, dateTo, durationMinutes, professionalId],
+    queryFn: () => calendarApi.getAvailableDates(providerId, dateFrom, dateTo, durationMinutes, professionalId),
+    enabled: !!providerId && !!dateFrom && !!dateTo,
+  });
+}
+
 export function useAvailability(
   providerId: number,
   date: string,

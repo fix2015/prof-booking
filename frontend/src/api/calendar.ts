@@ -9,6 +9,13 @@ export interface WorkSlotPayload {
 }
 
 export const calendarApi = {
+  getAvailableDates: (providerId: number, dateFrom: string, dateTo: string, durationMinutes: number, professionalId?: number) =>
+    apiClient
+      .get<string[]>("/calendar/available-dates", {
+        params: { provider_id: providerId, date_from: dateFrom, date_to: dateTo, duration_minutes: durationMinutes, professional_id: professionalId },
+      })
+      .then((r) => r.data),
+
   getAvailability: (providerId: number, date: string, durationMinutes: number, professionalId?: number) =>
     apiClient
       .get<AvailableSlot[]>("/calendar/availability", {

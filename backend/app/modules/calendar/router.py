@@ -10,12 +10,26 @@ from app.modules.calendar.schemas import (
 )
 from app.modules.calendar.services import (
     create_work_slot, delete_work_slot, get_professional_slots,
-    copy_weekly_schedule, copy_period_schedule, get_available_slots,
+    copy_weekly_schedule, copy_period_schedule, get_available_slots, get_available_dates,
 )
 from app.modules.masters.services import get_professional_by_user_id
 from app.modules.users.models import User
 
 router = APIRouter()
+
+
+@router.get("/available-dates", response_model=List[str])
+def get_available_dates_endpoint(
+    provider_id: int = Query(...),
+    date_from: date = Query(...),
+    date_to: date = Query(...),
+    duration_minutes: int = Query(60),
+    professional_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Public: returns dates that have at least one bookable slot."""
+    dates = get_available_dates(db, provider_id, date_from, date_to, duration_minutes, professional_id)
+    return [str(d) for d in dates]
 
 
 @router.get("/availability", response_model=List[AvailableSlot])
