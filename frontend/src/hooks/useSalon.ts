@@ -12,6 +12,14 @@ export interface ProviderSearchParams {
   minExperience?: number;
 }
 
+export function useProviderCategories() {
+  return useQuery({
+    queryKey: ["providers", "categories"],
+    queryFn: () => providersApi.getCategories(),
+    staleTime: 5 * 60 * 1000, // cache for 5 min
+  });
+}
+
 export function useSearchProviders(params: ProviderSearchParams) {
   return useQuery({
     queryKey: ["providers", "search", params],
