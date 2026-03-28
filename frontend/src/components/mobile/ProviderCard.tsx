@@ -8,9 +8,13 @@ interface Props {
   saved?: boolean;
   onToggleSave?: (id: number) => void;
   onClick?: (id: number) => void;
+  /** When a service is selected, pass its price here (overrides worker_payment_amount) */
+  servicePrice?: number;
 }
 
-export function ProviderCard({ provider, variant = "default", saved = false, onToggleSave, onClick }: Props) {
+export function ProviderCard({ provider, variant = "default", saved = false, onToggleSave, onClick, servicePrice }: Props) {
+  const displayPrice = servicePrice ?? (provider.worker_payment_amount > 0 ? provider.worker_payment_amount : null);
+  const priceLabel = servicePrice != null ? `$${servicePrice}` : displayPrice != null ? `from $${displayPrice}` : null;
   if (variant === "list") {
     return (
       <div
@@ -38,9 +42,9 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
             <StarRating rating={4} size="sm" />
             <span className="ds-caption text-ds-text-muted">4.8</span>
             <div className="flex-1" />
-            {provider.worker_payment_amount > 0 && (
+            {priceLabel && (
               <span className="bg-ds-interactive rounded-[20px] px-[10px] py-[4px] ds-label-small text-ds-text-inverse">
-                from ${provider.worker_payment_amount}
+                {priceLabel}
               </span>
             )}
           </div>
@@ -103,12 +107,10 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
         <div className="flex items-center gap-ds-2 mt-[2px]">
           <StarRating rating={4} size="sm" />
           <span className="ds-caption text-ds-text-secondary">4.0</span>
-          {provider.worker_payment_amount > 0 && (
+          {priceLabel && (
             <>
               <span className="ds-caption text-ds-text-disabled">·</span>
-              <span className="ds-caption text-ds-text-secondary">
-                from ${provider.worker_payment_amount}
-              </span>
+              <span className="ds-caption text-ds-text-secondary">{priceLabel}</span>
             </>
           )}
         </div>
