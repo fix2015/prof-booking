@@ -198,7 +198,7 @@ export function PublicBookingPage() {
               services.map((service) => (
                 <button
                   key={service.id}
-                  onClick={() => setSelectedService(service)}
+                  onClick={() => { setSelectedService(service); setStep(2); }}
                   className={`w-full flex items-center gap-ds-3 p-ds-3 rounded-ds-xl border transition-colors ${
                     selectedService?.id === service.id
                       ? "border-ds-interactive bg-ds-interactive"
@@ -229,7 +229,7 @@ export function PublicBookingPage() {
             <p className="ds-caption text-ds-text-secondary">{t("booking.optional_skip")}</p>
             <div className="grid grid-cols-3 gap-ds-3">
               <button
-                onClick={() => setSelectedProfessional(null)}
+                onClick={() => { setSelectedProfessional(null); setStep(3); }}
                 className={`flex flex-col items-center gap-ds-2 p-ds-3 rounded-ds-xl border ${
                   selectedProfessional ? "border-ds-border bg-ds-bg-primary" : "border-ds-interactive bg-ds-interactive"
                 }`}
@@ -247,7 +247,7 @@ export function PublicBookingPage() {
               {professionals.map((pro) => (
                 <button
                   key={pro.id}
-                  onClick={() => setSelectedProfessional(pro)}
+                  onClick={() => { setSelectedProfessional(pro); setStep(3); }}
                   className={`flex flex-col items-center gap-ds-2 p-ds-3 rounded-ds-xl border ${
                     selectedProfessional?.id === pro.id
                       ? "border-ds-interactive bg-ds-interactive"
@@ -301,7 +301,7 @@ export function PublicBookingPage() {
                   <button
                     key={dateStr}
                     disabled={isDisabled}
-                    onClick={() => setSelectedDate(dateStr)}
+                    onClick={() => { setSelectedDate(dateStr); setStep(4); }}
                     className={`h-[36px] rounded-ds-md ds-body-small transition-colors ${dayCls}`}
                   >
                     {day.getDate()}
@@ -332,7 +332,7 @@ export function PublicBookingPage() {
                     time={formatTime(slot)}
                     professionalName={slot.professional_name}
                     selected={selectedSlot?.start_time === slot.start_time && selectedSlot?.professional_id === slot.professional_id}
-                    onClick={() => setSelectedSlot(slot)}
+                    onClick={() => { setSelectedSlot(slot); setStep(5); }}
                   />
                 ))}
               </div>
@@ -395,19 +395,9 @@ export function PublicBookingPage() {
         )}
       </div>
 
-      {/* Bottom CTA */}
-      <div className="px-ds-4 py-ds-4 bg-ds-bg-primary border-t border-ds-border">
-        {step < 5 ? (
-          <button
-            onClick={handleNext}
-            disabled={!canProceed}
-            className={`w-full h-[48px] rounded-ds-2xl ds-body-large transition-colors ${
-              canProceed ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
-            }`}
-          >
-            {step === 2 && !selectedProfessional ? t("booking.skip_any") : t("booking.continue")}
-          </button>
-        ) : (
+      {/* Bottom CTA — only on the confirm step */}
+      {step === 5 && (
+        <div className="px-ds-4 py-ds-4 bg-ds-bg-primary border-t border-ds-border">
           <button
             onClick={handleConfirm}
             disabled={!canProceed || createBooking.isPending}
@@ -417,11 +407,11 @@ export function PublicBookingPage() {
           >
             {createBooking.isPending ? t("booking.in_progress") : t("booking.confirm_cta")}
           </button>
-        )}
-        {createBooking.isError && (
-          <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">{t("booking.failed")}</p>
-        )}
-      </div>
+          {createBooking.isError && (
+            <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">{t("booking.failed")}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
