@@ -61,7 +61,7 @@ export function ProviderProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[390px] mx-auto min-h-screen bg-ds-bg-secondary flex flex-col">
+      <div className="max-w-[768px] mx-auto min-h-screen bg-ds-bg-secondary flex flex-col">
         <AppHeader variant="back-title" title={t("providers.loading")} />
         <div className="h-[140px] bg-ds-bg-secondary animate-pulse" />
         <div className="p-ds-4 flex flex-col gap-ds-3">
@@ -75,7 +75,7 @@ export function ProviderProfilePage() {
 
   if (!provider) {
     return (
-      <div className="max-w-[390px] mx-auto flex flex-col items-center justify-center min-h-[300px] gap-ds-3 p-ds-6">
+      <div className="max-w-[768px] mx-auto flex flex-col items-center justify-center min-h-[300px] gap-ds-3 p-ds-6">
         <p className="ds-body text-ds-text-secondary">{t("providers.not_found")}</p>
         <button onClick={() => navigate("/")} className="ds-body-small text-ds-interactive">
           {t("providers.back_to_discovery")}
@@ -87,7 +87,7 @@ export function ProviderProfilePage() {
   const displayedServices = showAllServices ? services : services.slice(0, 4);
 
   return (
-    <div className="max-w-[390px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
+    <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
       <AppHeader variant="back-title-action" title={provider.name} rightElement={HeartButton} />
 
       {/* Hero banner */}

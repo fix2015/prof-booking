@@ -115,7 +115,7 @@ export function PublicBookingPage() {
   ];
 
   return (
-    <div className="max-w-[390px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
+    <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
       <AppHeader variant="back-title" title={t("booking.book_title")} onBack={handleBack} />
 
       {/* Progress indicator */}
