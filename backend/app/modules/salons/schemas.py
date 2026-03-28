@@ -63,6 +63,7 @@ class ProviderPublic(BaseModel):
     category: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
+    worker_payment_amount: float = 0.0
 
     model_config = {"from_attributes": True}
 
