@@ -45,7 +45,7 @@ export function BottomTabBar() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] h-[56px] bg-ds-bg-primary border-t border-ds-border flex items-center z-20">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[768px] h-[56px] bg-ds-bg-primary border-t border-ds-border flex items-center z-20">
       {TABS.map((tab) => {
         const active = location.pathname === tab.path;
         return (

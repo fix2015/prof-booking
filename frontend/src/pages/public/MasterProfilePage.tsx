@@ -48,7 +48,7 @@ export function MasterProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[390px] mx-auto flex flex-col">
+      <div className="max-w-[768px] mx-auto flex flex-col">
         <AppHeader variant="back-title" title={t("professionals.loading")} />
         <div className="p-ds-4 flex flex-col items-center gap-ds-4">
           <div className="w-[72px] h-[72px] rounded-ds-full bg-ds-bg-secondary animate-pulse" />
@@ -60,7 +60,7 @@ export function MasterProfilePage() {
 
   if (!professional) {
     return (
-      <div className="max-w-[390px] mx-auto flex flex-col items-center justify-center min-h-[300px] gap-ds-3 p-ds-6">
+      <div className="max-w-[768px] mx-auto flex flex-col items-center justify-center min-h-[300px] gap-ds-3 p-ds-6">
         <p className="ds-body text-ds-text-secondary">{t("professionals.not_found")}</p>
         <button onClick={() => navigate(-1)} className="ds-body-small text-ds-interactive">{t("professionals.go_back")}</button>
       </div>
@@ -70,7 +70,7 @@ export function MasterProfilePage() {
   const activeProviders = professional.professional_providers?.filter((pp) => pp.status === "active") ?? [];
 
   return (
-    <div className="max-w-[390px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
+    <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
       <AppHeader variant="back-title" title={professional.name} />
 
       {/* Profile header */}
@@ -265,7 +265,7 @@ function ReviewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-      <div className="bg-ds-bg-primary w-full max-w-[390px] rounded-t-ds-2xl">
+      <div className="bg-ds-bg-primary w-full max-w-[768px] rounded-t-ds-2xl">
         <div className="flex items-center justify-between px-ds-4 py-ds-4 border-b border-ds-border">
           <div>
             <p className="ds-h4 text-ds-text-primary">{t("reviews.write_title")}</p>
