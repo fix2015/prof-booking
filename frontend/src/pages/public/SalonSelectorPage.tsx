@@ -139,8 +139,26 @@ export function SalonSelectorPage() {
         <span className="ds-body-small text-ds-text-secondary">
           {isLoading ? t("common.loading") : t("providers.count", { count: filtered.length })}
         </span>
-        <Button variant="ghost" size="sm" className="ds-body-small text-ds-interactive h-auto py-0 px-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ds-body-small text-ds-interactive h-auto py-0 px-0 flex items-center gap-[4px]"
+          onClick={() => {
+            setFilters((prev) => ({
+              ...prev,
+              sort: prev.sort === "nearest" ? "price_asc" : prev.sort === "price_asc" ? "price_desc" : "nearest",
+            }));
+          }}
+        >
           {t("providers.sort")}
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            {filters.sort !== "price_desc" && (
+              <path d="M6 1L9 4.5H3L6 1Z" fill={filters.sort === "price_asc" ? "currentColor" : "var(--ds-text-disabled)"} />
+            )}
+            {filters.sort !== "price_asc" && (
+              <path d="M6 11L3 7.5H9L6 11Z" fill={filters.sort === "price_desc" ? "currentColor" : "var(--ds-text-disabled)"} />
+            )}
+          </svg>
         </Button>
       </div>
 
