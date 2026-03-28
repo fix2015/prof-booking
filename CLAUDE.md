@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Figma Design System
+
+**Rule:** Every screen element must come from the DS — no raw hex colors, no bare frames, no hardcoded font sizes. Before adding anything new, check `.claude/skills/probook-design-system.md` which documents every color token, text style, spacing token, and component (with variants). If something is missing, add it to the DS first, then use it on screen.
+
+- **Figma file:** `1b7MQQDvlyjtMpAUVPo20M` — Design System page + Mobile App Screens page (`52:164`)
+- **DS rules + full inventory:** `.claude/skills/probook-design-system.md`
+- **Verified screens:** Main Discovery (`52:2`), Filter Sheet (`52:105`)
+
+---
+
 ## Project Overview
 
 Multi-tenant SaaS for nail salon booking & worker management. Monorepo with a FastAPI backend and React frontend.
@@ -41,6 +51,9 @@ REDIS_URL=redis://localhost:6379/0 \
 
 # Lint
 cd backend && ruff check .
+
+# Seed mock data (10 providers + 200 professionals, clears previous seed first)
+cd backend && python scripts/seed_mock_data.py
 ```
 
 ### Frontend
@@ -73,7 +86,7 @@ docker compose down
 
 All routers registered in `main.py` under `/api/v1/`. Each feature module lives in `modules/<name>/` and follows the pattern: `models.py` → `schemas.py` → `services.py` → `router.py`.
 
-**18 modules:** auth, users, salons, masters, sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads, admin.
+**19 modules:** auth, users, salons, masters, clients, sessions, calendar, booking, payments, notifications, reports, invites, services, reviews, loyalty, invoices, analytics, uploads, admin.
 
 **Naming migration in progress:** modules are named `salons`/`masters` internally, but the primary API prefixes are now `/api/v1/providers` and `/api/v1/professionals`. The old `/api/v1/salons` and `/api/v1/masters` prefixes remain as backward-compat aliases registered in `main.py`. The same dual-route pattern applies on the frontend (`/providers` primary, `/salons` redirects; `/professionals` primary, `/masters` redirects).
 
@@ -162,7 +175,7 @@ sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --ta
 
 Migration chain in `backend/alembic/versions/`:
 ```
-0001 → ec54709d7c95 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 (head)
+0001 → ec54709d7c95 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 → 0010 → 0011 (head)
 ```
 | Revision | Description |
 |---|---|
@@ -176,6 +189,8 @@ Migration chain in `backend/alembic/versions/`:
 | `0007` | Rename `master_percentage` to `professional_percentage` |
 | `0008` | Rename `master_earnings`/`salon_earnings` to `professional_earnings`/`provider_earnings` in invoices |
 | `0009` | Add client CRM tables: `client_profiles`, `client_notes`, `client_photos` |
+| `0010` | Make `services.provider_id` nullable, add `professional_id` |
+| `0011` | Services many-to-many providers: replace `provider_id` with `service_providers` join table |
 
 ---
 

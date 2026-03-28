@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────
+   ShadCN UI base variables (kept for component compat)
+───────────────────────────────────────────── */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -25,28 +28,122 @@
     --ring: 222 47% 11%;
     --radius: 0.5rem;
   }
+}
 
-  .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 90%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 20%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 210 40% 90%;
-  }
+/* ─────────────────────────────────────────────
+   ProBook Design System Tokens
+   Source of truth: Figma file 1b7MQQDvlyjtMpAUVPo20M
+   NEVER override with raw hex/px — extend the tokens instead.
+───────────────────────────────────────────── */
+:root {
+  /* BG */
+  --ds-bg-primary:   #FFFFFF;
+  --ds-bg-secondary: #F9FAFC;
+  --ds-bg-tertiary:  #F3F5F8;
+  --ds-bg-inverse:   #111827;
+
+  /* Text */
+  --ds-text-primary:   #111827;
+  --ds-text-secondary: #6B7280;
+  --ds-text-muted:     #4B5563;
+  --ds-text-disabled:  #D0D5DB;
+  --ds-text-inverse:   #FFFFFF;
+
+  /* Border */
+  --ds-border-default: #E5E9EE;
+  --ds-border-strong:  #D0D5DB;
+  --ds-border-inverse: #111827;
+
+  /* Interactive */
+  --ds-interactive-default: #111827;
+  --ds-interactive-hover:   #1F2939;
+  --ds-interactive-subtle:  #F3F5F8;
+
+  /* Feedback */
+  --ds-feedback-saved:    #EF4444;
+  --ds-feedback-saved-bg: #FEEDED;
+  --ds-feedback-rating:   #FBBF24;
+
+  /* Avatar */
+  --ds-avatar-navy:   #1E2A54;
+  --ds-avatar-teal:   #10684F;
+  --ds-avatar-purple: #5F218D;
+
+  /* Spacing (4px scale) */
+  --ds-space-1:  4px;
+  --ds-space-2:  8px;
+  --ds-space-3:  12px;
+  --ds-space-4:  16px;
+  --ds-space-5:  20px;
+  --ds-space-6:  24px;
+  --ds-space-8:  32px;
+  --ds-space-10: 40px;
+  --ds-space-12: 48px;
+  --ds-space-14: 56px;
+
+  /* Radius */
+  --ds-radius-none: 0px;
+  --ds-radius-xs:   4px;
+  --ds-radius-sm:   6px;
+  --ds-radius-md:   8px;
+  --ds-radius-lg:   10px;
+  --ds-radius-xl:   12px;
+  --ds-radius-2xl:  16px;
+  --ds-radius-full: 9999px;
+
+  /* Typography — font sizes */
+  --ds-fs-display:      28px;
+  --ds-fs-h1:           22px;
+  --ds-fs-h2:           20px;
+  --ds-fs-h3:           18px;
+  --ds-fs-h4:           16px;
+  --ds-fs-body-medium:  16px;
+  --ds-fs-body-large:   15px;
+  --ds-fs-body:         14px;
+  --ds-fs-body-small:   13px;
+  --ds-fs-label:        13px;
+  --ds-fs-label-small:  12px;
+  --ds-fs-caption:      12px;
+  --ds-fs-badge:        11px;
+  --ds-fs-tab:          10px;
+
+  /* Typography — line heights */
+  --ds-lh-display:     36px;
+  --ds-lh-h1:          28px;
+  --ds-lh-h2:          26px;
+  --ds-lh-h3:          24px;
+  --ds-lh-h4:          22px;
+  --ds-lh-body:        20px;
+  --ds-lh-body-small:  18px;
+  --ds-lh-label:       18px;
+  --ds-lh-label-small: 16px;
+  --ds-lh-caption:     16px;
+  --ds-lh-badge:       14px;
+  --ds-lh-tab:         13px;
+}
+
+/* ─────────────────────────────────────────────
+   DS Typography utility classes
+   Usage: <h1 className="ds-display"> or <p className="ds-body">
+───────────────────────────────────────────── */
+@layer components {
+  .ds-display      { font-size: var(--ds-fs-display);     line-height: var(--ds-lh-display);     font-weight: 700; }
+  .ds-h1           { font-size: var(--ds-fs-h1);          line-height: var(--ds-lh-h1);          font-weight: 700; }
+  .ds-h2           { font-size: var(--ds-fs-h2);          line-height: var(--ds-lh-h2);          font-weight: 700; }
+  .ds-h3           { font-size: var(--ds-fs-h3);          line-height: var(--ds-lh-h3);          font-weight: 700; }
+  .ds-h4           { font-size: var(--ds-fs-h4);          line-height: var(--ds-lh-h4);          font-weight: 600; }
+  .ds-body-medium  { font-size: var(--ds-fs-body-medium); line-height: var(--ds-lh-h4);          font-weight: 400; }
+  .ds-body-large   { font-size: var(--ds-fs-body-large);  line-height: var(--ds-lh-h4);          font-weight: 400; }
+  .ds-body         { font-size: var(--ds-fs-body);        line-height: var(--ds-lh-body);        font-weight: 400; }
+  .ds-body-strong  { font-size: var(--ds-fs-body);        line-height: var(--ds-lh-body);        font-weight: 600; }
+  .ds-body-small   { font-size: var(--ds-fs-body-small);  line-height: var(--ds-lh-body-small);  font-weight: 400; }
+  .ds-label        { font-size: var(--ds-fs-label);       line-height: var(--ds-lh-label);       font-weight: 600; }
+  .ds-label-small  { font-size: var(--ds-fs-label-small); line-height: var(--ds-lh-label-small); font-weight: 600; }
+  .ds-caption      { font-size: var(--ds-fs-caption);     line-height: var(--ds-lh-caption);     font-weight: 400; }
+  .ds-caption-medium { font-size: var(--ds-fs-caption);   line-height: var(--ds-lh-caption);     font-weight: 500; }
+  .ds-badge        { font-size: var(--ds-fs-badge);       line-height: var(--ds-lh-badge);       font-weight: 500; }
+  .ds-tab-label        { font-size: var(--ds-fs-tab); line-height: var(--ds-lh-tab); font-weight: 400; }
+  .ds-tab-label-active { font-size: var(--ds-fs-tab); line-height: var(--ds-lh-tab); font-weight: 600; }
 }
 
 @layer base {
