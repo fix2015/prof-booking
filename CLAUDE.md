@@ -113,7 +113,13 @@ Vite dev server proxies `/api/*` to `http://localhost:8000`.
 - `recharts` — analytics charts
 - `react-hook-form` + `zod` — form validation
 
-**Routing:** Public routes (no auth) render standalone. Authenticated routes are wrapped in `<AppLayout>`. `DashboardRouter` dispatches to the correct dashboard page based on role (`provider_owner` → `OwnerDashboardPage`, `platform_admin` → `AdminPanelPage`, else `MasterDashboardPage`).
+**Routing:** Two layout contexts exist in `App.tsx`:
+- `<MobileLayout>` — consumer-facing tab bar (bottom nav). Routes: `/` (SalonSelectorPage), `/map` (MapPage), `/saved`, `/me` (UserProfilePage). No auth required.
+- `<AppLayout>` — authenticated B2B dashboard shell. Routes: `/dashboard`, `/calendar`, `/sessions`, `/professionals`, `/services`, `/reports`, `/notifications`, `/reviews`, `/analytics/*`, `/invoices`, `/clients/*`, `/admin`, `/profile/*`.
+
+Detail/booking routes render without a layout wrapper: `/providers/:id`, `/professionals/:id`, `/book/:providerId`.
+
+`DashboardRouter` dispatches based on role: `provider_owner` → `OwnerDashboardPage`, `platform_admin` → `AdminPanelPage`, else `MasterDashboardPage`.
 
 ### Auth & Multi-tenancy
 

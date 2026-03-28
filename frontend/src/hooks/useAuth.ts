@@ -5,6 +5,7 @@ import {
   OwnerRegisterPayload,
   ProfessionalRegisterPayload,
   MasterRegisterPayload,
+  ClientRegisterPayload,
 } from "@/api/auth";
 import { useAuthContext } from "@/context/AuthContext";
 
@@ -37,6 +38,14 @@ export function useRegisterMaster() {
   const { login } = useAuthContext();
   return useMutation({
     mutationFn: (data: MasterRegisterPayload) => authApi.registerMaster(data),
+    onSuccess: (tokens) => login(tokens),
+  });
+}
+
+export function useRegisterClient() {
+  const { login } = useAuthContext();
+  return useMutation({
+    mutationFn: (data: ClientRegisterPayload) => authApi.registerClient(data),
     onSuccess: (tokens) => login(tokens),
   });
 }

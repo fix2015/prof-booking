@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
@@ -9,6 +9,7 @@ import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
 import { TimeSlotButton } from "@/components/mobile/TimeSlotButton";
 import { t } from "@/i18n";
+import { useGuestSession } from "@/hooks/useGuestSession";
 import type { Service, Professional, AvailableSlot } from "@/types";
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -82,6 +83,21 @@ export function PublicBookingPage() {
   );
 
   const createBooking = useCreateBooking();
+  const { guestProfile, setGuestProfile, addGuestBooking } = useGuestSession();
+
+  // Prefill form from guest profile when step 5 opens
+  useEffect(() => {
+    if (step !== 5) return;
+    const source = guestProfile;
+    if (!source) return;
+    setForm((f) => ({
+      ...f,
+      name: f.name || source.name,
+      phone: f.phone || source.phone,
+      email: f.email || source.email,
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const canProceed = useMemo(() => {
     if (step === 1) return !!selectedService;
@@ -114,7 +130,13 @@ export function PublicBookingPage() {
         client_notes: form.notes || undefined,
         starts_at: startsAt,
       },
-      { onSuccess: () => navigate("/") }
+      {
+        onSuccess: (confirmation) => {
+          setGuestProfile({ name: form.name, phone: form.phone, email: form.email });
+          addGuestBooking(confirmation);
+          navigate("/me");
+        },
+      }
     );
   }
 
@@ -209,7 +231,7 @@ export function PublicBookingPage() {
               <button
                 onClick={() => setSelectedProfessional(null)}
                 className={`flex flex-col items-center gap-ds-2 p-ds-3 rounded-ds-xl border ${
-                  !selectedProfessional ? "border-ds-interactive bg-ds-interactive" : "border-ds-border bg-ds-bg-primary"
+                  selectedProfessional ? "border-ds-border bg-ds-bg-primary" : "border-ds-interactive bg-ds-interactive"
                 }`}
               >
                 <div className="w-10 h-10 rounded-ds-full bg-ds-bg-secondary flex items-center justify-center">
@@ -218,7 +240,7 @@ export function PublicBookingPage() {
                     <path d="M3 16C3 13 5.686 11 9 11C12.314 11 15 13 15 16" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
                   </svg>
                 </div>
-                <span className={`ds-caption text-center ${!selectedProfessional ? "text-ds-text-inverse" : "text-ds-text-primary"}`}>
+                <span className={`ds-caption text-center ${selectedProfessional ? "text-ds-text-primary" : "text-ds-text-inverse"}`}>
                   {t("booking.any")}
                 </span>
               </button>
@@ -272,16 +294,15 @@ export function PublicBookingPage() {
                 const hasSlots = availableDateSet.has(dateStr);
                 const isDisabled = isPast || !hasSlots;
                 const isSelected = dateStr === selectedDate;
+                let dayCls = "text-ds-text-primary hover:bg-ds-bg-secondary";
+                if (isDisabled) dayCls = "text-ds-text-disabled cursor-not-allowed";
+                else if (isSelected) dayCls = "bg-ds-interactive text-ds-text-inverse";
                 return (
                   <button
                     key={dateStr}
                     disabled={isDisabled}
                     onClick={() => setSelectedDate(dateStr)}
-                    className={`h-[36px] rounded-ds-md ds-body-small transition-colors ${
-                      isDisabled ? "text-ds-text-disabled cursor-not-allowed"
-                      : isSelected ? "bg-ds-interactive text-ds-text-inverse"
-                      : "text-ds-text-primary hover:bg-ds-bg-secondary"
-                    }`}
+                    className={`h-[36px] rounded-ds-md ds-body-small transition-colors ${dayCls}`}
                   >
                     {day.getDate()}
                   </button>
@@ -305,9 +326,9 @@ export function PublicBookingPage() {
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-ds-2">
-                {slots.map((slot, i) => (
+                {slots.map((slot) => (
                   <TimeSlotButton
-                    key={i}
+                    key={`${slot.professional_id}-${slot.start_time}`}
                     time={formatTime(slot)}
                     professionalName={slot.professional_name}
                     selected={selectedSlot?.start_time === slot.start_time && selectedSlot?.professional_id === slot.professional_id}
@@ -350,20 +371,25 @@ export function PublicBookingPage() {
               )}
             </div>
             <div className="flex flex-col gap-ds-3">
-              {(["name", "phone", "email", "notes"] as const).map((key) => (
-                <div key={key}>
-                  <label className="ds-label text-ds-text-secondary block mb-ds-1">
-                    {{name: t("booking.field.full_name"), phone: t("booking.field.phone"), email: t("booking.field.email"), notes: t("booking.field.notes")}[key]}
-                  </label>
-                  <input
-                    type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
-                    placeholder={{name: "Jane Smith", phone: "+1 (555) 000-0000", email: "jane@example.com", notes: "Any special requests..."}[key]}
-                    value={form[key]}
-                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                    className="w-full h-[44px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive"
-                  />
-                </div>
-              ))}
+              {(["name", "phone", "email", "notes"] as const).map((key) => {
+                const fieldLabels = { name: t("booking.field.full_name"), phone: t("booking.field.phone"), email: t("booking.field.email"), notes: t("booking.field.notes") };
+                const fieldPlaceholders = { name: "Jane Smith", phone: "+1 (555) 000-0000", email: "jane@example.com", notes: "Any special requests..." };
+                const fieldTypes = { name: "text", phone: "tel", email: "email", notes: "text" };
+                return (
+                  <div key={key}>
+                    <label className="ds-label text-ds-text-secondary block mb-ds-1">
+                      {fieldLabels[key]}
+                    </label>
+                    <input
+                      type={fieldTypes[key]}
+                      placeholder={fieldPlaceholders[key]}
+                      value={form[key]}
+                      onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                      className="w-full h-[44px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

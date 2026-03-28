@@ -28,6 +28,13 @@ export interface ProfessionalRegisterPayload {
 // Backward-compat alias
 export type MasterRegisterPayload = ProfessionalRegisterPayload;
 
+export interface ClientRegisterPayload {
+  email: string;
+  phone: string;
+  password: string;
+  name?: string;
+}
+
 export const authApi = {
   login: (data: LoginPayload) =>
     apiClient.post<AuthTokens>("/auth/login", data).then((r) => r.data),
@@ -41,6 +48,9 @@ export const authApi = {
   // Backward-compat alias
   registerMaster: (data: ProfessionalRegisterPayload) =>
     apiClient.post<AuthTokens>("/auth/register/professional", data).then((r) => r.data),
+
+  registerClient: (data: ClientRegisterPayload) =>
+    apiClient.post<AuthTokens>("/auth/register/client", data).then((r) => r.data),
 
   logout: () => apiClient.post("/auth/logout"),
 
