@@ -3,39 +3,42 @@ import { AuthProvider, useAuthContext } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { LoginPage } from "@/pages/LoginPage";
-import { RegisterPage } from "@/pages/RegisterPage";
-import { MasterRegisterPage } from "@/pages/MasterRegisterPage";
-import { MasterDashboardPage } from "@/pages/MasterDashboardPage";
-import { OwnerDashboardPage } from "@/pages/OwnerDashboardPage";
-import { CalendarPage } from "@/pages/CalendarPage";
-import { ReportsPage } from "@/pages/ReportsPage";
-import { AdminPanelPage } from "@/pages/AdminPanelPage";
-import { ServicesPage } from "@/pages/ServicesPage";
-import { MastersPage } from "@/pages/MastersPage";
-import { SessionsPage } from "@/pages/SessionsPage";
-import { NotificationsPage } from "@/pages/NotificationsPage";
-import { MasterDiscoveryPage } from "@/pages/MasterDiscoveryPage";
-import { FindProvidersPage } from "@/pages/FindProvidersPage";
-import { FindProfessionalsPage } from "@/pages/FindProfessionalsPage";
-import { ReviewsPage } from "@/pages/ReviewsPage";
-import { OwnerAnalyticsPage } from "@/pages/OwnerAnalyticsPage";
-import { MasterAnalyticsPage } from "@/pages/MasterAnalyticsPage";
-import { InvoicesPage } from "@/pages/InvoicesPage";
-import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
-import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
-import { ProfessionalSplitPage } from "@/pages/ProfessionalSplitPage";
-import { ClientsPage } from "@/pages/ClientsPage";
-import { ClientDetailPage } from "@/pages/ClientDetailPage";
-// Mobile pages
-import { MobileLayout } from "@/pages/mobile/MobileLayout";
-import { DiscoveryPage } from "@/pages/mobile/DiscoveryPage";
-import { MapPage } from "@/pages/mobile/MapPage";
-import { SavedPage } from "@/pages/mobile/SavedPage";
-import { MobileUserProfilePage } from "@/pages/mobile/MobileUserProfilePage";
-import { MobileProviderDetail } from "@/pages/mobile/MobileProviderDetail";
-import { MobileProfessionalDetail } from "@/pages/mobile/MobileProfessionalDetail";
-import { MobileBookingPage } from "@/pages/mobile/MobileBookingPage";
+
+// Public pages (no auth required)
+import { LoginPage } from "@/pages/public/LoginPage";
+import { RegisterPage } from "@/pages/public/RegisterPage";
+import { MasterRegisterPage } from "@/pages/public/MasterRegisterPage";
+import { MobileLayout } from "@/pages/public/MobileLayout";
+import { SalonSelectorPage } from "@/pages/public/SalonSelectorPage";
+import { MapPage } from "@/pages/public/MapPage";
+import { SavedPage } from "@/pages/public/SavedPage";
+import { UserProfilePage } from "@/pages/public/UserProfilePage";
+import { ProviderProfilePage } from "@/pages/public/ProviderProfilePage";
+import { MasterProfilePage } from "@/pages/public/MasterProfilePage";
+import { PublicBookingPage } from "@/pages/public/PublicBookingPage";
+import { MasterDiscoveryPage } from "@/pages/public/MasterDiscoveryPage";
+import { FindProvidersPage } from "@/pages/public/FindProvidersPage";
+import { FindProfessionalsPage } from "@/pages/public/FindProfessionalsPage";
+
+// Private pages (auth required)
+import { MasterDashboardPage } from "@/pages/private/MasterDashboardPage";
+import { OwnerDashboardPage } from "@/pages/private/OwnerDashboardPage";
+import { AdminPanelPage } from "@/pages/private/AdminPanelPage";
+import { CalendarPage } from "@/pages/private/CalendarPage";
+import { SessionsPage } from "@/pages/private/SessionsPage";
+import { ServicesPage } from "@/pages/private/ServicesPage";
+import { MastersPage } from "@/pages/private/MastersPage";
+import { ReportsPage } from "@/pages/private/ReportsPage";
+import { NotificationsPage } from "@/pages/private/NotificationsPage";
+import { ReviewsPage } from "@/pages/private/ReviewsPage";
+import { OwnerAnalyticsPage } from "@/pages/private/OwnerAnalyticsPage";
+import { MasterAnalyticsPage } from "@/pages/private/MasterAnalyticsPage";
+import { InvoicesPage } from "@/pages/private/InvoicesPage";
+import { MasterProfileEditPage } from "@/pages/private/MasterProfileEditPage";
+import { SalonProfileEditPage } from "@/pages/private/SalonProfileEditPage";
+import { ProfessionalSplitPage } from "@/pages/private/ProfessionalSplitPage";
+import { ClientsPage } from "@/pages/private/ClientsPage";
+import { ClientDetailPage } from "@/pages/private/ClientDetailPage";
 
 function DashboardRouter() {
   const { role } = useAuthContext();
@@ -51,29 +54,27 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/register/professional" element={<MasterRegisterPage />} />
-      {/* Backward-compat: keep old /register/master route */}
       <Route path="/register/master" element={<MasterRegisterPage />} />
 
-      {/* Mobile public routes — tab layout */}
+      {/* Public discovery — tab layout */}
       <Route element={<MobileLayout />}>
-        <Route path="/" element={<DiscoveryPage />} />
+        <Route path="/" element={<SalonSelectorPage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/saved" element={<SavedPage />} />
-        <Route path="/me" element={<MobileUserProfilePage />} />
+        <Route path="/me" element={<UserProfilePage />} />
       </Route>
 
-      {/* Mobile detail + booking routes (no tab bar) */}
-      <Route path="/providers/:providerId" element={<MobileProviderDetail />} />
-      <Route path="/professionals/:professionalId" element={<MobileProfessionalDetail />} />
-      <Route path="/book/:providerId" element={<MobileBookingPage />} />
-      <Route path="/book" element={<MobileBookingPage />} />
+      {/* Detail + booking routes (no tab bar) */}
+      <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
+      <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
+      <Route path="/book/:providerId" element={<PublicBookingPage />} />
+      <Route path="/book" element={<PublicBookingPage />} />
 
-      {/* Backward-compat: old routes */}
+      {/* Backward-compat */}
       <Route path="/providers" element={<Navigate to="/" replace />} />
       <Route path="/salons" element={<Navigate to="/" replace />} />
       <Route path="/professionals/:professionalId/split" element={<ProfessionalSplitPage />} />
-      {/* Backward-compat: old /masters/:masterId route */}
-      <Route path="/masters/:masterId" element={<MobileProfessionalDetail />} />
+      <Route path="/masters/:masterId" element={<MasterProfilePage />} />
       <Route path="/discover" element={<MasterDiscoveryPage />} />
       <Route path="/find-providers" element={<FindProvidersPage />} />
       <Route path="/find-professionals" element={<FindProfessionalsPage />} />
@@ -84,7 +85,6 @@ function AppRoutes() {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/sessions" element={<SessionsPage />} />
         <Route path="/professionals" element={<MastersPage />} />
-        {/* Backward-compat: old /masters route */}
         <Route path="/masters" element={<MastersPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/reports" element={<ReportsPage />} />
@@ -92,17 +92,14 @@ function AppRoutes() {
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/analytics/owner" element={<OwnerAnalyticsPage />} />
         <Route path="/analytics/professional" element={<MasterAnalyticsPage />} />
-        {/* Backward-compat: old /analytics/master route */}
         <Route path="/analytics/master" element={<MasterAnalyticsPage />} />
         <Route path="/invoices" element={<InvoicesPage />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/clients/:clientId" element={<ClientDetailPage />} />
         <Route path="/admin" element={<AdminPanelPage />} />
         <Route path="/profile/professional" element={<MasterProfileEditPage />} />
-        {/* Backward-compat: old /profile/master route */}
         <Route path="/profile/master" element={<MasterProfileEditPage />} />
         <Route path="/profile/provider" element={<SalonProfileEditPage />} />
-        {/* Backward-compat: old /profile/salon route */}
         <Route path="/profile/salon" element={<SalonProfileEditPage />} />
       </Route>
 
