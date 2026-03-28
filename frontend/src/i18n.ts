@@ -249,6 +249,14 @@ const translations = {
     "login.register_business_desc": "Salon, spa or studio owner",
     "login.join_professional": "Join as Professional",
     "login.join_professional_desc": "Nail artist, stylist or specialist",
+    "login.tab_signin": "Sign in",
+    "login.tab_create": "Create account",
+    "login.full_name": "Full name",
+    "login.phone": "Phone",
+    "login.password_hint": "At least 6 characters",
+    "login.create_account_cta": "Create account",
+    "login.guest_link": "Continue without account",
+    "login.for_business": "Business or professional?",
 
     // Register page extras
     "register.description": "Create your provider owner account",
@@ -670,6 +678,14 @@ const translations = {
     "login.register_business_desc": "Właściciel salonu, spa lub studia",
     "login.join_professional": "Dołącz jako profesjonalista",
     "login.join_professional_desc": "Artysta paznokci, stylista lub specjalista",
+    "login.tab_signin": "Zaloguj się",
+    "login.tab_create": "Utwórz konto",
+    "login.full_name": "Imię i nazwisko",
+    "login.phone": "Telefon",
+    "login.password_hint": "Minimum 6 znaków",
+    "login.create_account_cta": "Utwórz konto",
+    "login.guest_link": "Kontynuuj bez konta",
+    "login.for_business": "Biznes lub profesjonalista?",
 
     // Register page extras
     "register.description": "Utwórz konto właściciela dostawcy",
@@ -1091,6 +1107,14 @@ const translations = {
     "login.register_business_desc": "Proprietar de salon, spa sau studio",
     "login.join_professional": "Alătură-te ca profesionist",
     "login.join_professional_desc": "Artist unghii, stilist sau specialist",
+    "login.tab_signin": "Autentifică-te",
+    "login.tab_create": "Creează cont",
+    "login.full_name": "Nume complet",
+    "login.phone": "Telefon",
+    "login.password_hint": "Minimum 6 caractere",
+    "login.create_account_cta": "Creează cont",
+    "login.guest_link": "Continuă fără cont",
+    "login.for_business": "Afacere sau profesionist?",
 
     // Register page extras
     "register.description": "Creează contul tău de proprietar de furnizor",
@@ -1512,6 +1536,14 @@ const translations = {
     "login.register_business_desc": "Власник салону, спа або студії",
     "login.join_professional": "Приєднатись як спеціаліст",
     "login.join_professional_desc": "Нейл-майстер, стиліст або спеціаліст",
+    "login.tab_signin": "Увійти",
+    "login.tab_create": "Створити акаунт",
+    "login.full_name": "Повне ім'я",
+    "login.phone": "Телефон",
+    "login.password_hint": "Мінімум 6 символів",
+    "login.create_account_cta": "Створити акаунт",
+    "login.guest_link": "Продовжити без акаунту",
+    "login.for_business": "Бізнес або спеціаліст?",
 
     // Register page extras
     "register.description": "Створіть акаунт власника провайдера",
@@ -1933,6 +1965,14 @@ const translations = {
     "login.register_business_desc": "Propietario de salón, spa o estudio",
     "login.join_professional": "Unirse como profesional",
     "login.join_professional_desc": "Artista de uñas, estilista o especialista",
+    "login.tab_signin": "Iniciar sesión",
+    "login.tab_create": "Crear cuenta",
+    "login.full_name": "Nombre completo",
+    "login.phone": "Teléfono",
+    "login.password_hint": "Mínimo 6 caracteres",
+    "login.create_account_cta": "Crear cuenta",
+    "login.guest_link": "Continuar sin cuenta",
+    "login.for_business": "¿Negocio o profesional?",
 
     // Register page extras
     "register.description": "Crea tu cuenta de propietario de proveedor",
