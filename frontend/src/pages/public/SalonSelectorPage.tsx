@@ -7,6 +7,7 @@ import { ProviderCard } from "@/components/mobile/ProviderCard";
 import { SearchBar } from "@/components/mobile/SearchBar";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { t, TranslationKey } from "@/i18n";
 
 const SAVED_KEY = "pb_saved";
 
@@ -25,7 +26,16 @@ function toggleSaved(id: number): number[] {
   return next;
 }
 
-const CATEGORIES = ["All", "Beauty", "Nails", "Hair", "Massage", "Cleaning", "Auto Repair"];
+// value = English key used for filter matching; labelKey = i18n key for display
+const CATEGORIES: { value: string; labelKey: TranslationKey }[] = [
+  { value: "All",         labelKey: "providers.category.all" },
+  { value: "Beauty",      labelKey: "providers.category.beauty" },
+  { value: "Nails",       labelKey: "providers.category.nails" },
+  { value: "Hair",        labelKey: "providers.category.hair" },
+  { value: "Massage",     labelKey: "providers.category.massage" },
+  { value: "Cleaning",    labelKey: "providers.category.cleaning" },
+  { value: "Auto Repair", labelKey: "providers.category.auto_repair" },
+];
 
 export function SalonSelectorPage() {
   const navigate = useNavigate();
@@ -60,7 +70,7 @@ export function SalonSelectorPage() {
         className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
         onClick={() => navigate("/login")}
       >
-        Sign In
+        {t("providers.sign_in")}
       </Button>
     </div>
   );
@@ -71,10 +81,14 @@ export function SalonSelectorPage() {
 
       {/* Search section */}
       <div className="px-ds-4 pt-ds-5 pb-ds-3 bg-ds-bg-primary">
-        <h1 className="ds-h1 text-ds-text-primary mb-ds-3">Find any service nearby</h1>
+        <h1 className="ds-h1 text-ds-text-primary mb-ds-3">{t("providers.find_nearby")}</h1>
 
         {/* Search pill */}
-        <SearchBar value={search} onChange={setSearch} />
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+          placeholder={t("providers.search_placeholder")}
+        />
 
         {/* Filter bar */}
         <div className="flex items-center gap-ds-2 mt-ds-3 overflow-x-auto scrollbar-none pb-[2px]">
@@ -82,13 +96,13 @@ export function SalonSelectorPage() {
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-            Filters
+            {t("discover.filters")}
           </Button>
           <Button variant="outline" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3">
-            Price
+            {t("providers.price_filter")}
           </Button>
           <Button variant="outline" size="sm" className="shrink-0 h-[32px] rounded-ds-full px-ds-3">
-            Nationality
+            {t("discover.filter.nationality")}
           </Button>
         </div>
       </div>
@@ -97,24 +111,27 @@ export function SalonSelectorPage() {
       <div className="flex gap-ds-2 px-ds-4 py-ds-3 overflow-x-auto scrollbar-none bg-ds-bg-primary border-b border-ds-border">
         {CATEGORIES.map((cat) => (
           <CategoryChip
-            key={cat}
-            label={cat}
-            active={activeCategory === cat}
-            onClick={() => setActiveCategory(cat)}
+            key={cat.value}
+            label={t(cat.labelKey)}
+            active={activeCategory === cat.value}
+            onClick={() => setActiveCategory(cat.value)}
           />
         ))}
-        <button className="shrink-0 h-[32px] px-ds-3 rounded-ds-full border border-dashed border-ds-border ds-badge text-ds-text-secondary whitespace-nowrap">
-          +more
+        <button
+          type="button"
+          className="shrink-0 h-[32px] px-ds-3 rounded-ds-full border border-dashed border-ds-border ds-badge text-ds-text-secondary whitespace-nowrap"
+        >
+          {t("providers.more_categories")}
         </button>
       </div>
 
       {/* Results header */}
       <div className="flex items-center justify-between px-ds-4 py-ds-2">
         <span className="ds-body-small text-ds-text-secondary">
-          {isLoading ? "Loading..." : `${filtered.length} providers`}
+          {isLoading ? t("common.loading") : t("providers.count", { count: filtered.length })}
         </span>
         <Button variant="ghost" size="sm" className="ds-body-small text-ds-interactive h-auto py-0 px-0">
-          Sort
+          {t("providers.sort")}
         </Button>
       </div>
 
@@ -126,7 +143,7 @@ export function SalonSelectorPage() {
           ))
         ) : filtered.length === 0 ? (
           <div className="text-center py-ds-12">
-            <p className="ds-body text-ds-text-secondary">No providers found</p>
+            <p className="ds-body text-ds-text-secondary">{t("providers.no_providers")}</p>
           </div>
         ) : (
           filtered.map((provider) => (

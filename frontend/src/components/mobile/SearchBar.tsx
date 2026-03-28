@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n";
 
 interface Props {
   value: string;
@@ -42,7 +43,7 @@ export function SearchBar({ value, onChange, placeholder = "Search providers, se
           className="h-[32px] rounded-ds-full px-ds-3"
           onClick={onSearch}
         >
-          Search
+          {t("common.search")}
         </Button>
       )}
     </div>
