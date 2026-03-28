@@ -21,6 +21,7 @@ def search_providers(
     address: Optional[str] = Query(None),
     service_name: Optional[str] = Query(None),
     available_date: Optional[date_type] = Query(None, description="Filter to providers with available slots on this date"),
+    category: Optional[str] = Query(None, description="Filter by provider category"),
     min_price: Optional[float] = Query(None),
     max_price: Optional[float] = Query(None),
     nationality: Optional[str] = Query(None),
@@ -65,6 +66,8 @@ def search_providers(
             .subquery()
         )
         query = query.filter(Provider.id.in_(provider_ids_with_slots))
+    if category:
+        query = query.filter(Provider.category.ilike(category))
     if min_price is not None:
         query = query.filter(Provider.worker_payment_amount >= min_price)
     if max_price is not None:

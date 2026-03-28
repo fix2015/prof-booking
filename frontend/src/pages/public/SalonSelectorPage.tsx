@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
@@ -56,6 +56,7 @@ export function SalonSelectorPage() {
 
   const { data: providers = [], isLoading } = useSearchProviders({
     q: search || undefined,
+    category: activeCategory,
     sort: filters.sort || undefined,
     date: filters.date || undefined,
     minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
@@ -64,14 +65,8 @@ export function SalonSelectorPage() {
     minExperience: filters.minExperience || undefined,
   });
 
-  const filtered = useMemo(() => {
-    return providers.filter((p) => {
-      const matchesCategory =
-        activeCategory === "All" ||
-        (p.category ?? "").toLowerCase() === activeCategory.toLowerCase();
-      return matchesCategory;
-    });
-  }, [providers, activeCategory]);
+  // BE already filters by category; `providers` is the final result
+  const filtered = providers;
 
   function handleToggleSave(id: number) {
     setSaved(toggleSaved(id));
