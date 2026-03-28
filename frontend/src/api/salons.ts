@@ -35,6 +35,10 @@ export const providersApi = {
     nationality?: string;
     min_experience?: number;
     sort?: string;
+    lat_min?: number;
+    lat_max?: number;
+    lng_min?: number;
+    lng_max?: number;
     skip?: number;
     limit?: number;
   }) =>
