@@ -124,26 +124,26 @@ export function AddressAutocomplete({
           onFocus={() => predictions.length > 0 && setOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
-          className="pr-8"
+          className="pr-ds-8"
         />
         {loading && (
-          <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="absolute right-ds-3 top-ds-3 h-4 w-4 animate-spin text-ds-text-secondary" />
         )}
       </div>
 
       {open && predictions.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg max-h-60 overflow-y-auto">
+        <ul className="absolute z-50 mt-ds-1 w-full rounded-ds-md border border-ds-border bg-ds-bg-primary shadow-lg max-h-60 overflow-y-auto">
           {predictions.map((p) => (
             <li key={p.place_id}>
               <button
                 type="button"
-                className="w-full text-left px-3 py-2 hover:bg-muted flex items-start gap-2 text-sm"
+                className="w-full text-left px-ds-3 py-ds-2 hover:bg-ds-bg-secondary flex items-start gap-ds-2 ds-body"
                 onMouseDown={(e) => { e.preventDefault(); handleSelect(p); }}
               >
-                <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground" />
+                <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-ds-text-secondary" />
                 <span>
-                  <span className="font-medium">{p.structured_formatting.main_text}</span>
-                  <span className="text-muted-foreground"> {p.structured_formatting.secondary_text}</span>
+                  <span className="ds-body-strong">{p.structured_formatting.main_text}</span>
+                  <span className="text-ds-text-secondary"> {p.structured_formatting.secondary_text}</span>
                 </span>
               </button>
             </li>

@@ -60,9 +60,17 @@
   --ds-interactive-subtle:  #F3F5F8;
 
   /* Feedback */
-  --ds-feedback-saved:    #EF4444;
-  --ds-feedback-saved-bg: #FEEDED;
-  --ds-feedback-rating:   #FBBF24;
+  --ds-feedback-saved:       #EF4444;
+  --ds-feedback-saved-bg:    #FEEDED;
+  --ds-feedback-rating:      #FBBF24;
+  --ds-feedback-error:       #EF4444;
+  --ds-feedback-error-bg:    #FEEDED;
+  --ds-feedback-success:     #10684F;
+  --ds-feedback-success-bg:  #E8F5F0;
+  --ds-feedback-warning:     #D97706;
+  --ds-feedback-warning-bg:  #FEF3C7;
+  --ds-feedback-info:        #1E2A54;
+  --ds-feedback-info-bg:     #EEF0F8;
 
   /* Avatar */
   --ds-avatar-navy:   #1E2A54;

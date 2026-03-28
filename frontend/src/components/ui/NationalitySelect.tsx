@@ -190,58 +190,58 @@ export function NationalitySelect({ value, onChange, placeholder = "Select natio
         type="button"
         onClick={handleToggle}
         className={cn(
-          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-          "hover:bg-accent/30 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "flex h-ds-10 w-full items-center justify-between rounded-ds-md border border-ds-border bg-ds-bg-primary px-ds-3 py-ds-2 ds-body",
+          "hover:bg-ds-bg-secondary focus:outline-none focus:ring-2 focus:ring-ds-interactive focus:ring-offset-2",
           "transition-colors"
         )}
       >
         {selected ? (
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-ds-2">
             <span className="text-lg leading-none">{selected.flag}</span>
             <span>{selected.label}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground">{placeholder}</span>
+          <span className="text-ds-text-secondary">{placeholder}</span>
         )}
-        <span className="flex items-center gap-1 ml-2 shrink-0">
+        <span className="flex items-center gap-ds-1 ml-ds-2 shrink-0">
           {selected && (
             <span
               onClick={handleClear}
-              className="hover:text-destructive text-muted-foreground cursor-pointer"
+              className="hover:text-ds-feedback-error text-ds-text-secondary cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
             </span>
           )}
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+          <ChevronDown className={cn("h-4 w-4 text-ds-text-secondary transition-transform", open && "rotate-180")} />
         </span>
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg">
+        <div className="absolute z-50 mt-ds-1 w-full rounded-ds-md border border-ds-border bg-ds-bg-primary shadow-lg">
           {/* Search */}
-          <div className="p-2 border-b">
+          <div className="p-ds-2 border-b border-ds-border">
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-sm border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-ds-xs border border-ds-border bg-ds-bg-primary px-ds-2 py-ds-1 ds-body focus:outline-none focus:ring-1 focus:ring-ds-interactive"
             />
           </div>
           {/* Options */}
-          <ul className="max-h-56 overflow-y-auto py-1">
+          <ul className="max-h-56 overflow-y-auto py-ds-1">
             {filtered.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-muted-foreground">No results</li>
+              <li className="px-ds-3 py-ds-2 ds-body text-ds-text-secondary">No results</li>
             ) : (
               filtered.map((n) => (
                 <li
                   key={n.label}
                   onClick={() => handleSelect(n)}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer hover:bg-accent",
-                    value === n.label && "bg-accent font-medium"
+                    "flex items-center gap-ds-3 px-ds-3 py-ds-2 ds-body cursor-pointer hover:bg-ds-bg-secondary",
+                    value === n.label && "bg-ds-interactive-subtle ds-body-strong"
                   )}
                 >
                   <span className="text-lg leading-none">{n.flag}</span>

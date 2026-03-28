@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
         setLocale(e.target.value as Locale);
         window.location.reload();
       }}
-      className="text-sm border rounded px-2 py-1 bg-white dark:bg-gray-800 cursor-pointer"
+      className="ds-body border border-ds-border rounded-ds-xs px-ds-2 py-ds-1 bg-ds-bg-primary text-ds-text-primary cursor-pointer"
     >
       {LANGS.map((l) => (
         <option key={l.code} value={l.code}>
