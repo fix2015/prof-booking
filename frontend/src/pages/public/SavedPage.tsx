@@ -44,28 +44,28 @@ export function SavedPage() {
   );
 
   return (
-    <div className="flex flex-col min-h-full bg-ds-bg-secondary">
+    <div className="flex flex-col min-h-full bg-ds-bg-primary">
       <AppHeader variant="title-action" title={t("saved.title")} rightElement={AddButton} />
 
       {/* Segment tabs */}
-      <div className="flex bg-ds-bg-primary border-b border-ds-border">
+      <div className="flex bg-ds-bg-primary border-b border-ds-border px-ds-4">
         {(["All", "Providers", "Services"] as Tab[]).map((tabItem) => (
           <button
             key={tabItem}
             onClick={() => setTab(tabItem)}
-            className={`flex-1 h-[44px] ds-body-small transition-colors relative ${
-              tab === tabItem ? "text-ds-interactive" : "text-ds-text-secondary"
+            className={`h-[44px] px-ds-3 ds-label transition-colors relative ${
+              tab === tabItem ? "text-ds-text-primary" : "text-ds-text-muted"
             }`}
           >
             {tabItem === "All" ? t("saved.tab.all") : tabItem === "Providers" ? t("saved.tab.providers") : t("saved.tab.services")}
             {tab === tabItem && (
-              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ds-interactive rounded-t-ds-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ds-interactive" />
             )}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 px-ds-4 py-ds-4">
+      <div className="flex-1 px-ds-4 py-[14px]">
         {savedProviders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-ds-12 gap-ds-4">
             <div className="w-[72px] h-[72px] rounded-ds-full bg-ds-bg-primary border border-ds-border flex items-center justify-center">
@@ -91,11 +91,12 @@ export function SavedPage() {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-ds-3">
+          <div className="flex flex-col gap-[10px]">
             {savedProviders.map((provider) => (
               <ProviderCard
                 key={provider.id}
                 provider={provider}
+                variant="list"
                 saved={true}
                 onToggleSave={(id) => setSaved(toggleSaved(id))}
                 onClick={(id) => navigate(`/providers/${id}`)}
