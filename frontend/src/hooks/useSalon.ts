@@ -10,6 +10,7 @@ export interface ProviderSearchParams {
   maxPrice?: number;
   nationality?: string;
   minExperience?: number;
+  bounds?: { latMin: number; latMax: number; lngMin: number; lngMax: number };
 }
 
 export function useProviderCategories() {
@@ -33,6 +34,10 @@ export function useSearchProviders(params: ProviderSearchParams) {
         max_price: params.maxPrice || undefined,
         nationality: params.nationality || undefined,
         min_experience: params.minExperience || undefined,
+        lat_min: params.bounds?.latMin,
+        lat_max: params.bounds?.latMax,
+        lng_min: params.bounds?.lngMin,
+        lng_max: params.bounds?.lngMax,
       }),
   });
 }

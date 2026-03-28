@@ -27,6 +27,10 @@ def search_providers(
     nationality: Optional[str] = Query(None),
     min_experience: Optional[int] = Query(None),
     sort: Optional[str] = Query(None),
+    lat_min: Optional[float] = Query(None, description="SW latitude of map bounds"),
+    lat_max: Optional[float] = Query(None, description="NE latitude of map bounds"),
+    lng_min: Optional[float] = Query(None, description="SW longitude of map bounds"),
+    lng_max: Optional[float] = Query(None, description="NE longitude of map bounds"),
     skip: int = Query(0, ge=0),
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
@@ -92,6 +96,15 @@ def search_providers(
             .subquery()
         )
         query = query.filter(Provider.id.in_(provider_ids_exp))
+    if lat_min is not None and lat_max is not None and lng_min is not None and lng_max is not None:
+        query = query.filter(
+            Provider.latitude.isnot(None),
+            Provider.longitude.isnot(None),
+            Provider.latitude >= lat_min,
+            Provider.latitude <= lat_max,
+            Provider.longitude >= lng_min,
+            Provider.longitude <= lng_max,
+        )
     if sort == "price_asc":
         query = query.order_by(Provider.worker_payment_amount.asc())
     elif sort == "price_desc":
