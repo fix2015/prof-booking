@@ -10,6 +10,7 @@ import { StarRating } from "@/components/mobile/StarRating";
 import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/ui/spinner";
+import { t } from "@/i18n";
 import type { Review } from "@/types";
 
 export function MasterProfilePage() {
@@ -40,15 +41,15 @@ export function MasterProfilePage() {
 
   const inviteMutation = useMutation({
     mutationFn: () => professionalsApi.sendInvite(id),
-    onSuccess: () => toast({ title: "Invite sent!" }),
+    onSuccess: () => toast({ title: t("professionals.invite_sent") }),
     onError: (e: { response?: { data?: { detail?: string } } }) =>
-      toast({ title: "Failed", description: e?.response?.data?.detail, variant: "destructive" }),
+      toast({ title: t("professionals.invite_failed"), description: e?.response?.data?.detail, variant: "destructive" }),
   });
 
   if (isLoading) {
     return (
       <div className="max-w-[390px] mx-auto flex flex-col">
-        <AppHeader variant="back-title" title="Loading..." />
+        <AppHeader variant="back-title" title={t("professionals.loading")} />
         <div className="p-ds-4 flex flex-col items-center gap-ds-4">
           <div className="w-[72px] h-[72px] rounded-ds-full bg-ds-bg-secondary animate-pulse" />
           <div className="h-6 w-32 bg-ds-bg-secondary rounded-ds-md animate-pulse" />
@@ -60,8 +61,8 @@ export function MasterProfilePage() {
   if (!professional) {
     return (
       <div className="max-w-[390px] mx-auto flex flex-col items-center justify-center min-h-[300px] gap-ds-3 p-ds-6">
-        <p className="ds-body text-ds-text-secondary">Professional not found</p>
-        <button onClick={() => navigate(-1)} className="ds-body-small text-ds-interactive">Go back</button>
+        <p className="ds-body text-ds-text-secondary">{t("professionals.not_found")}</p>
+        <button onClick={() => navigate(-1)} className="ds-body-small text-ds-interactive">{t("professionals.go_back")}</button>
       </div>
     );
   }
@@ -93,7 +94,7 @@ export function MasterProfilePage() {
           <div className="flex items-center gap-ds-2">
             <StarRating rating={stats.average_rating} size="sm" />
             <span className="ds-body-small text-ds-text-secondary">
-              {stats.average_rating.toFixed(1)} ({stats.total_reviews} reviews)
+              {stats.average_rating.toFixed(1)} {t("reviews.count", { count: stats.total_reviews })}
             </span>
           </div>
         )}
@@ -116,7 +117,7 @@ export function MasterProfilePage() {
       {/* Bio */}
       {professional.bio && (
         <div className="bg-ds-bg-primary mt-ds-3 px-ds-4 py-ds-4 border-t border-ds-border">
-          <p className="ds-h4 text-ds-text-primary mb-ds-2">About</p>
+          <p className="ds-h4 text-ds-text-primary mb-ds-2">{t("professionals.about")}</p>
           <p className="ds-body text-ds-text-secondary">{professional.bio}</p>
         </div>
       )}
@@ -128,21 +129,21 @@ export function MasterProfilePage() {
             onClick={() => navigate(`/book/${activeProviders[0].provider_id}`)}
             className="w-full h-[48px] bg-ds-interactive rounded-ds-2xl ds-body-large text-ds-text-inverse"
           >
-            Book Appointment
+            {t("professionals.book_appointment")}
           </button>
         ) : (
           <button
             onClick={() => navigate("/")}
             className="w-full h-[48px] bg-ds-interactive rounded-ds-2xl ds-body-large text-ds-text-inverse"
           >
-            Find Availability
+            {t("professionals.find_availability")}
           </button>
         )}
         <button
           onClick={() => setReviewOpen(true)}
           className="w-full h-[48px] border border-ds-border rounded-ds-2xl ds-body-large text-ds-text-primary"
         >
-          Write a Review
+          {t("professionals.write_review")}
         </button>
         {role === "provider_owner" && (
           <button
@@ -150,7 +151,7 @@ export function MasterProfilePage() {
             onClick={() => inviteMutation.mutate()}
             className="w-full h-[48px] border border-ds-border rounded-ds-2xl ds-body text-ds-text-secondary disabled:text-ds-text-disabled"
           >
-            {inviteMutation.isSuccess ? "Invite Sent" : "Invite to Work"}
+            {inviteMutation.isSuccess ? t("professionals.invite_sent") : t("professionals.invite_to_work")}
           </button>
         )}
       </div>
@@ -158,15 +159,15 @@ export function MasterProfilePage() {
       {/* Reviews */}
       <div className="bg-ds-bg-primary mt-ds-3 border-t border-ds-border pb-ds-4">
         <div className="px-ds-4 pt-ds-4 pb-ds-3 flex items-center justify-between">
-          <p className="ds-h4 text-ds-text-primary">Reviews</p>
+          <p className="ds-h4 text-ds-text-primary">{t("professionals.reviews_section")}</p>
           {stats && stats.total_reviews > 0 && (
             <span className="ds-caption text-ds-text-secondary">
-              {stats.average_rating.toFixed(1)} · {stats.total_reviews} total
+              {stats.average_rating.toFixed(1)} · {t("professionals.reviews_total", { count: stats.total_reviews })}
             </span>
           )}
         </div>
         {reviews.length === 0 ? (
-          <p className="px-ds-4 ds-body text-ds-text-secondary">No reviews yet.</p>
+          <p className="px-ds-4 ds-body text-ds-text-secondary">{t("professionals.no_reviews")}</p>
         ) : (
           <div className="flex flex-col">
             {reviews.map((review: Review, idx: number) => (
@@ -240,11 +241,11 @@ function ReviewModal({
         images: images.length > 0 ? images : undefined,
       }),
     onSuccess: () => {
-      toast({ title: "Review submitted! Thank you." });
+      toast({ title: t("reviews.submitted") });
       onSuccess();
     },
     onError: (e: { response?: { data?: { detail?: string } } }) =>
-      toast({ title: "Failed", description: e?.response?.data?.detail, variant: "destructive" }),
+      toast({ title: t("professionals.invite_failed"), description: e?.response?.data?.detail, variant: "destructive" }),
   });
 
   const handleFiles = async (files: FileList | null) => {
@@ -256,7 +257,7 @@ function ReviewModal({
       const urls = await uploadsApi.uploadImages(Array.from(files).slice(0, remaining), 1200);
       setImages((prev) => [...prev, ...urls].slice(0, 3));
     } catch {
-      toast({ title: "Image upload failed", variant: "destructive" });
+      toast({ title: t("reviews.upload_failed"), variant: "destructive" });
     } finally {
       setUploading(false);
     }
@@ -267,7 +268,7 @@ function ReviewModal({
       <div className="bg-ds-bg-primary w-full max-w-[390px] rounded-t-ds-2xl">
         <div className="flex items-center justify-between px-ds-4 py-ds-4 border-b border-ds-border">
           <div>
-            <p className="ds-h4 text-ds-text-primary">Write a Review</p>
+            <p className="ds-h4 text-ds-text-primary">{t("reviews.write_title")}</p>
             <p className="ds-caption text-ds-text-secondary">{professionalName}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-ds-text-secondary">
@@ -280,7 +281,7 @@ function ReviewModal({
         <div className="p-ds-4 flex flex-col gap-ds-4">
           {/* Star rating */}
           <div>
-            <p className="ds-label text-ds-text-secondary mb-ds-2">Rating *</p>
+            <p className="ds-label text-ds-text-secondary mb-ds-2">{t("reviews.rating_label")}</p>
             <div className="flex gap-ds-2">
               {[1, 2, 3, 4, 5].map((s) => (
                 <button
@@ -302,9 +303,9 @@ function ReviewModal({
           </div>
 
           <div>
-            <p className="ds-label text-ds-text-secondary mb-ds-1">Your name *</p>
+            <p className="ds-label text-ds-text-secondary mb-ds-1">{t("reviews.name_label")}</p>
             <input
-              placeholder="Jane Smith"
+              placeholder={t("reviews.name_placeholder")}
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               className="w-full h-[44px] px-ds-3 bg-ds-bg-secondary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive"
@@ -312,18 +313,18 @@ function ReviewModal({
           </div>
 
           <div>
-            <p className="ds-label text-ds-text-secondary mb-ds-1">Comment</p>
+            <p className="ds-label text-ds-text-secondary mb-ds-1">{t("reviews.comment_label")}</p>
             <textarea
               className="w-full px-ds-3 py-ds-2 bg-ds-bg-secondary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive resize-none"
               rows={3}
-              placeholder="Share your experience…"
+              placeholder={t("reviews.comment_placeholder")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
           </div>
 
           <div>
-            <p className="ds-label text-ds-text-secondary mb-ds-2">Photos (up to 3)</p>
+            <p className="ds-label text-ds-text-secondary mb-ds-2">{t("reviews.photos_label")}</p>
             <div className="flex gap-ds-2 flex-wrap">
               {images.map((url, i) => (
                 <div key={i} className="relative">
@@ -350,7 +351,7 @@ function ReviewModal({
                       <path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   )}
-                  <span className="ds-caption">Add</span>
+                  <span className="ds-caption">{t("reviews.add_photo")}</span>
                 </button>
               )}
             </div>
@@ -363,14 +364,14 @@ function ReviewModal({
             onClick={onClose}
             className="flex-1 h-[48px] border border-ds-border rounded-ds-2xl ds-body text-ds-text-primary"
           >
-            Cancel
+            {t("reviews.cancel")}
           </button>
           <button
             disabled={!clientName.trim() || rating === 0 || submitMutation.isPending}
             onClick={() => submitMutation.mutate()}
             className="flex-1 h-[48px] bg-ds-interactive rounded-ds-2xl ds-body text-ds-text-inverse disabled:bg-ds-bg-secondary disabled:text-ds-text-disabled"
           >
-            {submitMutation.isPending ? "Submitting…" : "Submit"}
+            {submitMutation.isPending ? t("reviews.submitting") : t("reviews.submit")}
           </button>
         </div>
       </div>

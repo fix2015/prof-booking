@@ -99,8 +99,8 @@ export function MasterRegisterPage() {
           <CardTitle className="text-2xl">{t("register.pro.title")}</CardTitle>
           <CardDescription>
             {inviteToken
-              ? "You've been invited to join a provider"
-              : "Create your professional account"}
+              ? t("register.pro.invite_description")
+              : t("register.pro.description")}
           </CardDescription>
         </CardHeader>
 
@@ -108,13 +108,13 @@ export function MasterRegisterPage() {
           <CardContent className="space-y-4">
             {register_.isError && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {(register_.error as AxiosError<{ detail: string }>)?.response?.data?.detail ?? "Registration failed. Please try again."}
+                {(register_.error as AxiosError<{ detail: string }>)?.response?.data?.detail ?? t("register.failed")}
               </div>
             )}
 
             {inviteToken && (
               <div className="rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
-                You'll be connected to the provider after registration.
+                {t("register.pro.invite_notice")}
               </div>
             )}
 
@@ -137,7 +137,7 @@ export function MasterRegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Instagram (optional)</Label>
+              <Label>{t("register.pro.instagram")}</Label>
               <Input {...register("instagram")} placeholder="@yourusername" />
             </div>
 
@@ -152,10 +152,10 @@ export function MasterRegisterPage() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5">
                   <Building2 className="h-4 w-4" />
-                  Apply to providers (optional)
+                  {t("register.pro.apply_providers")}
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Type to search and select providers you'd like to work with. Each provider must approve before you appear there.
+                  {t("register.pro.apply_hint")}
                 </p>
 
                 {/* Selected provider tags */}
@@ -185,7 +185,7 @@ export function MasterRegisterPage() {
                 {/* Autocomplete input */}
                 <div className="relative" ref={comboRef}>
                   <Input
-                    placeholder="Search provider by name or address…"
+                    placeholder={t("register.pro.search_provider")}
                     value={providerSearch}
                     onChange={(e) => { setProviderSearch(e.target.value); setDropdownOpen(true); }}
                     onFocus={() => setDropdownOpen(true)}
@@ -209,7 +209,7 @@ export function MasterRegisterPage() {
                   )}
                   {dropdownOpen && filteredProviders.length === 0 && providerSearch.trim() && (
                     <div className="absolute z-50 mt-1 w-full rounded-md border bg-background shadow-lg px-3 py-2 text-sm text-muted-foreground">
-                      No providers found
+                      {t("register.pro.no_providers")}
                     </div>
                   )}
                 </div>
@@ -223,7 +223,7 @@ export function MasterRegisterPage() {
               {t("register.pro.submit")}
             </Button>
             <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
+              {t("register.already_have_account")}{" "}
               <Link to="/login" className="text-gray-700 hover:underline font-medium">
                 {t("register.sign_in")}
               </Link>

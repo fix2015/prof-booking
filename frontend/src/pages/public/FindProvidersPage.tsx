@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/useToast";
+import { t } from "@/i18n";
 import type { Provider } from "@/types";
 
 export function FindProvidersPage() {
@@ -54,9 +55,9 @@ export function FindProvidersPage() {
 
       <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Find Providers</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("providers.find_title")}</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Discover salons and beauty providers to work with
+            {t("providers.find_subtitle")}
           </p>
         </div>
 
@@ -65,7 +66,7 @@ export function FindProvidersPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Search by name or address…"
+              placeholder={t("providers.search_placeholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && apply()}
@@ -75,9 +76,9 @@ export function FindProvidersPage() {
           <div className="flex gap-2">
             <Button variant="outline" className="gap-2 flex-1 sm:flex-none" onClick={() => setShowFilters((v) => !v)}>
               <SlidersHorizontal className="h-4 w-4" />
-              Filters
+              {t("discover.filters")}
             </Button>
-            <Button onClick={apply} className="bg-gray-900 hover:bg-gray-950 flex-1 sm:flex-none">Search</Button>
+            <Button onClick={apply} className="bg-gray-900 hover:bg-gray-950 flex-1 sm:flex-none">{t("common.search")}</Button>
           </div>
         </div>
 
@@ -85,21 +86,21 @@ export function FindProvidersPage() {
         {showFilters && (
           <div className="rounded-xl border bg-muted/30 p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service offered</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("providers.filter_service_offered")}</label>
               <select
                 value={serviceName}
                 onChange={(e) => setServiceName(e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">All services</option>
+                <option value="">{t("providers.all_services")}</option>
                 {serviceNames.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
             <div className="sm:col-span-2 flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={clear}>Clear all</Button>
-              <Button size="sm" className="bg-gray-900 hover:bg-gray-950" onClick={apply}>Apply</Button>
+              <Button variant="ghost" size="sm" onClick={clear}>{t("discover.filter.clear_all")}</Button>
+              <Button size="sm" className="bg-gray-900 hover:bg-gray-950" onClick={apply}>{t("discover.filter.apply")}</Button>
             </div>
           </div>
         )}
@@ -110,10 +111,10 @@ export function FindProvidersPage() {
         ) : providers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
             <div className="text-5xl">🏪</div>
-            <p className="font-semibold text-lg">No providers found</p>
-            <p className="text-sm text-muted-foreground">Try different search terms or clear filters</p>
+            <p className="font-semibold text-lg">{t("providers.no_providers_title")}</p>
+            <p className="text-sm text-muted-foreground">{t("providers.no_providers_subtitle")}</p>
             {(applied.search || applied.service_name) && (
-              <Button variant="outline" size="sm" onClick={clear}>Clear filters</Button>
+              <Button variant="outline" size="sm" onClick={clear}>{t("discover.empty.clear")}</Button>
             )}
           </div>
         ) : (
@@ -152,11 +153,11 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
     mutationFn: () => professionalsApi.attachToProvider(provider.id),
     onSuccess: () => {
       setRequested(true);
-      toast({ title: "Request sent!", description: `${provider.name} will review your application.` });
+      toast({ title: t("providers.request_sent_title"), description: `${provider.name} will review your application.` });
     },
     onError: (e: any) => {
-      const msg = e?.response?.data?.detail ?? "Something went wrong.";
-      toast({ title: "Failed to send request", description: msg, variant: "destructive" });
+      const msg = e?.response?.data?.detail ?? t("common.error");
+      toast({ title: t("providers.request_failed"), description: msg, variant: "destructive" });
     },
   });
 
@@ -196,7 +197,9 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
           {(provider as any).professionals_count != null && (
             <span className="flex items-center gap-1.5">
               <Scissors className="h-3 w-3 text-gray-400 shrink-0" />
-              {(provider as any).professionals_count} professional{(provider as any).professionals_count !== 1 ? "s" : ""}
+              {(provider as any).professionals_count !== 1
+                ? t("providers.professionals_count_plural", { count: (provider as any).professionals_count })
+                : t("providers.professionals_count", { count: (provider as any).professionals_count })}
             </span>
           )}
         </div>
@@ -217,12 +220,12 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
 
         <div className="mt-auto flex flex-col gap-2 sm:flex-row">
           <Link to={`/providers/${provider.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full text-xs">View Profile</Button>
+            <Button variant="outline" size="sm" className="w-full text-xs">{t("providers.view_profile")}</Button>
           </Link>
           {isProfessional ? (
             alreadyLinked ? (
               <Button size="sm" variant="outline" disabled className="flex-1 gap-1 text-xs border-green-300 text-green-700">
-                <CheckCircle2 className="h-3 w-3" /> Already Working
+                <CheckCircle2 className="h-3 w-3" /> {t("providers.already_working")}
               </Button>
             ) : (
               <Button
@@ -232,10 +235,10 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
                 onClick={() => requestMutation.mutate()}
               >
                 {requested
-                  ? <><CheckCircle2 className="h-3 w-3" /> Requested</>
+                  ? <><CheckCircle2 className="h-3 w-3" /> {t("providers.requested")}</>
                   : requestMutation.isPending
                     ? <Spinner size="sm" />
-                    : <><UserPlus className="h-3 w-3" /> Request to Work</>}
+                    : <><UserPlus className="h-3 w-3" /> {t("providers.request_to_work")}</>}
               </Button>
             )
           ) : (
@@ -245,7 +248,7 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
               className="flex-1 text-xs gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
               onClick={onLoginRequired}
             >
-              <UserPlus className="h-3 w-3" /> Request to Work
+              <UserPlus className="h-3 w-3" /> {t("providers.request_to_work")}
             </Button>
           )}
         </div>

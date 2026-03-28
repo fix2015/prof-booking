@@ -8,6 +8,7 @@ import { servicesApi } from "@/api/services";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
 import { TimeSlotButton } from "@/components/mobile/TimeSlotButton";
+import { t } from "@/i18n";
 import type { Service, Professional, AvailableSlot } from "@/types";
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -105,11 +106,17 @@ export function PublicBookingPage() {
     );
   }
 
-  const STEP_LABELS = ["Service", "Professional", "Date", "Time", "Confirm"];
+  const STEP_LABELS = [
+    t("booking.step.service"),
+    t("booking.step.professional"),
+    t("booking.step.date"),
+    t("booking.step.time"),
+    t("booking.step.confirm"),
+  ];
 
   return (
     <div className="max-w-[390px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
-      <AppHeader variant="back-title" title="Book Appointment" onBack={handleBack} />
+      <AppHeader variant="back-title" title={t("booking.book_title")} onBack={handleBack} />
 
       {/* Progress indicator */}
       <div className="bg-ds-bg-primary px-ds-4 py-ds-3 border-b border-ds-border flex gap-ds-1">
@@ -141,7 +148,7 @@ export function PublicBookingPage() {
             onClick={() => navigate(`/providers/${id}`)}
             className="ds-caption text-ds-interactive flex-shrink-0"
           >
-            ↗ View
+            {t("booking.view")}
           </button>
         </div>
       )}
@@ -150,9 +157,9 @@ export function PublicBookingPage() {
         {/* Step 1: Service */}
         {step === 1 && (
           <div className="flex flex-col gap-ds-2">
-            <p className="ds-h4 text-ds-text-primary mb-ds-2">Select a Service</p>
+            <p className="ds-h4 text-ds-text-primary mb-ds-2">{t("booking.select_service_heading")}</p>
             {services.length === 0 ? (
-              <p className="ds-body text-ds-text-secondary">No services available</p>
+              <p className="ds-body text-ds-text-secondary">{t("booking.no_services")}</p>
             ) : (
               services.map((service) => (
                 <button
@@ -184,8 +191,8 @@ export function PublicBookingPage() {
         {/* Step 2: Professional */}
         {step === 2 && (
           <div className="flex flex-col gap-ds-3">
-            <p className="ds-h4 text-ds-text-primary mb-ds-1">Select a Professional</p>
-            <p className="ds-caption text-ds-text-secondary">Optional — skip to see all availability</p>
+            <p className="ds-h4 text-ds-text-primary mb-ds-1">{t("booking.select_professional_heading")}</p>
+            <p className="ds-caption text-ds-text-secondary">{t("booking.optional_skip")}</p>
             <div className="grid grid-cols-3 gap-ds-3">
               <button
                 onClick={() => setSelectedProfessional(null)}
@@ -200,7 +207,7 @@ export function PublicBookingPage() {
                   </svg>
                 </div>
                 <span className={`ds-caption text-center ${!selectedProfessional ? "text-ds-text-inverse" : "text-ds-text-primary"}`}>
-                  Any
+                  {t("booking.any")}
                 </span>
               </button>
               {professionals.map((pro) => (
@@ -226,7 +233,7 @@ export function PublicBookingPage() {
         {/* Step 3: Date */}
         {step === 3 && (
           <div className="flex flex-col gap-ds-3">
-            <p className="ds-h4 text-ds-text-primary mb-ds-1">Select a Date</p>
+            <p className="ds-h4 text-ds-text-primary mb-ds-1">{t("booking.select_date_heading")}</p>
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setCalMonth((m) => { const d = new Date(m.year, m.month - 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
@@ -273,14 +280,14 @@ export function PublicBookingPage() {
         {/* Step 4: Time slots */}
         {step === 4 && (
           <div className="flex flex-col gap-ds-3">
-            <p className="ds-h4 text-ds-text-primary mb-ds-1">Select a Time</p>
+            <p className="ds-h4 text-ds-text-primary mb-ds-1">{t("booking.select_time_heading")}</p>
             <p className="ds-caption text-ds-text-secondary">
               {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
             {slots.length === 0 ? (
               <div className="text-center py-ds-8">
-                <p className="ds-body text-ds-text-secondary">No availability on this date</p>
-                <button onClick={() => setStep(3)} className="ds-body-small text-ds-interactive mt-ds-2">Choose another date</button>
+                <p className="ds-body text-ds-text-secondary">{t("booking.no_availability")}</p>
+                <button onClick={() => setStep(3)} className="ds-body-small text-ds-interactive mt-ds-2">{t("booking.choose_another_date")}</button>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-ds-2">
@@ -301,29 +308,29 @@ export function PublicBookingPage() {
         {/* Step 5: Confirm */}
         {step === 5 && (
           <div className="flex flex-col gap-ds-4">
-            <p className="ds-h4 text-ds-text-primary">Your Details</p>
+            <p className="ds-h4 text-ds-text-primary">{t("booking.your_details")}</p>
             <div className="bg-ds-bg-primary rounded-ds-xl border border-ds-border p-ds-3 flex flex-col gap-ds-2">
               {selectedService && (
                 <div className="flex justify-between">
-                  <span className="ds-body text-ds-text-secondary">Service</span>
+                  <span className="ds-body text-ds-text-secondary">{t("booking.summary_service")}</span>
                   <span className="ds-body-strong text-ds-text-primary">{selectedService.name}</span>
                 </div>
               )}
               {selectedProfessional && (
                 <div className="flex justify-between">
-                  <span className="ds-body text-ds-text-secondary">Professional</span>
+                  <span className="ds-body text-ds-text-secondary">{t("booking.summary_professional")}</span>
                   <span className="ds-body-strong text-ds-text-primary">{selectedProfessional.name}</span>
                 </div>
               )}
               {selectedSlot && (
                 <div className="flex justify-between">
-                  <span className="ds-body text-ds-text-secondary">Date & Time</span>
-                  <span className="ds-body-strong text-ds-text-primary">{selectedDate} at {formatTime(selectedSlot)}</span>
+                  <span className="ds-body text-ds-text-secondary">{t("booking.summary_datetime")}</span>
+                  <span className="ds-body-strong text-ds-text-primary">{t("booking.date_at_time", { date: selectedDate, time: formatTime(selectedSlot) })}</span>
                 </div>
               )}
               {selectedService && (
                 <div className="flex justify-between border-t border-ds-border pt-ds-2">
-                  <span className="ds-body-strong text-ds-text-primary">Total</span>
+                  <span className="ds-body-strong text-ds-text-primary">{t("booking.summary_total")}</span>
                   <span className="ds-body-strong text-ds-text-primary">${selectedService.price}</span>
                 </div>
               )}
@@ -332,7 +339,7 @@ export function PublicBookingPage() {
               {(["name", "phone", "email", "notes"] as const).map((key) => (
                 <div key={key}>
                   <label className="ds-label text-ds-text-secondary block mb-ds-1">
-                    {{name: "Full Name *", phone: "Phone Number *", email: "Email (optional)", notes: "Notes (optional)"}[key]}
+                    {{name: t("booking.field.full_name"), phone: t("booking.field.phone"), email: t("booking.field.email"), notes: t("booking.field.notes")}[key]}
                   </label>
                   <input
                     type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
@@ -358,7 +365,7 @@ export function PublicBookingPage() {
               canProceed ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
             }`}
           >
-            {step === 2 && !selectedProfessional ? "Skip — Any Professional" : "Continue"}
+            {step === 2 && !selectedProfessional ? t("booking.skip_any") : t("booking.continue")}
           </button>
         ) : (
           <button
@@ -368,11 +375,11 @@ export function PublicBookingPage() {
               canProceed && !createBooking.isPending ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
             }`}
           >
-            {createBooking.isPending ? "Booking..." : "Confirm Booking"}
+            {createBooking.isPending ? t("booking.in_progress") : t("booking.confirm_cta")}
           </button>
         )}
         {createBooking.isError && (
-          <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">Booking failed. Please try again.</p>
+          <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">{t("booking.failed")}</p>
         )}
       </div>
     </div>

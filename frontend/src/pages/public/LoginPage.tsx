@@ -35,7 +35,7 @@ export function LoginPage() {
       <div className="w-full max-w-md space-y-4">
         {/* Register section — shown first so new users see it immediately */}
         <div className="text-center text-xs text-muted-foreground font-medium uppercase tracking-wide">
-          New here? Create an account
+          {t("login.new_here")}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Link to="/register">
@@ -44,8 +44,8 @@ export function LoginPage() {
                 <div className="rounded-full bg-gray-100 p-3">
                   <Building2 className="h-6 w-6 text-gray-700" />
                 </div>
-                <p className="font-semibold text-sm text-gray-800">Register Business</p>
-                <p className="text-xs text-muted-foreground">Salon, spa or studio owner</p>
+                <p className="font-semibold text-sm text-gray-800">{t("login.register_business")}</p>
+                <p className="text-xs text-muted-foreground">{t("login.register_business_desc")}</p>
               </CardContent>
             </Card>
           </Link>
@@ -55,8 +55,8 @@ export function LoginPage() {
                 <div className="rounded-full bg-pink-50 p-3">
                   <Scissors className="h-6 w-6 text-pink-600" />
                 </div>
-                <p className="font-semibold text-sm text-gray-800">Join as Professional</p>
-                <p className="text-xs text-muted-foreground">Nail artist, stylist or specialist</p>
+                <p className="font-semibold text-sm text-gray-800">{t("login.join_professional")}</p>
+                <p className="text-xs text-muted-foreground">{t("login.join_professional_desc")}</p>
               </CardContent>
             </Card>
           </Link>

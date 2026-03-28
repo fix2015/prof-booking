@@ -40,14 +40,14 @@ export function RegisterPage() {
         <CardHeader className="text-center">
           <div className="mb-2 text-4xl">✨</div>
           <CardTitle className="text-2xl">{t("register.title")}</CardTitle>
-          <CardDescription>Create your provider owner account</CardDescription>
+          <CardDescription>{t("register.description")}</CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit((data) => register_.mutate(data))}>
           <CardContent className="space-y-4">
             {register_.isError && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {(register_.error as AxiosError<{ detail: string }>)?.response?.data?.detail ?? "Registration failed. Please try again."}
+                {(register_.error as AxiosError<{ detail: string }>)?.response?.data?.detail ?? t("register.failed")}
               </div>
             )}
 
@@ -77,13 +77,13 @@ export function RegisterPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Business Address *</Label>
+              <Label>{t("register.business_address")} *</Label>
               <Input {...register("provider_address")} placeholder="123 Main Street, City, State" />
               {errors.provider_address && <p className="text-xs text-destructive">{errors.provider_address.message}</p>}
             </div>
 
             <div className="space-y-1">
-              <Label>Default Worker Payment ($)</Label>
+              <Label>{t("register.worker_payment")}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -99,7 +99,7 @@ export function RegisterPage() {
               {t("register.submit")}
             </Button>
             <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
+              {t("register.already_have_account")}{" "}
               <Link to="/login" className="text-gray-700 hover:underline font-medium">
                 {t("register.sign_in")}
               </Link>
