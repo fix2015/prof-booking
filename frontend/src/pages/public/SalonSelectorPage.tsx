@@ -24,7 +24,7 @@ function toggleSaved(id: number): number[] {
 
 const CATEGORIES = ["All", "Beauty", "Nails", "Hair", "Massage", "Cleaning", "Auto Repair"];
 
-export function DiscoveryPage() {
+export function SalonSelectorPage() {
   const navigate = useNavigate();
   const { data: providers = [], isLoading } = usePublicProviders();
   const [search, setSearch] = useState("");

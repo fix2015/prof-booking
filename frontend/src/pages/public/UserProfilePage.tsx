@@ -19,7 +19,7 @@ function ChevronRight() {
   );
 }
 
-export function MobileUserProfilePage() {
+export function UserProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthContext();
   const logout = useLogout();

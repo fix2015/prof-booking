@@ -30,7 +30,7 @@ function getDaysInMonth(year: number, month: number): Date[] {
   return days;
 }
 
-export function MobileBookingPage() {
+export function PublicBookingPage() {
   const { providerId } = useParams<{ providerId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -72,7 +72,7 @@ export function MobileBookingPage() {
 
   const canProceed = useMemo(() => {
     if (step === 1) return !!selectedService;
-    if (step === 2) return true; // professional is optional
+    if (step === 2) return true;
     if (step === 3) return !!selectedDate;
     if (step === 4) return !!selectedSlot;
     return form.name.trim().length > 0 && form.phone.trim().length > 0;
@@ -101,16 +101,14 @@ export function MobileBookingPage() {
         client_notes: form.notes || undefined,
         starts_at: startsAt,
       },
-      {
-        onSuccess: () => navigate("/"),
-      }
+      { onSuccess: () => navigate("/") }
     );
   }
 
   const STEP_LABELS = ["Service", "Professional", "Date", "Time", "Confirm"];
 
   return (
-    <div className="flex flex-col min-h-full bg-ds-bg-secondary">
+    <div className="max-w-[390px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
       <AppHeader variant="back-title" title="Book Appointment" onBack={handleBack} />
 
       {/* Progress indicator */}
@@ -149,7 +147,7 @@ export function MobileBookingPage() {
       )}
 
       <div className="flex-1 px-ds-4 py-ds-4">
-        {/* Step 1: Service selection */}
+        {/* Step 1: Service */}
         {step === 1 && (
           <div className="flex flex-col gap-ds-2">
             <p className="ds-h4 text-ds-text-primary mb-ds-2">Select a Service</p>
@@ -183,10 +181,10 @@ export function MobileBookingPage() {
           </div>
         )}
 
-        {/* Step 2: Professional selection */}
+        {/* Step 2: Professional */}
         {step === 2 && (
           <div className="flex flex-col gap-ds-3">
-            <p className="ds-h4 text-ds-text-primary mb-ds-2">Select a Professional</p>
+            <p className="ds-h4 text-ds-text-primary mb-ds-1">Select a Professional</p>
             <p className="ds-caption text-ds-text-secondary">Optional — skip to see all availability</p>
             <div className="grid grid-cols-3 gap-ds-3">
               <button
@@ -196,8 +194,9 @@ export function MobileBookingPage() {
                 }`}
               >
                 <div className="w-10 h-10 rounded-ds-full bg-ds-bg-secondary flex items-center justify-center">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-ds-text-secondary">
-                    <path d="M8 2L14 14H2L8 2Z" stroke="currentColor" strokeWidth="1.2" />
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-ds-text-secondary">
+                    <circle cx="9" cy="6" r="3" stroke="currentColor" strokeWidth="1.3" />
+                    <path d="M3 16C3 13 5.686 11 9 11C12.314 11 15 13 15 16" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
                   </svg>
                 </div>
                 <span className={`ds-caption text-center ${!selectedProfessional ? "text-ds-text-inverse" : "text-ds-text-primary"}`}>
@@ -224,58 +223,30 @@ export function MobileBookingPage() {
           </div>
         )}
 
-        {/* Step 3: Date selection */}
+        {/* Step 3: Date */}
         {step === 3 && (
           <div className="flex flex-col gap-ds-3">
             <p className="ds-h4 text-ds-text-primary mb-ds-1">Select a Date</p>
-
-            {/* Month navigation */}
             <div className="flex items-center justify-between">
               <button
-                onClick={() =>
-                  setCalMonth((m) => {
-                    const d = new Date(m.year, m.month - 1);
-                    return { year: d.getFullYear(), month: d.getMonth() };
-                  })
-                }
+                onClick={() => setCalMonth((m) => { const d = new Date(m.year, m.month - 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
                 className="w-8 h-8 flex items-center justify-center text-ds-text-secondary"
-              >
-                ‹
-              </button>
+              >‹</button>
               <span className="ds-body-strong text-ds-text-primary">
-                {new Date(calMonth.year, calMonth.month).toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
+                {new Date(calMonth.year, calMonth.month).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </span>
               <button
-                onClick={() =>
-                  setCalMonth((m) => {
-                    const d = new Date(m.year, m.month + 1);
-                    return { year: d.getFullYear(), month: d.getMonth() };
-                  })
-                }
+                onClick={() => setCalMonth((m) => { const d = new Date(m.year, m.month + 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
                 className="w-8 h-8 flex items-center justify-center text-ds-text-secondary"
-              >
-                ›
-              </button>
+              >›</button>
             </div>
-
-            {/* Day of week headers */}
             <div className="grid grid-cols-7 gap-[2px]">
               {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-                <div key={d} className="text-center ds-caption text-ds-text-secondary py-[4px]">
-                  {d}
-                </div>
+                <div key={d} className="text-center ds-caption text-ds-text-secondary py-[4px]">{d}</div>
               ))}
             </div>
-
-            {/* Day grid */}
             <div className="grid grid-cols-7 gap-[2px]">
-              {/* Empty cells for first week */}
-              {Array.from({ length: calDays[0].getDay() }, (_, i) => (
-                <div key={`empty-${i}`} />
-              ))}
+              {Array.from({ length: calDays[0].getDay() }, (_, i) => <div key={`e-${i}`} />)}
               {calDays.map((day) => {
                 const dateStr = formatDate(day);
                 const isPast = day < new Date(formatDate(today));
@@ -286,11 +257,9 @@ export function MobileBookingPage() {
                     disabled={isPast}
                     onClick={() => setSelectedDate(dateStr)}
                     className={`h-[36px] rounded-ds-md ds-body-small transition-colors ${
-                      isPast
-                        ? "text-ds-text-disabled cursor-not-allowed"
-                        : isSelected
-                        ? "bg-ds-interactive text-ds-text-inverse"
-                        : "text-ds-text-primary hover:bg-ds-bg-secondary"
+                      isPast ? "text-ds-text-disabled cursor-not-allowed"
+                      : isSelected ? "bg-ds-interactive text-ds-text-inverse"
+                      : "text-ds-text-primary hover:bg-ds-bg-secondary"
                     }`}
                   >
                     {day.getDate()}
@@ -301,23 +270,17 @@ export function MobileBookingPage() {
           </div>
         )}
 
-        {/* Step 4: Time slot selection */}
+        {/* Step 4: Time slots */}
         {step === 4 && (
           <div className="flex flex-col gap-ds-3">
             <p className="ds-h4 text-ds-text-primary mb-ds-1">Select a Time</p>
             <p className="ds-caption text-ds-text-secondary">
-              {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
+              {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
             {slots.length === 0 ? (
               <div className="text-center py-ds-8">
                 <p className="ds-body text-ds-text-secondary">No availability on this date</p>
-                <button onClick={() => setStep(3)} className="ds-body-small text-ds-interactive mt-ds-2">
-                  Choose another date
-                </button>
+                <button onClick={() => setStep(3)} className="ds-body-small text-ds-interactive mt-ds-2">Choose another date</button>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-ds-2">
@@ -326,10 +289,7 @@ export function MobileBookingPage() {
                     key={i}
                     time={formatTime(slot)}
                     professionalName={slot.professional_name}
-                    selected={
-                      selectedSlot?.start_time === slot.start_time &&
-                      selectedSlot?.professional_id === slot.professional_id
-                    }
+                    selected={selectedSlot?.start_time === slot.start_time && selectedSlot?.professional_id === slot.professional_id}
                     onClick={() => setSelectedSlot(slot)}
                   />
                 ))}
@@ -338,12 +298,10 @@ export function MobileBookingPage() {
           </div>
         )}
 
-        {/* Step 5: Client info form */}
+        {/* Step 5: Confirm */}
         {step === 5 && (
           <div className="flex flex-col gap-ds-4">
             <p className="ds-h4 text-ds-text-primary">Your Details</p>
-
-            {/* Summary */}
             <div className="bg-ds-bg-primary rounded-ds-xl border border-ds-border p-ds-3 flex flex-col gap-ds-2">
               {selectedService && (
                 <div className="flex justify-between">
@@ -360,9 +318,7 @@ export function MobileBookingPage() {
               {selectedSlot && (
                 <div className="flex justify-between">
                   <span className="ds-body text-ds-text-secondary">Date & Time</span>
-                  <span className="ds-body-strong text-ds-text-primary">
-                    {selectedDate} at {formatTime(selectedSlot)}
-                  </span>
+                  <span className="ds-body-strong text-ds-text-primary">{selectedDate} at {formatTime(selectedSlot)}</span>
                 </div>
               )}
               {selectedService && (
@@ -372,19 +328,15 @@ export function MobileBookingPage() {
                 </div>
               )}
             </div>
-
             <div className="flex flex-col gap-ds-3">
-              {[
-                { key: "name" as const, label: "Full Name", type: "text", required: true, placeholder: "Jane Smith" },
-                { key: "phone" as const, label: "Phone Number", type: "tel", required: true, placeholder: "+1 (555) 000-0000" },
-                { key: "email" as const, label: "Email (optional)", type: "email", required: false, placeholder: "jane@example.com" },
-                { key: "notes" as const, label: "Notes (optional)", type: "text", required: false, placeholder: "Any special requests..." },
-              ].map(({ key, label, type, placeholder }) => (
+              {(["name", "phone", "email", "notes"] as const).map((key) => (
                 <div key={key}>
-                  <label className="ds-label text-ds-text-secondary block mb-ds-1">{label}</label>
+                  <label className="ds-label text-ds-text-secondary block mb-ds-1">
+                    {{name: "Full Name *", phone: "Phone Number *", email: "Email (optional)", notes: "Notes (optional)"}[key]}
+                  </label>
                   <input
-                    type={type}
-                    placeholder={placeholder}
+                    type={key === "email" ? "email" : key === "phone" ? "tel" : "text"}
+                    placeholder={{name: "Jane Smith", phone: "+1 (555) 000-0000", email: "jane@example.com", notes: "Any special requests..."}[key]}
                     value={form[key]}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                     className="w-full h-[44px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive"
@@ -403,9 +355,7 @@ export function MobileBookingPage() {
             onClick={handleNext}
             disabled={!canProceed}
             className={`w-full h-[48px] rounded-ds-2xl ds-body-large transition-colors ${
-              canProceed
-                ? "bg-ds-interactive text-ds-text-inverse"
-                : "bg-ds-bg-secondary text-ds-text-disabled"
+              canProceed ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
             }`}
           >
             {step === 2 && !selectedProfessional ? "Skip — Any Professional" : "Continue"}
@@ -415,18 +365,14 @@ export function MobileBookingPage() {
             onClick={handleConfirm}
             disabled={!canProceed || createBooking.isPending}
             className={`w-full h-[48px] rounded-ds-2xl ds-body-large transition-colors ${
-              canProceed && !createBooking.isPending
-                ? "bg-ds-interactive text-ds-text-inverse"
-                : "bg-ds-bg-secondary text-ds-text-disabled"
+              canProceed && !createBooking.isPending ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
             }`}
           >
             {createBooking.isPending ? "Booking..." : "Confirm Booking"}
           </button>
         )}
         {createBooking.isError && (
-          <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">
-            Booking failed. Please try again.
-          </p>
+          <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">Booking failed. Please try again.</p>
         )}
       </div>
     </div>
