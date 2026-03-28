@@ -24,7 +24,7 @@ function toggleSaved(id: number): number[] {
   return next;
 }
 
-const DEFAULT_CENTER = { lat: 40.7128, lng: -74.006 };
+const DEFAULT_CENTER = { lat: 51.5074, lng: -0.1278 };
 const MAP_CONTAINER = { width: "100%", height: "100%" };
 
 export function MapPage() {
