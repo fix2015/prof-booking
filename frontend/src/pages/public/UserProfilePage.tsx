@@ -137,7 +137,7 @@ export function UserProfilePage() {
                 : t("profile.no_bookings")
               : undefined
           }
-          onClick={() => navigate("/sessions")}
+          onClick={() => isAuthenticated ? navigate("/sessions") : undefined}
         />
         {isAuthenticated && (
           <MenuRow
@@ -198,6 +198,42 @@ export function UserProfilePage() {
             label={t("profile.sign_out")}
             onClick={() => logout.mutate(undefined, { onSuccess: () => navigate("/") })}
           />
+        </div>
+      )}
+
+      {/* Guest bookings list */}
+      {!isAuthenticated && guestBookings.length > 0 && (
+        <div className="mt-ds-3">
+          <p className="ds-label text-ds-text-secondary px-ds-4 pb-ds-2">{t("profile.my_bookings")}</p>
+          <div className="flex flex-col gap-ds-2">
+            {guestBookings.map((b) => (
+              <div
+                key={b.confirmation_code}
+                className="bg-ds-bg-primary border border-ds-border rounded-ds-xl mx-ds-4 p-ds-3 flex flex-col gap-[6px]"
+              >
+                <div className="flex items-start justify-between gap-ds-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="ds-body-strong text-ds-text-primary truncate">{b.service_name ?? "Booking"}</p>
+                    <p className="ds-caption text-ds-text-secondary truncate">{b.provider_name}</p>
+                  </div>
+                  <span className="ds-caption text-ds-text-muted shrink-0">
+                    {new Date(b.starts_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {" · "}
+                    {new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+                {b.professional_name && (
+                  <p className="ds-caption text-ds-text-secondary">{b.professional_name}</p>
+                )}
+                <div className="flex items-center justify-between pt-[2px]">
+                  <span className="ds-caption text-ds-text-muted">#{b.confirmation_code}</span>
+                  {b.price != null && (
+                    <span className="ds-body-strong text-ds-text-primary">${b.price}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
