@@ -4,6 +4,7 @@ import { usePublicProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
+import { SearchBar } from "@/components/mobile/SearchBar";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
@@ -73,29 +74,7 @@ export function SalonSelectorPage() {
         <h1 className="ds-h1 text-ds-text-primary mb-ds-3">Find any service nearby</h1>
 
         {/* Search pill */}
-        <div className="flex items-center bg-ds-bg-secondary rounded-ds-full border border-ds-border px-ds-3 h-[48px] gap-ds-2">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 text-ds-interactive">
-            <circle cx="7" cy="7" r="2" fill="currentColor" />
-            <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2" />
-          </svg>
-          <input
-            className="flex-1 bg-transparent outline-none ds-body text-ds-text-primary placeholder:text-ds-text-disabled"
-            placeholder="Search providers, services..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {search ? (
-            <button onClick={() => setSearch("")} className="text-ds-text-secondary">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          ) : (
-            <Button variant="default" size="sm" className="h-[32px] rounded-ds-full px-ds-3">
-              Search
-            </Button>
-          )}
-        </div>
+        <SearchBar value={search} onChange={setSearch} />
 
         {/* Filter bar */}
         <div className="flex items-center gap-ds-2 mt-ds-3 overflow-x-auto scrollbar-none pb-[2px]">
