@@ -120,6 +120,69 @@ def copy_period_schedule(db: Session, professional_id: int, data: PeriodCopy) ->
     return created
 
 
+def get_available_dates(
+    db: Session,
+    provider_id: int,
+    date_from: date,
+    date_to: date,
+    duration_minutes: int = 60,
+    professional_id: Optional[int] = None,
+) -> List[date]:
+    """Return dates in [date_from, date_to] that have at least one bookable slot."""
+    slot_query = db.query(WorkSlot).filter(
+        WorkSlot.provider_id == provider_id,
+        WorkSlot.slot_date >= date_from,
+        WorkSlot.slot_date <= date_to,
+        WorkSlot.is_available == True,  # noqa: E712
+    )
+    if professional_id:
+        slot_query = slot_query.filter(WorkSlot.professional_id == professional_id)
+
+    work_slots = slot_query.all()
+    if not work_slots:
+        return []
+
+    prof_ids = list({ws.professional_id for ws in work_slots})
+    period_start = datetime.combine(date_from, time.min)
+    period_end = datetime.combine(date_to, time(23, 59, 59))
+
+    bookings = (
+        db.query(BookingSession)
+        .filter(
+            BookingSession.professional_id.in_(prof_ids),
+            BookingSession.starts_at >= period_start,
+            BookingSession.starts_at <= period_end,
+            BookingSession.status.notin_([SessionStatus.CANCELLED, SessionStatus.NO_SHOW]),
+        )
+        .all()
+    )
+
+    booked_by_prof_date: dict = {}
+    for b in bookings:
+        key = (b.professional_id, b.starts_at.date())
+        booked_by_prof_date.setdefault(key, []).append((b.starts_at.time(), b.ends_at.time()))
+
+    available_dates: set = set()
+    duration = timedelta(minutes=duration_minutes)
+
+    for ws in work_slots:
+        if ws.slot_date in available_dates:
+            continue
+        booked = booked_by_prof_date.get((ws.professional_id, ws.slot_date), [])
+        slot_start = datetime.combine(ws.slot_date, ws.start_time)
+        slot_end = datetime.combine(ws.slot_date, ws.end_time)
+        current = slot_start
+        while current + duration <= slot_end:
+            cs = current.time()
+            ce = (current + duration).time()
+            if not any(bs < ce and be > cs for (bs, be) in booked):
+                available_dates.add(ws.slot_date)
+                break
+            current += timedelta(minutes=30)
+
+    return sorted(available_dates)
+
+
 def get_available_slots(
     db: Session,
     provider_id: int,

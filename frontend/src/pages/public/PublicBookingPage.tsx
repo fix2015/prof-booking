@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
 import { useProviderProfessionalsPublic } from "@/hooks/useMaster";
-import { useAvailability, useCreateBooking } from "@/hooks/useBooking";
+import { useAvailability, useAvailableDates, useCreateBooking } from "@/hooks/useBooking";
 import { servicesApi } from "@/api/services";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
@@ -61,6 +61,18 @@ export function PublicBookingPage() {
   const today = new Date();
   const [calMonth, setCalMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const calDays = getDaysInMonth(calMonth.year, calMonth.month);
+
+  // First and last day of visible month for available-dates query
+  const calDateFrom = formatDate(new Date(calMonth.year, calMonth.month, 1));
+  const calDateTo = formatDate(new Date(calMonth.year, calMonth.month + 1, 0));
+  const { data: availableDates = [] } = useAvailableDates(
+    id,
+    calDateFrom,
+    calDateTo,
+    selectedService?.duration_minutes ?? 60,
+    selectedProfessional?.id
+  );
+  const availableDateSet = new Set(availableDates);
 
   const { data: slots = [] } = useAvailability(
     id,
@@ -257,14 +269,16 @@ export function PublicBookingPage() {
               {calDays.map((day) => {
                 const dateStr = formatDate(day);
                 const isPast = day < new Date(formatDate(today));
+                const hasSlots = availableDateSet.has(dateStr);
+                const isDisabled = isPast || !hasSlots;
                 const isSelected = dateStr === selectedDate;
                 return (
                   <button
                     key={dateStr}
-                    disabled={isPast}
+                    disabled={isDisabled}
                     onClick={() => setSelectedDate(dateStr)}
                     className={`h-[36px] rounded-ds-md ds-body-small transition-colors ${
-                      isPast ? "text-ds-text-disabled cursor-not-allowed"
+                      isDisabled ? "text-ds-text-disabled cursor-not-allowed"
                       : isSelected ? "bg-ds-interactive text-ds-text-inverse"
                       : "text-ds-text-primary hover:bg-ds-bg-secondary"
                     }`}
