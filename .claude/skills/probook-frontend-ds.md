@@ -170,6 +170,62 @@ Or use the explicit DS aliases: `p-ds-4`, `gap-ds-6`, etc.
 
 ---
 
+## Translations (i18n) — MANDATORY for every string
+
+**File:** `frontend/src/i18n.ts` — custom solution, 5 locales: `en`, `pl`, `ro`, `uk`, `es`
+
+```tsx
+import { t, TranslationKey } from "@/i18n";
+
+// Simple string
+<h1 className="ds-h1">{t("providers.find_nearby")}</h1>
+
+// With interpolation
+<span>{t("providers.count", { count: filtered.length })}</span>
+
+// In an attribute
+<input placeholder={t("providers.search_placeholder")} />
+
+// Array of items with label keys — type as TranslationKey to avoid TS error
+const TABS: { value: string; labelKey: TranslationKey }[] = [
+  { value: "all", labelKey: "saved.tab.all" },
+];
+```
+
+### When implementing a Figma design — REQUIRED steps
+
+1. **Never write a raw string literal** for any user-visible text. Every label, heading, placeholder, button text, error message, empty state, toast, and aria-label must go through `t()`.
+2. **Check existing keys first** — grep `i18n.ts` for the string before creating a new key.
+3. **Add new keys to ALL 5 locales** (en, pl, ro, uk, es) in `i18n.ts`. Never add to just one locale.
+4. **Follow the key namespace** for the screen being implemented:
+   - `login.*`, `register.*`, `register.pro.*` — auth pages
+   - `providers.*` — provider discovery / detail
+   - `professionals.*` — professional discovery / detail
+   - `booking.*` — booking flow
+   - `map.*`, `saved.*`, `profile.*`, `reviews.*` — respective pages
+   - `common.*` — reusable across pages (loading, cancel, save, search, error…)
+5. **Interpolated values** use `{placeholder}` syntax in the value string: `"found {count} results"` → `t("key", { count: n })`.
+
+### ❌ Never do this
+
+```tsx
+<h1>Find any service nearby</h1>           // raw string
+<Button>Sign In</Button>                   // raw string
+<input placeholder="Search..." />         // raw string
+toast({ title: "Booking failed" })        // raw string
+```
+
+### ✅ Always do this
+
+```tsx
+<h1>{t("providers.find_nearby")}</h1>
+<Button>{t("providers.sign_in")}</Button>
+<input placeholder={t("providers.search_placeholder")} />
+toast({ title: t("booking.failed") })
+```
+
+---
+
 ## Pre-flight Checklist (before submitting any component)
 
 Before writing or reviewing any React component, check:
@@ -181,6 +237,8 @@ Before writing or reviewing any React component, check:
 - [ ] No `p-7`, `mt-9`, or other non-DS spacing steps → use DS steps only (1,2,3,4,5,6,8,10,12,14)
 - [ ] No `style={{ padding: '...px' }}` → use Tailwind spacing utilities
 - [ ] Dynamic color values come from `color.*` or `hex.*` in `design-system.ts`
+- [ ] **No hardcoded user-visible strings** → every string goes through `t()` from `@/i18n`
+- [ ] **New i18n keys added to all 5 locales** (en, pl, ro, uk, es)
 
 ---
 
