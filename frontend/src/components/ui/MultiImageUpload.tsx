@@ -39,10 +39,10 @@ export function MultiImageUpload({ photos, onAdd, onRemove }: MultiImageUploadPr
 
   return (
     <div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-ds-2">
         {/* Existing photos */}
         {photos.map((photo) => (
-          <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden group bg-gray-100">
+          <div key={photo.id} className="relative aspect-square rounded-ds-md overflow-hidden group bg-ds-bg-secondary">
             <img
               src={photo.image_url}
               alt="portfolio"
@@ -51,7 +51,7 @@ export function MultiImageUpload({ photos, onAdd, onRemove }: MultiImageUploadPr
             <button
               type="button"
               onClick={() => onRemove(photo.id)}
-              className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-ds-1 right-ds-1 bg-black/60 text-ds-text-inverse rounded-ds-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <X className="h-3 w-3" />
             </button>
@@ -62,7 +62,7 @@ export function MultiImageUpload({ photos, onAdd, onRemove }: MultiImageUploadPr
         {remaining > 0 && (
           <button
             type="button"
-            className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-gray-400 hover:text-gray-500 hover:bg-gray-50 transition-colors"
+            className="aspect-square rounded-ds-md border-2 border-dashed border-ds-border flex flex-col items-center justify-center gap-ds-1 text-ds-text-secondary hover:border-ds-border-strong hover:text-ds-text-primary hover:bg-ds-bg-secondary transition-colors"
             onClick={() => !loading && inputRef.current?.click()}
             disabled={loading}
           >
@@ -71,8 +71,8 @@ export function MultiImageUpload({ photos, onAdd, onRemove }: MultiImageUploadPr
             ) : (
               <>
                 <Plus className="h-5 w-5" />
-                <span className="text-[10px] font-medium">Add photos</span>
-                <span className="text-[10px] text-muted-foreground">{remaining} left</span>
+                <span className="ds-badge">Add photos</span>
+                <span className="ds-badge text-ds-text-secondary">{remaining} left</span>
               </>
             )}
           </button>

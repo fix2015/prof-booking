@@ -7,9 +7,9 @@ export function ThemeToggle() {
   return (
     <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
       {theme === "dark" ? (
-        <Sun className="h-5 w-5 text-muted-foreground" />
+        <Sun className="h-5 w-5 text-ds-text-secondary" />
       ) : (
-        <Moon className="h-5 w-5 text-muted-foreground" />
+        <Moon className="h-5 w-5 text-ds-text-secondary" />
       )}
     </Button>
   );

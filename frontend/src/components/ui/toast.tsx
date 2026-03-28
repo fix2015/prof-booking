@@ -11,7 +11,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitive.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-ds-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
       className
     )}
     {...props}
@@ -26,10 +26,10 @@ const Toast = React.forwardRef<
   <ToastPrimitive.Root
     ref={ref}
     className={cn(
-      "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all",
-      variant === "destructive" && "destructive border-destructive bg-destructive text-destructive-foreground",
-      variant === "success" && "border-green-500 bg-green-50 text-green-900",
-      variant === "default" && "border bg-background text-foreground",
+      "group pointer-events-auto relative flex w-full items-center justify-between space-x-ds-4 overflow-hidden rounded-ds-md border p-ds-6 pr-ds-8 shadow-lg transition-all",
+      variant === "destructive" && "border-ds-feedback-error bg-ds-feedback-error text-ds-text-inverse",
+      variant === "success" && "border-ds-feedback-success bg-ds-feedback-success-bg text-ds-feedback-success",
+      variant === "default" && "border-ds-border bg-ds-bg-primary text-ds-text-primary",
       className
     )}
     {...props}
@@ -41,7 +41,7 @@ const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Title>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitive.Title ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
+  <ToastPrimitive.Title ref={ref} className={cn("ds-body-strong", className)} {...props} />
 ));
 ToastTitle.displayName = ToastPrimitive.Title.displayName;
 
@@ -49,7 +49,7 @@ const ToastDescription = React.forwardRef<
   React.ElementRef<typeof ToastPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <ToastPrimitive.Description ref={ref} className={cn("text-sm opacity-90", className)} {...props} />
+  <ToastPrimitive.Description ref={ref} className={cn("ds-body opacity-90", className)} {...props} />
 ));
 ToastDescription.displayName = ToastPrimitive.Description.displayName;
 
@@ -59,7 +59,7 @@ const ToastClose = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitive.Close
     ref={ref}
-    className={cn("absolute right-2 top-2 rounded-md p-1 text-foreground/50 hover:text-foreground", className)}
+    className={cn("absolute right-ds-2 top-ds-2 rounded-ds-xs p-ds-1 text-ds-text-secondary hover:text-ds-text-primary", className)}
     {...props}
   >
     <X className="h-4 w-4" />
