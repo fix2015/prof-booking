@@ -10,14 +10,11 @@ import { MasterDashboardPage } from "@/pages/MasterDashboardPage";
 import { OwnerDashboardPage } from "@/pages/OwnerDashboardPage";
 import { CalendarPage } from "@/pages/CalendarPage";
 import { ReportsPage } from "@/pages/ReportsPage";
-import { PublicBookingPage } from "@/pages/PublicBookingPage";
 import { AdminPanelPage } from "@/pages/AdminPanelPage";
 import { ServicesPage } from "@/pages/ServicesPage";
 import { MastersPage } from "@/pages/MastersPage";
 import { SessionsPage } from "@/pages/SessionsPage";
-import { SalonSelectorPage } from "@/pages/SalonSelectorPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
-import { MasterProfilePage } from "@/pages/MasterProfilePage";
 import { MasterDiscoveryPage } from "@/pages/MasterDiscoveryPage";
 import { FindProvidersPage } from "@/pages/FindProvidersPage";
 import { FindProfessionalsPage } from "@/pages/FindProfessionalsPage";
@@ -28,9 +25,17 @@ import { InvoicesPage } from "@/pages/InvoicesPage";
 import { MasterProfileEditPage } from "@/pages/MasterProfileEditPage";
 import { SalonProfileEditPage } from "@/pages/SalonProfileEditPage";
 import { ProfessionalSplitPage } from "@/pages/ProfessionalSplitPage";
-import { ProviderProfilePage } from "@/pages/ProviderProfilePage";
 import { ClientsPage } from "@/pages/ClientsPage";
 import { ClientDetailPage } from "@/pages/ClientDetailPage";
+// Mobile pages
+import { MobileLayout } from "@/pages/mobile/MobileLayout";
+import { DiscoveryPage } from "@/pages/mobile/DiscoveryPage";
+import { MapPage } from "@/pages/mobile/MapPage";
+import { SavedPage } from "@/pages/mobile/SavedPage";
+import { MobileUserProfilePage } from "@/pages/mobile/MobileUserProfilePage";
+import { MobileProviderDetail } from "@/pages/mobile/MobileProviderDetail";
+import { MobileProfessionalDetail } from "@/pages/mobile/MobileProfessionalDetail";
+import { MobileBookingPage } from "@/pages/mobile/MobileBookingPage";
 
 function DashboardRouter() {
   const { role } = useAuthContext();
@@ -48,17 +53,27 @@ function AppRoutes() {
       <Route path="/register/professional" element={<MasterRegisterPage />} />
       {/* Backward-compat: keep old /register/master route */}
       <Route path="/register/master" element={<MasterRegisterPage />} />
-      <Route path="/book" element={<PublicBookingPage />} />
-      <Route path="/book/:providerId" element={<PublicBookingPage />} />
-      <Route path="/" element={<SalonSelectorPage />} />
+
+      {/* Mobile public routes — tab layout */}
+      <Route element={<MobileLayout />}>
+        <Route path="/" element={<DiscoveryPage />} />
+        <Route path="/map" element={<MapPage />} />
+        <Route path="/saved" element={<SavedPage />} />
+        <Route path="/me" element={<MobileUserProfilePage />} />
+      </Route>
+
+      {/* Mobile detail + booking routes (no tab bar) */}
+      <Route path="/providers/:providerId" element={<MobileProviderDetail />} />
+      <Route path="/professionals/:professionalId" element={<MobileProfessionalDetail />} />
+      <Route path="/book/:providerId" element={<MobileBookingPage />} />
+      <Route path="/book" element={<MobileBookingPage />} />
+
       {/* Backward-compat: old routes */}
       <Route path="/providers" element={<Navigate to="/" replace />} />
       <Route path="/salons" element={<Navigate to="/" replace />} />
-      <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
       <Route path="/professionals/:professionalId/split" element={<ProfessionalSplitPage />} />
-      <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
       {/* Backward-compat: old /masters/:masterId route */}
-      <Route path="/masters/:masterId" element={<MasterProfilePage />} />
+      <Route path="/masters/:masterId" element={<MobileProfessionalDetail />} />
       <Route path="/discover" element={<MasterDiscoveryPage />} />
       <Route path="/find-providers" element={<FindProvidersPage />} />
       <Route path="/find-professionals" element={<FindProfessionalsPage />} />
