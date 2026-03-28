@@ -99,6 +99,31 @@ def search_providers(
     return query.offset(skip).limit(limit).all()
 
 
+@router.get("/categories", response_model=List[str])
+def get_provider_categories(db: Session = Depends(get_db)):
+    """Public: return distinct non-empty categories from active providers."""
+    from sqlalchemy import func
+    from app.modules.salons.models import Provider as ProviderModel
+    rows = (
+        db.query(ProviderModel.category)
+        .filter(
+            ProviderModel.is_active == True,  # noqa: E712
+            ProviderModel.category.isnot(None),
+            ProviderModel.category != "",
+        )
+        .order_by(func.lower(ProviderModel.category))
+        .all()
+    )
+    seen: set = set()
+    result: list = []
+    for (cat,) in rows:
+        key = cat.lower()
+        if key not in seen:
+            seen.add(key)
+            result.append(cat)
+    return result
+
+
 @router.get("/public", response_model=List[ProviderPublic])
 def get_public_providers(
     skip: int = Query(0, ge=0),

@@ -21,6 +21,9 @@ export const providersApi = {
   create: (data: Partial<Provider>) =>
     apiClient.post<Provider>("/providers/", data).then((r) => r.data),
 
+  getCategories: () =>
+    apiClient.get<string[]>("/providers/categories").then((r) => r.data),
+
   search: (params: {
     q?: string;
     address?: string;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSearchProviders } from "@/hooks/useSalon";
+import { useSearchProviders, useProviderCategories } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
@@ -9,7 +9,7 @@ import { FilterBar } from "@/components/mobile/FilterBar";
 import { FilterSheet, FilterValues } from "@/components/mobile/FilterSheet";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
-import { t, TranslationKey } from "@/i18n";
+import { t } from "@/i18n";
 
 const SAVED_KEY = "pb_saved";
 
@@ -28,17 +28,6 @@ function toggleSaved(id: number): number[] {
   return next;
 }
 
-// value = English key used for filter matching; labelKey = i18n key for display
-const CATEGORIES: { value: string; labelKey: TranslationKey }[] = [
-  { value: "All",         labelKey: "providers.category.all" },
-  { value: "Beauty",      labelKey: "providers.category.beauty" },
-  { value: "Nails",       labelKey: "providers.category.nails" },
-  { value: "Hair",        labelKey: "providers.category.hair" },
-  { value: "Massage",     labelKey: "providers.category.massage" },
-  { value: "Cleaning",    labelKey: "providers.category.cleaning" },
-  { value: "Auto Repair", labelKey: "providers.category.auto_repair" },
-];
-
 export function SalonSelectorPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -53,6 +42,8 @@ export function SalonSelectorPage() {
     nationality: "",
     minExperience: 0,
   });
+
+  const { data: categories = [] } = useProviderCategories();
 
   const { data: providers = [], isLoading } = useSearchProviders({
     q: search || undefined,
@@ -127,20 +118,20 @@ export function SalonSelectorPage() {
 
       {/* Category chips */}
       <div className="flex gap-ds-2 px-ds-4 py-ds-3 overflow-x-auto scrollbar-none bg-ds-bg-primary border-b border-ds-border">
-        {CATEGORIES.map((cat) => (
+        <CategoryChip
+          key="All"
+          label={t("providers.category.all")}
+          active={activeCategory === "All"}
+          onClick={() => setActiveCategory("All")}
+        />
+        {categories.map((cat) => (
           <CategoryChip
-            key={cat.value}
-            label={t(cat.labelKey)}
-            active={activeCategory === cat.value}
-            onClick={() => setActiveCategory(cat.value)}
+            key={cat}
+            label={cat}
+            active={activeCategory === cat}
+            onClick={() => setActiveCategory(cat)}
           />
         ))}
-        <button
-          type="button"
-          className="shrink-0 h-[32px] px-ds-3 rounded-ds-full border border-dashed border-ds-border ds-badge text-ds-text-secondary whitespace-nowrap"
-        >
-          {t("providers.more_categories")}
-        </button>
       </div>
 
       {/* Results header */}
