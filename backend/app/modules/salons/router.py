@@ -71,7 +71,15 @@ def search_providers(
         )
         query = query.filter(Provider.id.in_(provider_ids_with_slots))
     if category:
-        query = query.filter(Provider.category.ilike(category))
+        from app.modules.services.models import Service, service_providers
+        provider_ids_cat = (
+            db.query(service_providers.c.provider_id)
+            .join(Service, Service.id == service_providers.c.service_id)
+            .filter(Service.name.ilike(f"%{category}%"), Service.is_active == True)  # noqa: E712
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(Provider.id.in_(provider_ids_cat))
     if min_price is not None:
         query = query.filter(Provider.worker_payment_amount >= min_price)
     if max_price is not None:
@@ -114,26 +122,22 @@ def search_providers(
 
 @router.get("/categories", response_model=List[str])
 def get_provider_categories(db: Session = Depends(get_db)):
-    """Public: return distinct non-empty categories from active providers."""
+    """Public: return distinct active service names across all providers."""
     from sqlalchemy import func
-    from app.modules.salons.models import Provider as ProviderModel
+    from app.modules.services.models import Service
     rows = (
-        db.query(ProviderModel.category)
-        .filter(
-            ProviderModel.is_active == True,  # noqa: E712
-            ProviderModel.category.isnot(None),
-            ProviderModel.category != "",
-        )
-        .order_by(func.lower(ProviderModel.category))
+        db.query(Service.name)
+        .filter(Service.is_active == True)  # noqa: E712
+        .order_by(func.lower(Service.name))
         .all()
     )
     seen: set = set()
     result: list = []
-    for (cat,) in rows:
-        key = cat.lower()
+    for (name,) in rows:
+        key = name.lower()
         if key not in seen:
             seen.add(key)
-            result.append(cat)
+            result.append(name)
     return result
 
 
