@@ -99,7 +99,8 @@ export function PublicBookingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  const canProceed = form.name.trim().length > 0 && form.phone.trim().length > 0;
+  const phoneValid = /^\+?[\d\s\-().]{6,20}$/.test(form.phone.trim());
+  const canProceed = form.name.trim().length > 0 && phoneValid;
 
   function handleBack() {
     if (step > 1) setStep((step - 1) as Step);
@@ -361,13 +362,20 @@ export function PublicBookingPage() {
               )}
             </div>
             <div className="flex flex-col gap-ds-3">
-              {(["name", "phone", "email", "notes"] as const).map((key) => {
-                const fieldLabels = { name: t("booking.field.full_name"), phone: t("booking.field.phone"), email: t("booking.field.email"), notes: t("booking.field.notes") };
-                const fieldPlaceholders = { name: "Jane Smith", phone: "+1 (555) 000-0000", email: "jane@example.com", notes: "Any special requests..." };
-                const fieldTypes = { name: "text", phone: "tel", email: "email", notes: "text" };
+              {(["phone", "name", "email", "notes"] as const).map((key) => {
+                const required = key === "phone" || key === "name";
+                const fieldLabels = {
+                  phone: t("booking.field.phone"),
+                  name: `${t("booking.field.full_name")} *`,
+                  email: t("booking.field.email"),
+                  notes: t("booking.field.notes"),
+                };
+                const fieldPlaceholders = { phone: "+1 (555) 000-0000", name: "Jane Smith", email: "jane@example.com", notes: "Any special requests..." };
+                const fieldTypes = { phone: "tel", name: "text", email: "email", notes: "text" };
+                const isPhoneError = key === "phone" && form.phone.trim().length > 0 && !phoneValid;
                 return (
                   <div key={key}>
-                    <label className="ds-label text-ds-text-secondary block mb-ds-1">
+                    <label className="block mb-ds-1 text-[13px] font-semibold leading-[18px] text-ds-text-secondary">
                       {fieldLabels[key]}
                     </label>
                     <input
@@ -375,8 +383,14 @@ export function PublicBookingPage() {
                       placeholder={fieldPlaceholders[key]}
                       value={form[key]}
                       onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                      className="w-full h-[44px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive"
+                      required={required}
+                      className={`w-full h-[48px] px-ds-3 bg-ds-bg-primary border rounded-ds-lg ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive ${
+                        isPhoneError ? "border-ds-feedback-saved" : "border-ds-border"
+                      }`}
                     />
+                    {isPhoneError && (
+                      <p className="ds-caption text-ds-feedback-saved mt-[4px]">{t("booking.field.phone_invalid")}</p>
+                    )}
                   </div>
                 );
               })}
