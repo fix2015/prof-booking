@@ -257,6 +257,7 @@ const translations = {
     "login.create_account_cta": "Create account",
     "login.guest_link": "Continue without account",
     "login.for_business": "Business or professional?",
+    "login.already_account": "Already have an account? Sign in",
 
     // Register page extras
     "register.description": "Create your provider owner account",
@@ -686,6 +687,7 @@ const translations = {
     "login.create_account_cta": "Utwórz konto",
     "login.guest_link": "Kontynuuj bez konta",
     "login.for_business": "Biznes lub profesjonalista?",
+    "login.already_account": "Masz już konto? Zaloguj się",
 
     // Register page extras
     "register.description": "Utwórz konto właściciela dostawcy",
@@ -1115,6 +1117,7 @@ const translations = {
     "login.create_account_cta": "Creează cont",
     "login.guest_link": "Continuă fără cont",
     "login.for_business": "Afacere sau profesionist?",
+    "login.already_account": "Ai deja un cont? Autentifică-te",
 
     // Register page extras
     "register.description": "Creează contul tău de proprietar de furnizor",
@@ -1544,6 +1547,7 @@ const translations = {
     "login.create_account_cta": "Створити акаунт",
     "login.guest_link": "Продовжити без акаунту",
     "login.for_business": "Бізнес або спеціаліст?",
+    "login.already_account": "Вже маєте акаунт? Увійти",
 
     // Register page extras
     "register.description": "Створіть акаунт власника провайдера",
@@ -1973,6 +1977,7 @@ const translations = {
     "login.create_account_cta": "Crear cuenta",
     "login.guest_link": "Continuar sin cuenta",
     "login.for_business": "¿Negocio o profesional?",
+    "login.already_account": "¿Ya tienes cuenta? Inicia sesión",
 
     // Register page extras
     "register.description": "Crea tu cuenta de propietario de proveedor",

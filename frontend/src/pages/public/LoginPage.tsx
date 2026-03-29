@@ -1,30 +1,84 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
-import { useLogin, useRegisterClient } from "@/hooks/useAuth";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { X } from "lucide-react";
+import { useLogin, useRegisterClient, useRegisterOwner, useRegisterProfessional } from "@/hooks/useAuth";
 import { useAuthContext } from "@/context/AuthContext";
 import { useGuestSession } from "@/hooks/useGuestSession";
+import { providersApi } from "@/api/salons";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { t } from "@/i18n";
 
-type Tab = "signin" | "register";
+type Tab = "signin" | "client" | "business" | "pro";
+
+const TABS: { value: Tab; label: string }[] = [
+  { value: "signin", label: "Sign in" },
+  { value: "client", label: "Client" },
+  { value: "business", label: "Business" },
+  { value: "pro", label: "Pro" },
+];
+
+const SUBTITLE: Record<Tab, string> = {
+  signin: "Sign in to your account",
+  client: "Create your account",
+  business: "Create your business account",
+  pro: "Join as a professional",
+};
+
+const HEADER_TITLE: Record<Tab, string> = {
+  signin: "Sign in",
+  client: "Create account",
+  business: "Register business",
+  pro: "Join as professional",
+};
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuthContext();
   const { guestProfile, clearGuestSession } = useGuestSession();
 
   const login = useLogin();
   const registerClient = useRegisterClient();
+  const registerOwner = useRegisterOwner();
+  const registerPro = useRegisterProfessional();
 
-  const [tab, setTab] = useState<Tab>("signin");
+  const initialTab = (searchParams.get("tab") as Tab | null) ?? "signin";
+  const inviteToken = searchParams.get("invite") ?? undefined;
+
+  const [tab, setTab] = useState<Tab>(TABS.some((t) => t.value === initialTab) ? initialTab : "signin");
 
   const [signInForm, setSignInForm] = useState({ email: "", password: "" });
-  const [registerForm, setRegisterForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [clientForm, setClientForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [bizForm, setBizForm] = useState({ email: "", phone: "", password: "", provider_name: "", provider_address: "", worker_payment_amount: "" });
+  const [proForm, setProForm] = useState({ name: "", email: "", phone: "", instagram: "", password: "" });
 
-  // Prefill register form from guest session
+  // Provider search for pro tab
+  const [selectedProviderIds, setSelectedProviderIds] = useState<number[]>([]);
+  const [providerSearch, setProviderSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const comboRef = useRef<HTMLDivElement>(null);
+
+  const { data: providers = [] } = useQuery({
+    queryKey: ["providers", "public"],
+    queryFn: () => providersApi.listPublic(),
+    enabled: tab === "pro",
+  });
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (comboRef.current && !comboRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Prefill client form from guest session
   useEffect(() => {
     if (guestProfile) {
-      setRegisterForm((f) => ({
+      setClientForm((f) => ({
         ...f,
         name: guestProfile.name || f.name,
         email: guestProfile.email || f.email,
@@ -36,12 +90,14 @@ export function LoginPage() {
 
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
+  const inputCls =
+    "w-full h-[48px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-lg ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive";
+  const labelCls = "block mb-ds-1 text-[13px] font-semibold leading-[18px] text-ds-text-secondary";
+
   const canSignIn = signInForm.email.trim() && signInForm.password.trim();
-  const canRegister =
-    registerForm.name.trim() &&
-    registerForm.email.trim() &&
-    registerForm.phone.trim() &&
-    registerForm.password.trim().length >= 6;
+  const canClient = clientForm.name.trim() && clientForm.email.trim() && clientForm.phone.trim() && clientForm.password.length >= 6;
+  const canBiz = bizForm.email.trim() && bizForm.phone.trim() && bizForm.password.length >= 8 && bizForm.provider_name.trim() && bizForm.provider_address.trim();
+  const canPro = proForm.name.trim() && proForm.email.trim() && proForm.phone.trim() && proForm.password.length >= 8;
 
   function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -49,60 +105,87 @@ export function LoginPage() {
     login.mutate({ email: signInForm.email, password: signInForm.password });
   }
 
-  function handleRegister(e: React.FormEvent) {
+  function handleClient(e: React.FormEvent) {
     e.preventDefault();
-    if (!canRegister) return;
+    if (!canClient) return;
     registerClient.mutate(
-      {
-        email: registerForm.email,
-        phone: registerForm.phone,
-        password: registerForm.password,
-        name: registerForm.name,
-      },
-      {
-        onSuccess: () => {
-          clearGuestSession();
-          navigate("/me");
-        },
-      }
+      { email: clientForm.email, phone: clientForm.phone, password: clientForm.password, name: clientForm.name },
+      { onSuccess: () => { clearGuestSession(); navigate("/me"); } }
     );
   }
 
-  const inputCls =
-    "w-full h-[44px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-xl ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive";
-  const labelCls = "ds-label text-ds-text-secondary block mb-ds-1";
+  function handleBiz(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canBiz) return;
+    registerOwner.mutate(
+      {
+        email: bizForm.email,
+        phone: bizForm.phone,
+        password: bizForm.password,
+        provider_name: bizForm.provider_name,
+        provider_address: bizForm.provider_address,
+        worker_payment_amount: Number(bizForm.worker_payment_amount) || 0,
+      },
+      { onSuccess: () => navigate("/dashboard") }
+    );
+  }
+
+  function handlePro(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canPro) return;
+    registerPro.mutate(
+      {
+        email: proForm.email,
+        name: proForm.name,
+        phone: proForm.phone,
+        password: proForm.password,
+        social_links: proForm.instagram ? { instagram: proForm.instagram } : undefined,
+        invite_token: inviteToken,
+        provider_ids: inviteToken ? undefined : (selectedProviderIds.length > 0 ? selectedProviderIds : undefined),
+      },
+      { onSuccess: () => navigate("/dashboard") }
+    );
+  }
+
+  const addProvider = (id: number) => {
+    if (!selectedProviderIds.includes(id)) setSelectedProviderIds((prev) => [...prev, id]);
+    setProviderSearch("");
+    setDropdownOpen(false);
+  };
+  const removeProvider = (id: number) => setSelectedProviderIds((prev) => prev.filter((s) => s !== id));
+  const filteredProviders = providers.filter(
+    (s) =>
+      !selectedProviderIds.includes(s.id) &&
+      (!providerSearch.trim() ||
+        s.name.toLowerCase().includes(providerSearch.toLowerCase()) ||
+        (s.address ?? "").toLowerCase().includes(providerSearch.toLowerCase()))
+  );
 
   return (
     <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
-      <AppHeader variant="back-title" title="" onBack={() => navigate(-1)} />
+      <AppHeader variant="back-title" title={HEADER_TITLE[tab]} onBack={() => navigate(-1)} />
 
       {/* Brand area */}
       <div className="bg-ds-bg-primary border-b border-ds-border flex flex-col items-center gap-[8px] pt-7 pb-6">
-        <div className="size-[56px] rounded-[10px] bg-ds-avatar-navy flex items-center justify-center">
-          <span className="text-[20px] font-bold text-ds-text-inverse leading-none">PB</span>
-        </div>
         <p className="text-[20px] font-semibold text-ds-text-primary leading-tight">ProBook</p>
-        <p className="ds-body text-ds-text-secondary">
-          {tab === "signin" ? t("login.sign_in") : t("login.tab_create")}
-        </p>
+        <p className="ds-body text-ds-text-secondary">{SUBTITLE[tab]}</p>
       </div>
 
-      {/* Segment tabs */}
+      {/* 4-tab bar */}
       <div className="bg-ds-bg-primary border-b border-ds-border flex">
-        {(["signin", "register"] as Tab[]).map((value) => {
-          const label = value === "signin" ? t("login.tab_signin") : t("login.tab_create");
+        {TABS.map(({ value, label }) => {
           const isActive = tab === value;
           return (
             <button
               key={value}
               onClick={() => setTab(value)}
-              className={`flex-1 h-[44px] ds-body-strong transition-colors relative ${
-                isActive ? "text-ds-text-primary" : "text-ds-text-secondary"
+              className={`flex-1 h-[44px] ds-body-small transition-colors relative ${
+                isActive ? "font-semibold text-ds-text-primary" : "text-ds-text-secondary"
               }`}
             >
               {label}
               {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ds-interactive rounded-t-ds-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-ds-interactive" />
               )}
             </button>
           );
@@ -111,104 +194,183 @@ export function LoginPage() {
 
       {/* Forms */}
       <div className="flex-1 flex flex-col">
-        {tab === "signin" ? (
-          <form onSubmit={handleSignIn} className="flex-1 flex flex-col">
+        {/* Sign in */}
+        {tab === "signin" && (
+          <form onSubmit={handleSignIn}>
             <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
               {login.isError && (
                 <p className="ds-caption text-ds-feedback-saved text-center">{t("login.invalid_credentials")}</p>
               )}
               <div>
                 <label className={labelCls}>{t("login.email")}</label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={signInForm.email}
-                  onChange={(e) => setSignInForm((f) => ({ ...f, email: e.target.value }))}
-                  className={inputCls}
-                />
+                <input type="email" placeholder="you@example.com" value={signInForm.email}
+                  onChange={(e) => setSignInForm((f) => ({ ...f, email: e.target.value }))} className={inputCls} />
               </div>
               <div>
                 <label className={labelCls}>{t("login.password")}</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={signInForm.password}
-                  onChange={(e) => setSignInForm((f) => ({ ...f, password: e.target.value }))}
-                  className={inputCls}
-                />
+                <input type="password" placeholder="••••••••" value={signInForm.password}
+                  onChange={(e) => setSignInForm((f) => ({ ...f, password: e.target.value }))} className={inputCls} />
               </div>
-              <button
-                type="submit"
-                disabled={!canSignIn || login.isPending}
-                className={`w-full h-[48px] rounded-ds-2xl ds-body-strong transition-colors ${
-                  canSignIn && !login.isPending
-                    ? "bg-ds-interactive text-ds-text-inverse"
-                    : "bg-ds-bg-secondary text-ds-text-disabled"
-                }`}
-              >
-                {login.isPending ? "Signing in…" : t("login.tab_signin")}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleRegister} className="flex-1 flex flex-col">
-            <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
-              {registerClient.isError && (
-                <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>
-              )}
-              {(
-                [
-                  { key: "name" as const, label: t("login.full_name"), type: "text", placeholder: "Jane Smith" },
-                  { key: "email" as const, label: t("login.email"), type: "email", placeholder: "you@example.com" },
-                  { key: "phone" as const, label: t("login.phone"), type: "tel", placeholder: "+1 (555) 000-0000" },
-                  { key: "password" as const, label: t("login.password"), type: "password", placeholder: t("login.password_hint") },
-                ]
-              ).map(({ key, label, type, placeholder }) => (
-                <div key={key}>
-                  <label className={labelCls}>{label}</label>
-                  <input
-                    type={type}
-                    placeholder={placeholder}
-                    value={registerForm[key]}
-                    onChange={(e) => setRegisterForm((f) => ({ ...f, [key]: e.target.value }))}
-                    className={inputCls}
-                  />
-                </div>
-              ))}
-              <button
-                type="submit"
-                disabled={!canRegister || registerClient.isPending}
-                className={`w-full h-[48px] rounded-ds-2xl ds-body-strong transition-colors ${
-                  canRegister && !registerClient.isPending
-                    ? "bg-ds-interactive text-ds-text-inverse"
-                    : "bg-ds-bg-secondary text-ds-text-disabled"
-                }`}
-              >
-                {registerClient.isPending ? "Creating account…" : t("login.create_account_cta")}
-              </button>
+              <CtaButton disabled={!canSignIn || login.isPending} pending={login.isPending} label={t("login.tab_signin")} />
             </div>
           </form>
         )}
 
-        {/* Footer links */}
-        <div className="flex flex-col items-center gap-ds-3 px-ds-4 py-ds-6">
-          <button
-            onClick={() => navigate("/")}
-            className="ds-body-small text-ds-interactive"
-          >
-            {t("login.guest_link")}
-          </button>
-          <div className="flex items-center gap-[6px]">
-            <span className="ds-caption text-ds-text-muted">{t("login.for_business")}</span>
-            <button
-              onClick={() => navigate("/register")}
-              className="ds-caption text-ds-interactive"
-            >
-              {t("login.register_business")}
+        {/* Client register */}
+        {tab === "client" && (
+          <form onSubmit={handleClient}>
+            <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
+              {registerClient.isError && <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>}
+              {([
+                { key: "name" as const, label: t("login.full_name"), type: "text", ph: "Jane Smith" },
+                { key: "email" as const, label: t("login.email"), type: "email", ph: "you@example.com" },
+                { key: "phone" as const, label: t("login.phone"), type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "password" as const, label: t("login.password"), type: "password", ph: t("login.password_hint") },
+              ]).map(({ key, label, type, ph }) => (
+                <div key={key}>
+                  <label className={labelCls}>{label}</label>
+                  <input type={type} placeholder={ph} value={clientForm[key]}
+                    onChange={(e) => setClientForm((f) => ({ ...f, [key]: e.target.value }))} className={inputCls} />
+                </div>
+              ))}
+              <CtaButton disabled={!canClient || registerClient.isPending} pending={registerClient.isPending} label={t("login.create_account_cta")} />
+            </div>
+          </form>
+        )}
+
+        {/* Business register */}
+        {tab === "business" && (
+          <form onSubmit={handleBiz}>
+            <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
+              {registerOwner.isError && <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>}
+              {([
+                { key: "email" as const, label: t("login.email"), type: "email", ph: "owner@business.com" },
+                { key: "phone" as const, label: t("login.phone"), type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "password" as const, label: t("login.password"), type: "password", ph: "At least 8 characters" },
+                { key: "provider_name" as const, label: t("register.business_name"), type: "text", ph: "My Salon" },
+                { key: "provider_address" as const, label: t("register.business_address"), type: "text", ph: "123 Main Street, City" },
+                { key: "worker_payment_amount" as const, label: t("register.worker_payment"), type: "number", ph: "0" },
+              ]).map(({ key, label, type, ph }) => (
+                <div key={key}>
+                  <label className={labelCls}>{label}</label>
+                  <input type={type} placeholder={ph} value={bizForm[key]}
+                    onChange={(e) => setBizForm((f) => ({ ...f, [key]: e.target.value }))} className={inputCls} />
+                </div>
+              ))}
+              <CtaButton disabled={!canBiz || registerOwner.isPending} pending={registerOwner.isPending} label={t("register.submit")} />
+            </div>
+          </form>
+        )}
+
+        {/* Professional register */}
+        {tab === "pro" && (
+          <form onSubmit={handlePro}>
+            <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
+              {registerPro.isError && <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>}
+              {inviteToken && (
+                <p className="ds-caption text-ds-text-secondary bg-ds-bg-secondary rounded-ds-lg px-ds-3 py-ds-2">
+                  {t("register.pro.invite_notice")}
+                </p>
+              )}
+              {([
+                { key: "name" as const, label: t("login.full_name"), type: "text", ph: "Jane Smith" },
+                { key: "email" as const, label: t("login.email"), type: "email", ph: "jane@example.com" },
+                { key: "phone" as const, label: t("login.phone"), type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "instagram" as const, label: t("register.pro.instagram"), type: "text", ph: "@yourusername" },
+                { key: "password" as const, label: t("login.password"), type: "password", ph: "At least 8 characters" },
+              ]).map(({ key, label, type, ph }) => (
+                <div key={key}>
+                  <label className={labelCls}>{label}</label>
+                  <input type={type} placeholder={ph} value={proForm[key]}
+                    onChange={(e) => setProForm((f) => ({ ...f, [key]: e.target.value }))} className={inputCls} />
+                </div>
+              ))}
+
+              {/* Apply to providers — hidden when coming from an invite link */}
+              {!inviteToken && (
+              <div>
+                <label className={labelCls}>{t("register.pro.apply_providers")}</label>
+                {selectedProviderIds.length > 0 && (
+                  <div className="flex flex-wrap gap-[6px] mb-ds-2">
+                    {selectedProviderIds.map((id) => {
+                      const p = providers.find((s) => s.id === id);
+                      return p ? (
+                        <span key={id} className="flex items-center gap-[4px] bg-ds-bg-secondary text-ds-text-primary ds-caption px-[8px] py-[4px] rounded-ds-full">
+                          {p.name}
+                          <button type="button" onClick={() => removeProvider(id)} className="text-ds-text-secondary hover:text-ds-text-primary">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+                <div className="relative" ref={comboRef}>
+                  <input
+                    type="text"
+                    placeholder={t("register.pro.search_provider")}
+                    value={providerSearch}
+                    onChange={(e) => { setProviderSearch(e.target.value); setDropdownOpen(true); }}
+                    onFocus={() => setDropdownOpen(true)}
+                    className={inputCls}
+                  />
+                  {dropdownOpen && filteredProviders.length > 0 && (
+                    <div className="absolute z-50 mt-[4px] w-full rounded-ds-lg border border-ds-border bg-ds-bg-primary shadow-lg max-h-48 overflow-y-auto">
+                      {filteredProviders.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className="w-full text-left px-ds-3 py-ds-2 hover:bg-ds-bg-secondary ds-body flex flex-col"
+                          onMouseDown={(e) => { e.preventDefault(); addProvider(p.id); }}
+                        >
+                          <span className="text-ds-text-primary font-medium">{p.name}</span>
+                          {p.address && <span className="ds-caption text-ds-text-secondary truncate">{p.address}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {dropdownOpen && filteredProviders.length === 0 && providerSearch.trim() && (
+                    <div className="absolute z-50 mt-[4px] w-full rounded-ds-lg border border-ds-border bg-ds-bg-primary shadow-lg px-ds-3 py-ds-2 ds-body text-ds-text-secondary">
+                      {t("register.pro.no_providers")}
+                    </div>
+                  )}
+                </div>
+                <p className="ds-caption text-ds-text-secondary mt-[4px]">{t("register.pro.apply_hint")}</p>
+              </div>
+              )}
+
+              <CtaButton disabled={!canPro || registerPro.isPending} pending={registerPro.isPending} label={t("register.pro.submit")} />
+            </div>
+          </form>
+        )}
+
+        {/* Footer */}
+        <div className="flex flex-col items-center gap-ds-2 px-ds-4 py-ds-6">
+          {tab === "signin" ? (
+            <button onClick={() => navigate("/")} className="ds-body-small text-ds-interactive">
+              {t("login.guest_link")}
             </button>
-          </div>
+          ) : (
+            <button onClick={() => setTab("signin")} className="ds-body-small text-ds-interactive">
+              {t("login.already_account")}
+            </button>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function CtaButton({ disabled, pending, label }: Readonly<{ disabled: boolean; pending: boolean; label: string }>) {
+  const activeCls = "bg-ds-interactive text-ds-text-inverse";
+  const inactiveCls = "bg-ds-bg-secondary text-ds-text-disabled";
+  return (
+    <button
+      type="submit"
+      disabled={disabled}
+      className={`w-full h-[48px] rounded-ds-lg ds-body-strong transition-colors ${disabled ? inactiveCls : activeCls}`}
+    >
+      {pending ? "…" : label}
+    </button>
   );
 }
