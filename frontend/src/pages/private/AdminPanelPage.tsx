@@ -135,11 +135,11 @@ export function AdminPanelPage() {
   const professionalCount = allUsers.filter((u) => u.role === "professional").length;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">Platform Administration</h1>
+    <div className="space-y-ds-4 md:space-y-ds-6">
+      <h1 className="ds-h2">Platform Administration</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-ds-3 md:gap-ds-4 lg:grid-cols-4">
         <StatsCard title="Total Providers" value={providers.length} icon={Building2} color="slate" />
         <StatsCard title="Total Users" value={allUsers.length} icon={Users} color="blue" />
         <StatsCard title="Provider Owners" value={ownerCount} icon={Users} color="purple" />
@@ -147,16 +147,16 @@ export function AdminPanelPage() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 border-b">
+      <div className="flex gap-ds-1 border-b border-ds-border">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px",
+              "flex items-center gap-ds-2 px-ds-4 py-ds-2 ds-body-strong border-b-2 transition-colors -mb-px",
               tab === key
-                ? "border-gray-900 text-gray-900"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "border-ds-interactive text-ds-interactive"
+                : "border-transparent text-ds-text-secondary hover:text-ds-text-primary"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -174,33 +174,33 @@ export function AdminPanelPage() {
           <CardContent>
             {providersLoading ? <Spinner className="mx-auto" /> : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full ds-body">
                   <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2 font-medium">ID</th>
-                      <th className="pb-2 font-medium">Name</th>
-                      <th className="pb-2 font-medium">Address</th>
-                      <th className="pb-2 font-medium">Status</th>
-                      <th className="pb-2 font-medium text-right">Actions</th>
+                    <tr className="border-b border-ds-border text-left text-ds-text-secondary">
+                      <th className="pb-ds-2 ds-label-small">ID</th>
+                      <th className="pb-ds-2 ds-label-small">Name</th>
+                      <th className="pb-ds-2 ds-label-small">Address</th>
+                      <th className="pb-ds-2 ds-label-small">Status</th>
+                      <th className="pb-ds-2 ds-label-small text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y divide-ds-border">
                     {providers.map((p) => (
                       <tr key={p.id} className={cn(!p.is_active && "opacity-50")}>
-                        <td className="py-2 text-muted-foreground">#{p.id}</td>
-                        <td className="py-2 font-medium">{p.name}</td>
-                        <td className="py-2 text-muted-foreground text-xs">{p.address || "—"}</td>
-                        <td className="py-2">
+                        <td className="py-ds-2 text-ds-text-muted">#{p.id}</td>
+                        <td className="py-ds-2 ds-body-strong">{p.name}</td>
+                        <td className="py-ds-2 text-ds-text-muted ds-caption">{p.address || "—"}</td>
+                        <td className="py-ds-2">
                           <Badge variant={p.is_active ? "success" : "secondary"}>
                             {p.is_active ? "Active" : "Frozen"}
                           </Badge>
                         </td>
-                        <td className="py-2">
-                          <div className="flex items-center gap-1 justify-end">
+                        <td className="py-ds-2">
+                          <div className="flex items-center gap-ds-1 justify-end">
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 text-xs gap-1"
+                              className="h-7 ds-caption gap-ds-1"
                               disabled={toggleProvider.isPending}
                               onClick={() => toggleProvider.mutate({ id: p.id, is_active: !p.is_active })}
                             >
@@ -210,7 +210,7 @@ export function AdminPanelPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              className="h-7 text-xs"
+                              className="h-7 ds-caption"
                               disabled={deleteProvider.isPending}
                               onClick={() => confirmDelete(p.name, () => deleteProvider.mutate(p.id))}
                             >
@@ -221,7 +221,7 @@ export function AdminPanelPage() {
                       </tr>
                     ))}
                     {providers.length === 0 && (
-                      <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">No providers</td></tr>
+                      <tr><td colSpan={5} className="py-ds-8 text-center text-ds-text-secondary">No providers</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -240,31 +240,31 @@ export function AdminPanelPage() {
           <CardContent>
             {professionalsLoading ? <Spinner className="mx-auto" /> : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full ds-body">
                   <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2 font-medium">ID</th>
-                      <th className="pb-2 font-medium">Email</th>
-                      <th className="pb-2 font-medium">Status</th>
-                      <th className="pb-2 font-medium text-right">Actions</th>
+                    <tr className="border-b border-ds-border text-left text-ds-text-secondary">
+                      <th className="pb-ds-2 ds-label-small">ID</th>
+                      <th className="pb-ds-2 ds-label-small">Email</th>
+                      <th className="pb-ds-2 ds-label-small">Status</th>
+                      <th className="pb-ds-2 ds-label-small text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y divide-ds-border">
                     {professionals.map((u) => (
                       <tr key={u.id} className={cn(!u.is_active && "opacity-50")}>
-                        <td className="py-2 text-muted-foreground">#{u.id}</td>
-                        <td className="py-2">{u.email}</td>
-                        <td className="py-2">
+                        <td className="py-ds-2 text-ds-text-muted">#{u.id}</td>
+                        <td className="py-ds-2">{u.email}</td>
+                        <td className="py-ds-2">
                           <Badge variant={u.is_active ? "success" : "secondary"}>
                             {u.is_active ? "Active" : "Frozen"}
                           </Badge>
                         </td>
-                        <td className="py-2">
-                          <div className="flex items-center gap-1 justify-end">
+                        <td className="py-ds-2">
+                          <div className="flex items-center gap-ds-1 justify-end">
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 text-xs gap-1"
+                              className="h-7 ds-caption gap-ds-1"
                               disabled={toggleUser.isPending}
                               onClick={() => toggleUser.mutate({ id: u.id, is_active: !u.is_active })}
                             >
@@ -274,7 +274,7 @@ export function AdminPanelPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              className="h-7 text-xs"
+                              className="h-7 ds-caption"
                               disabled={deleteUser.isPending}
                               onClick={() => confirmDelete(u.email, () => deleteUser.mutate(u.id))}
                             >
@@ -285,7 +285,7 @@ export function AdminPanelPage() {
                       </tr>
                     ))}
                     {professionals.length === 0 && (
-                      <tr><td colSpan={4} className="py-8 text-center text-muted-foreground">No professionals</td></tr>
+                      <tr><td colSpan={4} className="py-ds-8 text-center text-ds-text-secondary">No professionals</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -304,37 +304,37 @@ export function AdminPanelPage() {
           <CardContent>
             {reviewsLoading ? <Spinner className="mx-auto" /> : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full ds-body">
                   <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2 font-medium">ID</th>
-                      <th className="pb-2 font-medium">Client</th>
-                      <th className="pb-2 font-medium">Rating</th>
-                      <th className="pb-2 font-medium">Comment</th>
-                      <th className="pb-2 font-medium">Status</th>
-                      <th className="pb-2 font-medium text-right">Actions</th>
+                    <tr className="border-b border-ds-border text-left text-ds-text-secondary">
+                      <th className="pb-ds-2 ds-label-small">ID</th>
+                      <th className="pb-ds-2 ds-label-small">Client</th>
+                      <th className="pb-ds-2 ds-label-small">Rating</th>
+                      <th className="pb-ds-2 ds-label-small">Comment</th>
+                      <th className="pb-ds-2 ds-label-small">Status</th>
+                      <th className="pb-ds-2 ds-label-small text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y divide-ds-border">
                     {reviews.map((r) => (
                       <tr key={r.id} className={cn(!r.is_published && "opacity-50")}>
-                        <td className="py-2 text-muted-foreground">#{r.id}</td>
-                        <td className="py-2 font-medium">{r.client_name}</td>
-                        <td className="py-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</td>
-                        <td className="py-2 text-xs text-muted-foreground max-w-[200px] truncate">
+                        <td className="py-ds-2 text-ds-text-muted">#{r.id}</td>
+                        <td className="py-ds-2 ds-body-strong">{r.client_name}</td>
+                        <td className="py-ds-2">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</td>
+                        <td className="py-ds-2 ds-caption text-ds-text-secondary max-w-[200px] truncate">
                           {r.comment || "—"}
                         </td>
-                        <td className="py-2">
+                        <td className="py-ds-2">
                           <Badge variant={r.is_published ? "success" : "secondary"}>
                             {r.is_published ? "Published" : "Hidden"}
                           </Badge>
                         </td>
-                        <td className="py-2">
-                          <div className="flex items-center gap-1 justify-end">
+                        <td className="py-ds-2">
+                          <div className="flex items-center gap-ds-1 justify-end">
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 text-xs gap-1"
+                              className="h-7 ds-caption gap-ds-1"
                               disabled={toggleReview.isPending}
                               onClick={() => toggleReview.mutate({ id: r.id, is_published: !r.is_published })}
                             >
@@ -344,7 +344,7 @@ export function AdminPanelPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              className="h-7 text-xs"
+                              className="h-7 ds-caption"
                               disabled={deleteReview.isPending}
                               onClick={() => confirmDelete(`review #${r.id}`, () => deleteReview.mutate(r.id))}
                             >
@@ -355,7 +355,7 @@ export function AdminPanelPage() {
                       </tr>
                     ))}
                     {reviews.length === 0 && (
-                      <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No reviews</td></tr>
+                      <tr><td colSpan={6} className="py-ds-8 text-center text-ds-text-secondary">No reviews</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -374,35 +374,35 @@ export function AdminPanelPage() {
           <CardContent>
             {servicesLoading ? <Spinner className="mx-auto" /> : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full ds-body">
                   <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2 font-medium">ID</th>
-                      <th className="pb-2 font-medium">Name</th>
-                      <th className="pb-2 font-medium">Provider</th>
-                      <th className="pb-2 font-medium">Price</th>
-                      <th className="pb-2 font-medium">Status</th>
-                      <th className="pb-2 font-medium text-right">Actions</th>
+                    <tr className="border-b border-ds-border text-left text-ds-text-secondary">
+                      <th className="pb-ds-2 ds-label-small">ID</th>
+                      <th className="pb-ds-2 ds-label-small">Name</th>
+                      <th className="pb-ds-2 ds-label-small">Provider</th>
+                      <th className="pb-ds-2 ds-label-small">Price</th>
+                      <th className="pb-ds-2 ds-label-small">Status</th>
+                      <th className="pb-ds-2 ds-label-small text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y">
+                  <tbody className="divide-y divide-ds-border">
                     {services.map((s) => (
                       <tr key={s.id} className={cn(!s.is_active && "opacity-50")}>
-                        <td className="py-2 text-muted-foreground">#{s.id}</td>
-                        <td className="py-2 font-medium">{s.name}</td>
-                        <td className="py-2 text-muted-foreground">Provider #{s.provider_id}</td>
-                        <td className="py-2">${s.price}</td>
-                        <td className="py-2">
+                        <td className="py-ds-2 text-ds-text-muted">#{s.id}</td>
+                        <td className="py-ds-2 ds-body-strong">{s.name}</td>
+                        <td className="py-ds-2 text-ds-text-secondary">Provider #{s.provider_id}</td>
+                        <td className="py-ds-2">${s.price}</td>
+                        <td className="py-ds-2">
                           <Badge variant={s.is_active ? "success" : "secondary"}>
                             {s.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </td>
-                        <td className="py-2">
-                          <div className="flex items-center gap-1 justify-end">
+                        <td className="py-ds-2">
+                          <div className="flex items-center gap-ds-1 justify-end">
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 text-xs gap-1"
+                              className="h-7 ds-caption gap-ds-1"
                               disabled={toggleService.isPending}
                               onClick={() => toggleService.mutate({ id: s.id, is_active: !s.is_active })}
                             >
@@ -412,7 +412,7 @@ export function AdminPanelPage() {
                             <Button
                               size="sm"
                               variant="destructive"
-                              className="h-7 text-xs"
+                              className="h-7 ds-caption"
                               disabled={deleteService.isPending}
                               onClick={() => confirmDelete(s.name, () => deleteService.mutate(s.id))}
                             >
@@ -423,7 +423,7 @@ export function AdminPanelPage() {
                       </tr>
                     ))}
                     {services.length === 0 && (
-                      <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">No services</td></tr>
+                      <tr><td colSpan={6} className="py-ds-8 text-center text-ds-text-secondary">No services</td></tr>
                     )}
                   </tbody>
                 </table>

@@ -14,10 +14,10 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Invoice, InvoiceStatus } from "@/types";
 
 const STATUS_COLORS: Record<InvoiceStatus, string> = {
-  draft: "bg-gray-100 text-gray-700",
-  sent: "bg-blue-100 text-blue-700",
-  paid: "bg-green-100 text-green-700",
-  overdue: "bg-red-100 text-red-700",
+  draft: "bg-ds-bg-tertiary text-ds-text-secondary",
+  sent:  "bg-[var(--ds-feedback-info-bg)] text-[var(--ds-feedback-info)]",
+  paid:  "bg-[var(--ds-feedback-success-bg)] text-[var(--ds-feedback-success)]",
+  overdue: "bg-[var(--ds-feedback-error-bg)] text-[var(--ds-feedback-error)]",
 };
 
 export function InvoicesPage() {
@@ -85,17 +85,17 @@ export function InvoicesPage() {
   });
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-2">
+    <div className="space-y-ds-4 md:space-y-ds-6">
+      <div className="flex items-center justify-between flex-wrap gap-ds-2">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <h1 className="ds-h2 flex items-center gap-ds-2">
             <FileText className="h-6 w-6" /> Invoices
           </h1>
-          <p className="text-muted-foreground text-sm">Monthly earnings statements</p>
+          <p className="text-ds-text-secondary ds-body">Monthly earnings statements</p>
         </div>
         {isOwner && (
           <Button onClick={() => setShowGenerate(!showGenerate)}>
-            <Plus className="mr-2 h-4 w-4" /> Generate Invoice
+            <Plus className="mr-ds-2 h-4 w-4" /> Generate Invoice
           </Button>
         )}
       </div>
@@ -104,12 +104,12 @@ export function InvoicesPage() {
       {showGenerate && isOwner && (
         <Card>
           <CardHeader><CardTitle>Generate Monthly Invoice</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <CardContent className="space-y-ds-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-ds-3">
               <select
                 value={selectedProfessionalId}
                 onChange={(e) => setSelectedProfessionalId(e.target.value === "" ? "" : Number(e.target.value))}
-                className="border rounded px-3 py-2 text-sm w-full"
+                className="border border-ds-border rounded-ds-md px-ds-3 py-ds-2 ds-body bg-ds-bg-primary text-ds-text-primary focus:outline-none focus:border-ds-interactive w-full"
               >
                 <option value="">Select professional…</option>
                 {professionalProviders.map((pp: ProfessionalProvider) => (
@@ -118,28 +118,28 @@ export function InvoicesPage() {
                   </option>
                 ))}
               </select>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <div className="flex items-center gap-ds-2">
+                <Calendar className="h-4 w-4 text-ds-text-muted flex-shrink-0" />
                 <input
                   type="date"
                   value={periodStart}
                   onChange={(e) => setPeriodStart(e.target.value)}
-                  className="border rounded px-2 py-1.5 text-sm w-full"
+                  className="border border-ds-border rounded-ds-md px-ds-2 py-[6px] ds-body bg-ds-bg-primary text-ds-text-primary focus:outline-none focus:border-ds-interactive w-full"
                 />
               </div>
               <input
                 type="date"
                 value={periodEnd}
                 onChange={(e) => setPeriodEnd(e.target.value)}
-                className="border rounded px-2 py-1.5 text-sm w-full"
+                className="border border-ds-border rounded-ds-md px-ds-2 py-[6px] ds-body bg-ds-bg-primary text-ds-text-primary focus:outline-none focus:border-ds-interactive w-full"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-ds-2">
               <Button
                 onClick={() => generateMutation.mutate()}
                 disabled={!selectedProfessionalId || generateMutation.isPending}
               >
-                {generateMutation.isPending && <Spinner size="sm" className="mr-2" />}
+                {generateMutation.isPending && <Spinner size="sm" className="mr-ds-2" />}
                 Generate
               </Button>
               <Button variant="outline" onClick={() => setShowGenerate(false)}>Cancel</Button>
@@ -152,12 +152,12 @@ export function InvoicesPage() {
       {isLoading ? (
         <Spinner className="mx-auto" />
       ) : (invoices as Invoice[]).length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p>No invoices yet</p>
+        <div className="text-center py-ds-16 text-ds-text-secondary">
+          <FileText className="h-12 w-12 mx-auto mb-ds-3 opacity-30" />
+          <p className="ds-body">No invoices yet</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-ds-3">
           {(invoices as Invoice[]).map((invoice) => (
             <InvoiceRow
               key={invoice.id}
@@ -206,33 +206,33 @@ function InvoiceRow({
 
   return (
     <Card>
-      <CardContent className="p-3 md:p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <CardContent className="p-ds-3 md:p-ds-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-ds-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <p className="font-semibold text-sm md:text-base">
+            <div className="flex items-center gap-ds-2 flex-wrap mb-[4px]">
+              <p className="ds-body-strong text-ds-text-primary">
                 {invoice.period_start} – {invoice.period_end}
               </p>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[invoice.status]}`}>
+              <span className={`px-ds-2 py-[2px] rounded-ds-full ds-badge ${STATUS_COLORS[invoice.status]}`}>
                 {invoice.status.toUpperCase()}
               </span>
             </div>
-            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] sm:text-xs md:text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-x-ds-3 gap-y-[2px] ds-caption text-ds-text-muted">
               <span>{invoice.total_sessions} sessions</span>
               <span>Revenue: {formatCurrency(invoice.total_revenue)}</span>
-              <span className="text-green-600">Pro: {formatCurrency(professionalEarnings)}</span>
-              <span className="text-blue-600">Prov: {formatCurrency(providerEarnings)}</span>
+              <span className="text-[var(--ds-feedback-success)]">Pro: {formatCurrency(professionalEarnings)}</span>
+              <span className="text-[var(--ds-feedback-info)]">Prov: {formatCurrency(providerEarnings)}</span>
               <span>{professionalPct}%</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-ds-2">
             <Button
               size="sm"
               variant="outline"
               onClick={handleDownload}
               disabled={downloading}
-              className="gap-1.5"
+              className="gap-[6px]"
             >
               {downloading ? <Spinner size="sm" /> : <Download className="h-4 w-4" />}
               PDF
@@ -243,7 +243,7 @@ function InvoiceRow({
                 value={invoice.status}
                 onChange={(e) => onStatusChange(e.target.value as InvoiceStatus)}
                 disabled={isLoading}
-                className="border rounded px-2 py-1 text-sm"
+                className="border border-ds-border rounded-ds-md px-ds-2 py-[6px] ds-body bg-ds-bg-primary text-ds-text-primary focus:outline-none focus:border-ds-interactive"
               >
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>

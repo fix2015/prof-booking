@@ -37,12 +37,12 @@ export function ReportsPage() {
   const isLoading = providerLoading || professionalLoading;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-2xl font-bold">Reports & Analytics</h1>
-        <div className="flex items-center gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs">From</Label>
+    <div className="space-y-ds-6">
+      <div className="flex items-center justify-between flex-wrap gap-ds-4">
+        <h1 className="ds-h2">Reports & Analytics</h1>
+        <div className="flex items-center gap-ds-3">
+          <div className="space-y-[4px]">
+            <Label className="ds-caption">From</Label>
             <Input
               type="date"
               value={dateFrom}
@@ -50,8 +50,8 @@ export function ReportsPage() {
               className="w-36"
             />
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">To</Label>
+          <div className="space-y-[4px]">
+            <Label className="ds-caption">To</Label>
             <Input
               type="date"
               value={dateTo}
@@ -68,7 +68,7 @@ export function ReportsPage() {
       {professionalReport && <MasterAnalytics report={professionalReport} />}
 
       {!isLoading && !providerReport && !professionalReport && (
-        <div className="py-12 text-center text-muted-foreground">
+        <div className="py-ds-12 text-center text-ds-text-secondary ds-body">
           No report data available for this period.
         </div>
       )}

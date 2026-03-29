@@ -89,11 +89,11 @@ export function SessionsPage() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">{t("sessions.title")}</h1>
+    <div className="space-y-ds-4 md:space-y-ds-6">
+      <h1 className="ds-h2">{t("sessions.title")}</h1>
 
       {/* Status filter */}
-      <div className="flex gap-1.5 md:gap-2 flex-wrap">
+      <div className="flex gap-[6px] md:gap-ds-2 flex-wrap">
         {STATUS_FILTERS.map((f) => (
           <Button
             key={f.value}
@@ -107,16 +107,16 @@ export function SessionsPage() {
       </div>
 
       {/* Date filter */}
-      <div className="flex gap-1.5 md:gap-2 flex-wrap">
+      <div className="flex gap-[6px] md:gap-ds-2 flex-wrap">
         {DATE_FILTERS.map((f) => (
           <button
             key={f.value}
             onClick={() => setDateFilter(f.value)}
             className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+              "px-ds-3 py-[4px] rounded-ds-full ds-caption border transition-colors",
               dateFilter === f.value
-                ? "bg-gray-900 border-gray-700 text-white"
-                : "bg-white border-gray-200 text-gray-700 hover:border-gray-400"
+                ? "bg-ds-interactive border-ds-interactive text-ds-text-inverse"
+                : "bg-ds-bg-primary border-ds-border text-ds-text-secondary hover:border-ds-interactive"
             )}
           >
             {f.label}
@@ -127,33 +127,33 @@ export function SessionsPage() {
       {isLoading ? (
         <Spinner className="mx-auto mt-12" />
       ) : sessions.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">{t("sessions.no_sessions")}</div>
+        <div className="py-ds-12 text-center text-ds-text-secondary ds-body">{t("sessions.no_sessions")}</div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-ds-3">
           {sessions.map((session) => (
             <Card key={session.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-3 md:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <CardContent className="p-ds-3 md:p-ds-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-ds-3">
                   <div>
-                    <p className="font-semibold">{session.client_name}</p>
-                    <p className="text-sm text-muted-foreground">{session.client_phone}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="ds-body-strong text-ds-text-primary">{session.client_name}</p>
+                    <p className="ds-body text-ds-text-secondary">{session.client_phone}</p>
+                    <p className="ds-body text-ds-text-secondary">
                       {session.starts_at ? formatDateTime(session.starts_at) : "—"}
                     </p>
                     {session.price && (
-                      <p className="text-sm font-medium">{formatCurrency(session.price)}</p>
+                      <p className="ds-body-strong text-ds-text-primary">{formatCurrency(session.price)}</p>
                     )}
                   </div>
-                  <div className="flex sm:flex-col items-center sm:items-end gap-2 flex-wrap">
+                  <div className="flex sm:flex-col items-center sm:items-end gap-ds-2 flex-wrap">
                     <span
                       className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                        "inline-flex items-center rounded-ds-full px-ds-2 py-[2px] ds-badge",
                         statusColorMap[session.status]
                       )}
                     >
                       {statusLabel[session.status]}
                     </span>
-                    <div className="flex gap-1">
+                    <div className="flex gap-ds-1">
                       {session.status === "pending" && (
                         <Button
                           size="sm"
@@ -195,16 +195,16 @@ export function SessionsPage() {
       {/* Earnings modal */}
       {earningsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-sm mx-4">
+          <Card className="w-full max-w-sm mx-ds-4">
             <CardHeader>
               <CardTitle>Record Earnings</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+            <CardContent className="space-y-ds-4">
+              <p className="ds-body text-ds-text-secondary">
                 Session with {earningsModal.client_name}
               </p>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Earnings Amount ($)</label>
+              <div className="space-y-[4px]">
+                <label className="ds-body-strong text-ds-text-primary">Earnings Amount ($)</label>
                 <Input
                   type="number"
                   step="0.01"
@@ -213,7 +213,7 @@ export function SessionsPage() {
                   placeholder="0.00"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-ds-2">
                 <Button
                   variant="outline"
                   className="flex-1"
@@ -226,7 +226,7 @@ export function SessionsPage() {
                   onClick={handleRecordEarnings}
                   disabled={recordEarnings.isPending}
                 >
-                  {recordEarnings.isPending ? <Spinner size="sm" className="mr-2" /> : null}
+                  {recordEarnings.isPending ? <Spinner size="sm" className="mr-ds-2" /> : null}
                   Save
                 </Button>
               </div>

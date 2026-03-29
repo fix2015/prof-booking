@@ -41,22 +41,22 @@ function NoteCard({
   onDelete: (note: ClientNote) => void;
 }) {
   return (
-    <div className="border rounded-lg p-3 space-y-1 bg-card">
-      <div className="flex items-start justify-between gap-2">
-        <span className="font-medium text-sm">{note.title}</span>
+    <div className="border border-ds-border rounded-ds-xl p-ds-3 space-y-[4px] bg-ds-bg-primary">
+      <div className="flex items-start justify-between gap-ds-2">
+        <span className="ds-body-strong text-ds-text-primary">{note.title}</span>
         {canEdit && (
-          <div className="flex gap-1 shrink-0">
-            <button onClick={() => onEdit(note)} className="p-1 hover:text-primary transition-colors">
+          <div className="flex gap-ds-1 shrink-0">
+            <button onClick={() => onEdit(note)} className="p-[4px] hover:text-ds-interactive transition-colors">
               <Pencil className="w-3.5 h-3.5" />
             </button>
-            <button onClick={() => onDelete(note)} className="p-1 hover:text-destructive transition-colors">
+            <button onClick={() => onDelete(note)} className="p-[4px] hover:text-[var(--ds-feedback-error)] transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
       </div>
-      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{note.content}</p>
-      <p className="text-xs text-muted-foreground">{formatDatetime(note.created_at)}</p>
+      <p className="ds-body text-ds-text-secondary whitespace-pre-wrap">{note.content}</p>
+      <p className="ds-caption text-ds-text-muted">{formatDatetime(note.created_at)}</p>
     </div>
   );
 }
@@ -75,17 +75,17 @@ function PhotoCard({
   onDelete: (photo: ClientPhoto) => void;
 }) {
   return (
-    <div className="relative group rounded-lg overflow-hidden aspect-square bg-muted">
+    <div className="relative group rounded-ds-xl overflow-hidden aspect-square bg-ds-bg-tertiary">
       <img src={photo.url} alt={photo.caption ?? "client photo"} className="w-full h-full object-cover" />
       {photo.caption && (
-        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-2 py-1 truncate">
+        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-ds-text-inverse ds-caption px-ds-2 py-[4px] truncate">
           {photo.caption}
         </div>
       )}
       {canEdit && (
         <button
           onClick={() => onDelete(photo)}
-          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground rounded-full p-0.5"
+          className="absolute top-[4px] right-[4px] opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--ds-feedback-error)] text-ds-text-inverse rounded-ds-full p-[2px]"
         >
           <X className="w-3 h-3" />
         </button>
@@ -287,59 +287,58 @@ export function ClientDetailPage() {
   // ── Render ────────────────────────────────────────
 
   if (isLoading) return <Spinner className="mx-auto mt-20" />;
-  if (!client) return <div className="text-center py-12 text-muted-foreground">Client not found.</div>;
+  if (!client) return <div className="text-center py-ds-12 text-ds-text-secondary">Client not found.</div>;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-ds-6 max-w-2xl mx-auto">
       {/* Back */}
-      <Button variant="ghost" size="sm" onClick={() => navigate("/clients")} className="gap-2">
+      <Button variant="ghost" size="sm" onClick={() => navigate("/clients")} className="gap-ds-2">
         <ArrowLeft className="w-4 h-4" />
         Clients
       </Button>
 
       {/* Profile card */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-ds-6">
           {editingProfile ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+            <div className="space-y-ds-4">
+              <div className="flex items-center gap-ds-4">
+                <div className="w-16 h-16 rounded-ds-full bg-ds-bg-tertiary flex items-center justify-center overflow-hidden shrink-0">
                   {profileForm.avatar_url ? (
                     <img src={profileForm.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-8 h-8 text-muted-foreground" />
+                    <User className="w-8 h-8 text-ds-text-muted" />
                   )}
                 </div>
-                <div className="space-y-1 flex-1">
-                  <p className="text-xs text-muted-foreground">Avatar URL</p>
+                <div className="space-y-[4px] flex-1">
+                  <p className="ds-caption text-ds-text-muted">Avatar URL</p>
                   <Input
                     value={profileForm.avatar_url}
                     onChange={(e) => setProfileForm((f) => ({ ...f, avatar_url: e.target.value }))}
                     placeholder="https://..."
-                    className="text-sm"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-ds-3">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Name</p>
+                  <p className="ds-caption text-ds-text-muted mb-[4px]">Name</p>
                   <Input value={profileForm.name} onChange={(e) => setProfileForm((f) => ({ ...f, name: e.target.value }))} />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Email</p>
+                  <p className="ds-caption text-ds-text-muted mb-[4px]">Email</p>
                   <Input value={profileForm.email} onChange={(e) => setProfileForm((f) => ({ ...f, email: e.target.value }))} />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Birth date</p>
+                  <p className="ds-caption text-ds-text-muted mb-[4px]">Birth date</p>
                   <Input type="date" value={profileForm.birth_date} onChange={(e) => setProfileForm((f) => ({ ...f, birth_date: e.target.value }))} />
                 </div>
               </div>
               {/* Tags */}
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Tags</p>
-                <div className="flex gap-2 flex-wrap mb-2">
+                <p className="ds-caption text-ds-text-muted mb-[4px]">Tags</p>
+                <div className="flex gap-ds-2 flex-wrap mb-ds-2">
                   {profileTags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="gap-1">
+                    <Badge key={tag} variant="secondary" className="gap-[4px]">
                       {tag}
                       <button onClick={() => setProfileTags((t) => t.filter((x) => x !== tag))}>
                         <X className="w-2.5 h-2.5" />
@@ -347,20 +346,19 @@ export function ClientDetailPage() {
                     </Badge>
                   ))}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-ds-2">
                   <Input
                     value={profileForm.tagInput}
                     onChange={(e) => setProfileForm((f) => ({ ...f, tagInput: e.target.value }))}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                     placeholder="Add tag…"
-                    className="text-sm"
                   />
                   <Button variant="outline" size="sm" onClick={addTag} disabled={!profileForm.tagInput.trim()}>
                     <Tag className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-ds-2">
                 <Button onClick={saveProfile} disabled={updateMutation.isPending} size="sm">
                   {updateMutation.isPending ? "Saving…" : "Save"}
                 </Button>
@@ -368,31 +366,31 @@ export function ClientDetailPage() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4 items-start">
+            <div className="flex gap-ds-4 items-start">
               {/* Avatar with upload overlay */}
               <div className="relative group shrink-0">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-16 rounded-ds-full bg-ds-bg-tertiary flex items-center justify-center overflow-hidden">
                   {client.avatar_url ? (
                     <img src={client.avatar_url} alt={client.name} className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-8 h-8 text-muted-foreground" />
+                    <User className="w-8 h-8 text-ds-text-muted" />
                   )}
                 </div>
-                <label className="absolute inset-0 rounded-full cursor-pointer flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {uploadingAvatar ? <Spinner className="w-4 h-4" /> : <Upload className="w-4 h-4 text-white" />}
+                <label className="absolute inset-0 rounded-ds-full cursor-pointer flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingAvatar ? <Spinner className="w-4 h-4" /> : <Upload className="w-4 h-4 text-ds-text-inverse" />}
                   <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                 </label>
               </div>
 
               {/* Info */}
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0 space-y-ds-2">
+                <div className="flex items-start justify-between gap-ds-2">
                   <div>
-                    <h2 className="text-lg font-bold">{client.name}</h2>
+                    <h2 className="ds-h3 text-ds-text-primary">{client.name}</h2>
                     {client.tags && client.tags.length > 0 && (
-                      <div className="flex gap-1 flex-wrap mt-1">
+                      <div className="flex gap-ds-1 flex-wrap mt-[4px]">
                         {client.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                          <Badge key={tag} variant="secondary" className="ds-caption">{tag}</Badge>
                         ))}
                       </div>
                     )}
@@ -402,19 +400,19 @@ export function ClientDetailPage() {
                   </Button>
                 </div>
 
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="space-y-[4px] ds-body text-ds-text-secondary">
+                  <div className="flex items-center gap-ds-2">
                     <Phone className="w-3.5 h-3.5 shrink-0" />
                     <span>{client.phone}</span>
                   </div>
                   {client.email && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="flex items-center gap-ds-2">
                       <Mail className="w-3.5 h-3.5 shrink-0" />
                       <span>{client.email}</span>
                     </div>
                   )}
                   {client.birth_date && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                    <div className="flex items-center gap-ds-2">
                       <Calendar className="w-3.5 h-3.5 shrink-0" />
                       <span>{formatDate(client.birth_date)}</span>
                     </div>
@@ -422,25 +420,25 @@ export function ClientDetailPage() {
                 </div>
 
                 {/* Stats row */}
-                <div className="flex gap-4 pt-1">
+                <div className="flex gap-ds-4 pt-[4px]">
                   <div className="text-center">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-[4px] ds-caption text-ds-text-muted">
                       <TrendingUp className="w-3 h-3" /> Visits
                     </div>
-                    <div className="font-semibold text-sm">{client.total_visits}</div>
+                    <div className="ds-body-strong text-ds-text-primary">{client.total_visits}</div>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-[4px] ds-caption text-ds-text-muted">
                       <DollarSign className="w-3 h-3" /> Spent
                     </div>
-                    <div className="font-semibold text-sm">${client.total_spent.toFixed(2)}</div>
+                    <div className="ds-body-strong text-ds-text-primary">${client.total_spent.toFixed(2)}</div>
                   </div>
                   {client.last_visit_at && (
                     <div className="text-center">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-[4px] ds-caption text-ds-text-muted">
                         <Clock className="w-3 h-3" /> Last visit
                       </div>
-                      <div className="font-semibold text-sm">{formatDate(client.last_visit_at)}</div>
+                      <div className="ds-body-strong text-ds-text-primary">{formatDate(client.last_visit_at)}</div>
                     </div>
                   )}
                 </div>
@@ -452,28 +450,28 @@ export function ClientDetailPage() {
 
       {/* Private notes */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-ds-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">
+            <CardTitle className="ds-body-strong">
               {role === "provider_owner" ? "Team Notes" : "My Private Notes"}
             </CardTitle>
             {isProfessional && !showNoteForm && (
-              <Button size="sm" variant="outline" onClick={() => setShowNoteForm(true)} className="gap-1">
+              <Button size="sm" variant="outline" onClick={() => setShowNoteForm(true)} className="gap-[4px]">
                 <Plus className="w-3.5 h-3.5" /> Add Note
               </Button>
             )}
           </div>
           {role === "provider_owner" && (
-            <p className="text-xs text-muted-foreground">Notes added by all professionals in your salon</p>
+            <p className="ds-caption text-ds-text-muted">Notes added by all professionals in your salon</p>
           )}
           {isProfessional && (
-            <p className="text-xs text-muted-foreground">Only you can see these notes</p>
+            <p className="ds-caption text-ds-text-muted">Only you can see these notes</p>
           )}
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-ds-3">
           {/* Note form */}
           {isProfessional && showNoteForm && (
-            <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+            <div className="border border-ds-border rounded-ds-xl p-ds-3 space-y-ds-3 bg-ds-bg-secondary">
               <Input
                 value={noteForm.title}
                 onChange={(e) => setNoteForm((f) => ({ ...f, title: e.target.value }))}
@@ -484,9 +482,9 @@ export function ClientDetailPage() {
                 onChange={(e) => setNoteForm((f) => ({ ...f, content: e.target.value }))}
                 placeholder="Note content…"
                 rows={3}
-                className="w-full text-sm border rounded-md px-3 py-2 bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full ds-body border border-ds-border rounded-ds-md px-ds-3 py-ds-2 bg-ds-bg-primary resize-none focus:outline-none focus:border-ds-interactive text-ds-text-primary"
               />
-              <div className="flex gap-2">
+              <div className="flex gap-ds-2">
                 <Button
                   size="sm"
                   onClick={submitNote}
@@ -500,7 +498,7 @@ export function ClientDetailPage() {
           )}
 
           {client.my_notes.length === 0 && !showNoteForm && (
-            <p className="text-sm text-muted-foreground text-center py-4">No notes yet.</p>
+            <p className="ds-body text-ds-text-secondary text-center py-ds-4">No notes yet.</p>
           )}
 
           {client.my_notes.map((note) => (
@@ -517,22 +515,22 @@ export function ClientDetailPage() {
 
       {/* Photos */}
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle className="text-base">
+        <CardHeader className="pb-ds-3">
+          <div className="flex items-center justify-between flex-wrap gap-ds-2">
+            <CardTitle className="ds-body-strong">
               {role === "provider_owner" ? "Team Photos" : "My Photos"}
             </CardTitle>
             {isProfessional && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-ds-2">
                 <Input
                   value={photoCaption}
                   onChange={(e) => setPhotoCaption(e.target.value)}
                   placeholder="Caption (optional)"
-                  className="text-sm w-40"
+                  className="w-40"
                 />
                 <label className="cursor-pointer">
                   <Button size="sm" variant="outline" asChild>
-                    <span className="gap-1">
+                    <span className="gap-[4px]">
                       {uploadingPhoto ? <Spinner className="w-3.5 h-3.5" /> : <Upload className="w-3.5 h-3.5" />}
                       Upload
                     </span>
@@ -543,14 +541,14 @@ export function ClientDetailPage() {
             )}
           </div>
           {isProfessional && (
-            <p className="text-xs text-muted-foreground">Only you can see these photos</p>
+            <p className="ds-caption text-ds-text-muted">Only you can see these photos</p>
           )}
         </CardHeader>
         <CardContent>
           {client.my_photos.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No photos yet.</p>
+            <p className="ds-body text-ds-text-secondary text-center py-ds-4">No photos yet.</p>
           ) : (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-ds-2">
               {client.my_photos.map((photo) => (
                 <PhotoCard
                   key={photo.id}
@@ -566,28 +564,28 @@ export function ClientDetailPage() {
 
       {/* Session history */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Recent Sessions</CardTitle>
+        <CardHeader className="pb-ds-3">
+          <CardTitle className="ds-body-strong">Recent Sessions</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-ds-2">
           {client.recent_sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No sessions found.</p>
+            <p className="ds-body text-ds-text-secondary text-center py-ds-4">No sessions found.</p>
           ) : (
             client.recent_sessions.map((s) => (
-              <div key={s.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
-                <div className="space-y-0.5">
-                  <div className="font-medium">{s.service_name ?? "Service"}</div>
-                  <div className="text-xs text-muted-foreground">
+              <div key={s.id} className="flex items-center justify-between ds-body py-ds-2 border-b border-ds-border last:border-0">
+                <div className="space-y-[2px]">
+                  <div className="ds-body-strong text-ds-text-primary">{s.service_name ?? "Service"}</div>
+                  <div className="ds-caption text-ds-text-muted">
                     {formatDatetime(s.starts_at)}
                     {s.professional_name && ` · ${s.professional_name}`}
                   </div>
                 </div>
-                <div className="text-right space-y-0.5">
-                  <Badge variant={s.status === "completed" ? "default" : "secondary"} className="text-xs">
+                <div className="text-right space-y-[2px]">
+                  <Badge variant={s.status === "completed" ? "default" : "secondary"} className="ds-caption">
                     {s.status}
                   </Badge>
                   {s.price != null && (
-                    <div className="text-xs text-muted-foreground">${s.price.toFixed(2)}</div>
+                    <div className="ds-caption text-ds-text-muted">${s.price.toFixed(2)}</div>
                   )}
                 </div>
               </div>
@@ -598,12 +596,12 @@ export function ClientDetailPage() {
 
       {/* Admin: delete client */}
       {isAdmin && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
+        <Card className="border-[var(--ds-feedback-error)]">
+          <CardContent className="pt-ds-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-sm">Delete Client</p>
-                <p className="text-xs text-muted-foreground">Permanently removes this client and all their notes/photos.</p>
+                <p className="ds-body-strong text-ds-text-primary">Delete Client</p>
+                <p className="ds-caption text-ds-text-muted">Permanently removes this client and all their notes/photos.</p>
               </div>
               <Button
                 variant="destructive"

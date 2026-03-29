@@ -76,7 +76,7 @@ export function NotificationsPage() {
           {isLoading ? (
             <Spinner className="mx-auto mt-8" />
           ) : notifications.length === 0 ? (
-            <p className="py-12 text-center ds-body text-ds-text-secondary">{t("notifications.empty")}</p>
+            <p className="py-ds-12 text-center ds-body text-ds-text-secondary">{t("notifications.empty")}</p>
           ) : (
             <div className="flex flex-col gap-ds-2">
               {notifications.map((n) => (
@@ -94,42 +94,42 @@ export function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl md:text-2xl font-bold">{t("notifications.title")}</h1>
+    <div className="space-y-ds-6">
+      <h1 className="ds-h2">{t("notifications.title")}</h1>
 
       {/* Provider invites — professionals only */}
       {role === "professional" && (
-        <div className="space-y-3">
+        <div className="space-y-ds-3">
           {invitesLoading ? (
             <Spinner className="mx-auto" />
           ) : pendingInvites.length > 0 ? (
             <>
-              <h2 className="text-base font-semibold flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-purple-600" />
+              <h2 className="ds-body-strong flex items-center gap-ds-2">
+                <Building2 className="h-4 w-4 text-ds-interactive" />
                 Provider Invites
-                <span className="ml-1 inline-flex items-center justify-center h-5 w-5 rounded-full bg-purple-600 text-white text-[11px] font-bold">
+                <span className="ml-[4px] inline-flex items-center justify-center h-5 w-5 rounded-ds-full bg-ds-interactive text-ds-text-inverse ds-caption font-bold">
                   {pendingInvites.length}
                 </span>
               </h2>
               {pendingInvites.map((invite) => (
-                <Card key={invite.id} className="border-purple-200 bg-purple-50/40">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                <Card key={invite.id} className="border-ds-border bg-ds-bg-secondary">
+                  <CardContent className="p-ds-4">
+                    <div className="flex items-start justify-between gap-ds-3 flex-wrap">
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm text-gray-900">
+                        <p className="ds-body-strong text-ds-text-primary">
                           {invite.provider?.name ?? `Provider #${invite.provider_id}`}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="ds-caption text-ds-text-muted mt-[2px]">
                           Invited you to join their team · {formatDateTime(invite.created_at)}
                         </p>
                         {invite.message && (
-                          <p className="text-sm text-gray-700 mt-1 italic">"{invite.message}"</p>
+                          <p className="ds-body text-ds-text-secondary mt-[4px] italic">"{invite.message}"</p>
                         )}
                       </div>
-                      <div className="flex gap-2 shrink-0">
+                      <div className="flex gap-ds-2 shrink-0">
                         <Button
                           size="sm"
-                          className="gap-1.5 bg-purple-700 hover:bg-purple-800"
+                          className="gap-[6px] bg-ds-interactive hover:bg-ds-interactive-hover"
                           disabled={respondMutation.isPending}
                           onClick={() => respondMutation.mutate({ id: invite.id, status: "accepted" })}
                         >
@@ -138,7 +138,7 @@ export function NotificationsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50"
+                          className="gap-[6px] text-[var(--ds-feedback-error)] border-[var(--ds-feedback-error)] hover:bg-[var(--ds-feedback-error-bg)]"
                           disabled={respondMutation.isPending}
                           onClick={() => respondMutation.mutate({ id: invite.id, status: "rejected" })}
                         >
@@ -155,17 +155,17 @@ export function NotificationsPage() {
           {/* Past invites */}
           {pastInvites.length > 0 && (
             <>
-              <h2 className="text-sm font-medium text-muted-foreground mt-4">Past Invites</h2>
+              <h2 className="ds-body text-ds-text-muted mt-ds-4">Past Invites</h2>
               <Card>
                 <CardContent className="p-0">
-                  <div className="divide-y">
+                  <div className="divide-y divide-ds-border">
                     {pastInvites.map((invite) => (
-                      <div key={invite.id} className="flex items-center justify-between gap-2 p-3">
+                      <div key={invite.id} className="flex items-center justify-between gap-ds-2 p-ds-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">
+                          <p className="ds-body-strong text-ds-text-primary truncate">
                             {invite.provider?.name ?? `Provider #${invite.provider_id}`}
                           </p>
-                          <p className="text-xs text-muted-foreground">{formatDateTime(invite.created_at)}</p>
+                          <p className="ds-caption text-ds-text-muted">{formatDateTime(invite.created_at)}</p>
                         </div>
                         <Badge variant={invite.status === "accepted" ? "success" : "destructive"}>
                           {invite.status}
@@ -183,7 +183,7 @@ export function NotificationsPage() {
       {/* Regular session notifications */}
       <div>
         {pendingInvites.length > 0 && role === "professional" && (
-          <h2 className="text-base font-semibold mb-3">Session Notifications</h2>
+          <h2 className="ds-body-strong mb-ds-3">Session Notifications</h2>
         )}
         {isLoading ? (
           <Spinner className="mx-auto" />
@@ -191,21 +191,21 @@ export function NotificationsPage() {
           <Card>
             <CardContent className="p-0">
               {notifications.length === 0 ? (
-                <p className="py-12 text-center text-muted-foreground">{t("notifications.empty")}</p>
+                <p className="py-ds-12 text-center text-ds-text-secondary ds-body">{t("notifications.empty")}</p>
               ) : (
-                <div className="divide-y">
+                <div className="divide-y divide-ds-border">
                   {notifications.map((n) => (
-                    <div key={n.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 md:p-4">
+                    <div key={n.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-ds-2 p-ds-3 md:p-ds-4">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium">{n.subject || n.notification_type.replace(/_/g, " ")}</p>
-                        {n.body && <p className="text-sm text-gray-700 mt-0.5">{n.body}</p>}
-                        <p className="text-xs text-muted-foreground mt-0.5">{n.recipient}</p>
+                        <p className="ds-body-strong text-ds-text-primary">{n.subject || n.notification_type.replace(/_/g, " ")}</p>
+                        {n.body && <p className="ds-body text-ds-text-secondary mt-[2px]">{n.body}</p>}
+                        <p className="ds-caption text-ds-text-muted mt-[2px]">{n.recipient}</p>
                       </div>
-                      <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 shrink-0">
+                      <div className="flex sm:flex-col items-center sm:items-end gap-ds-2 sm:gap-[4px] shrink-0">
                         <Badge variant={n.status === "sent" ? "success" : n.status === "failed" ? "destructive" : "secondary"}>
                           {n.status}
                         </Badge>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        <span className="ds-caption text-ds-text-muted whitespace-nowrap">
                           {formatDateTime(n.sent_at || n.created_at)}
                         </span>
                       </div>
