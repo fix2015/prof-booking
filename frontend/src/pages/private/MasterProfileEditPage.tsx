@@ -214,7 +214,7 @@ export function MasterProfileEditPage() {
 
             <Button
               type="submit"
-              className="w-full md:w-auto bg-gray-900 hover:bg-gray-950"
+              className="w-full md:w-auto bg-ds-interactive hover:bg-ds-interactive-hover"
               disabled={updateProfessional.isPending}
             >
               {updateProfessional.isPending ? "Saving…" : "Save Changes"}

@@ -101,7 +101,7 @@ export function ProfessionalSplitPage() {
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Current split</p>
-            <p className="text-3xl font-bold text-green-600 mt-1">{currentSplit.professional_percentage}%</p>
+            <p className="ds-h1 text-[var(--ds-feedback-success)] mt-[4px]">{currentSplit.professional_percentage}%</p>
             <p className="text-xs text-muted-foreground mt-1">
               effective from {currentSplit.effective_from} · professional earns this % of session earnings
             </p>
@@ -131,8 +131,8 @@ export function ProfessionalSplitPage() {
             </div>
             {percentage && Number(percentage) > 0 && Number(percentage) <= 100 && (
               <p className="text-xs text-muted-foreground">
-                Professional earns <span className="font-semibold text-green-600">{percentage}%</span>,
-                provider earns <span className="font-semibold text-blue-600">{100 - Number(percentage)}%</span>
+                Professional earns <span className="ds-body-strong text-[var(--ds-feedback-success)]">{percentage}%</span>,
+                provider earns <span className="ds-body-strong text-[var(--ds-feedback-info)]">{100 - Number(percentage)}%</span>
               </p>
             )}
           </div>

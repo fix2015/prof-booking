@@ -116,7 +116,7 @@ export function SalonProfileEditPage() {
               />
             </div>
             <Button
-              className="w-full bg-gray-900 hover:bg-gray-950"
+              className="w-full bg-ds-interactive hover:bg-ds-interactive-hover"
               disabled={!createForm.name || createProvider.isPending}
               onClick={() => createProvider.mutate({ name: createForm.name, address: createForm.address })}
             >
@@ -234,7 +234,7 @@ export function SalonProfileEditPage() {
 
             <Button
               type="submit"
-              className="w-full md:w-auto bg-gray-900 hover:bg-gray-950"
+              className="w-full md:w-auto bg-ds-interactive hover:bg-ds-interactive-hover"
               disabled={updateProvider.isPending || !providerId}
             >
               {updateProvider.isPending ? "Saving…" : "Save Changes"}
