@@ -161,29 +161,29 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
   });
 
   return (
-    <Card className="hover:shadow-md transition-all bg-ds-bg-primary flex flex-col">
+    <Card className="hover:shadow-md transition-all bg-ds-bg-primary flex flex-col overflow-hidden">
       <CardContent className="p-ds-3 sm:p-ds-4 flex flex-col flex-1">
         <div className="flex items-center gap-ds-3 mb-ds-2">
           {provider.logo_url ? (
             <img src={provider.logo_url} alt={provider.name}
-              className="w-11 h-11 sm:w-14 sm:h-14 rounded-ds-xl object-cover border border-ds-border shrink-0" />
+              className="w-11 h-11 rounded-ds-xl object-cover border border-ds-border shrink-0" />
           ) : (
-            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-ds-xl bg-ds-avatar-teal flex items-center justify-center text-xl sm:text-2xl font-bold text-ds-text-inverse shrink-0">
+            <div className="w-11 h-11 rounded-ds-xl bg-ds-avatar-teal flex items-center justify-center text-xl font-bold text-ds-text-inverse shrink-0">
               {provider.name.charAt(0).toUpperCase()}
             </div>
           )}
           <div className="flex-1 min-w-0">
             <h3 className="ds-body-strong text-ds-text-primary truncate">{provider.name}</h3>
             {provider.category && (
-              <span className="inline-flex items-center gap-[4px] mt-[2px] ds-badge text-ds-text-secondary bg-ds-bg-tertiary border border-ds-border rounded-ds-full px-ds-2 py-[2px]">
-                <Building2 className="h-3 w-3" /> {provider.category}
+              <span className="inline-flex items-center gap-[4px] mt-[2px] ds-badge text-ds-text-secondary bg-ds-bg-tertiary border border-ds-border rounded-ds-full px-ds-2 py-[2px] max-w-full overflow-hidden">
+                <Building2 className="h-3 w-3 shrink-0" /> <span className="truncate">{provider.category}</span>
               </span>
             )}
           </div>
         </div>
 
         {provider.description && (
-          <p className="ds-caption text-ds-text-secondary line-clamp-2 mb-ds-2">{provider.description}</p>
+          <p className="ds-caption text-ds-text-secondary line-clamp-1 mb-ds-2">{provider.description}</p>
         )}
 
         <div className="space-y-[4px] mb-ds-3 min-w-0">
@@ -207,19 +207,19 @@ function ProviderCard({ provider, isProfessional, alreadyLinked, onLoginRequired
 
         {services.length > 0 && (
           <div className="flex flex-wrap gap-[4px] mb-ds-3">
-            {services.slice(0, 4).map((s) => (
-              <span key={s.id} className="inline-flex items-center ds-badge bg-ds-bg-tertiary text-ds-text-secondary rounded-ds-full px-ds-2 py-[2px]">
-                {s.name}
-                {s.price ? <span className="ml-[4px] font-medium text-ds-text-primary">£{s.price}</span> : null}
+            {services.slice(0, 3).map((s) => (
+              <span key={s.id} className="inline-flex items-center gap-[2px] ds-badge bg-ds-bg-tertiary text-ds-text-secondary rounded-ds-full px-ds-2 py-[2px] max-w-[calc(50%-2px)] overflow-hidden">
+                <span className="truncate">{s.name}</span>
+                {s.price ? <span className="font-medium text-ds-text-primary shrink-0">£{s.price}</span> : null}
               </span>
             ))}
-            {services.length > 4 && (
-              <span className="ds-caption text-ds-text-muted px-[4px]">+{services.length - 4} more</span>
+            {services.length > 3 && (
+              <span className="ds-caption text-ds-text-muted px-[4px] self-center">+{services.length - 3}</span>
             )}
           </div>
         )}
 
-        <div className="mt-auto flex flex-col gap-ds-2 sm:flex-row">
+        <div className="mt-auto flex flex-row gap-ds-2">
           <Link to={`/providers/${provider.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">{t("providers.view_profile")}</Button>
           </Link>
