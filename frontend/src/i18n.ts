@@ -385,6 +385,8 @@ const translations = {
     "map.loading": "Loading map…",
     "map.view_provider": "View Provider",
     "map.providers_nearby": "{count} providers nearby",
+    "map.search_placeholder": "Location or postcode…",
+    "map.search_btn": "Search",
 
     // SavedPage
     "saved.title": "Saved",
@@ -815,6 +817,8 @@ const translations = {
     "map.loading": "Ładowanie mapy…",
     "map.view_provider": "Zobacz dostawcę",
     "map.providers_nearby": "{count} dostawców w pobliżu",
+    "map.search_placeholder": "Lokalizacja lub kod pocztowy…",
+    "map.search_btn": "Szukaj",
 
     // SavedPage
     "saved.title": "Zapisane",
@@ -1245,6 +1249,8 @@ const translations = {
     "map.loading": "Se încarcă harta…",
     "map.view_provider": "Vezi furnizorul",
     "map.providers_nearby": "{count} furnizori în apropiere",
+    "map.search_placeholder": "Locație sau cod poștal…",
+    "map.search_btn": "Caută",
 
     // SavedPage
     "saved.title": "Salvate",
@@ -1675,6 +1681,8 @@ const translations = {
     "map.loading": "Завантаження карти…",
     "map.view_provider": "Переглянути провайдера",
     "map.providers_nearby": "{count} провайдерів поруч",
+    "map.search_placeholder": "Місце або поштовий індекс…",
+    "map.search_btn": "Пошук",
 
     // SavedPage
     "saved.title": "Збережені",
@@ -2105,6 +2113,8 @@ const translations = {
     "map.loading": "Cargando mapa…",
     "map.view_provider": "Ver proveedor",
     "map.providers_nearby": "{count} proveedores cercanos",
+    "map.search_placeholder": "Ubicación o código postal…",
+    "map.search_btn": "Buscar",
 
     // SavedPage
     "saved.title": "Guardados",
