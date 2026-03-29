@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Figma file:** `1b7MQQDvlyjtMpAUVPo20M` — Design System page + Mobile App Screens page (`52:164`)
 - **DS rules + full inventory:** `.claude/skills/probook-design-system.md`
+- **Active migration plan + violation categories + spacing/status token reference:** `docs/redesign-plan.md`
 - **Verified screens:** Main Discovery (`52:2`), Filter Sheet (`52:105`)
 
 ---
@@ -99,7 +100,7 @@ Key files:
 
 - `api/` — Typed Axios layer, one file per domain (mirrors backend modules)
 - `pages/` — Route-level components
-- `components/` — Shared UI; `components/ui/` contains ShadCN primitives
+- `components/` — Shared UI; `components/ui/` contains ShadCN primitives; `components/mobile/` contains DS-compliant consumer-facing components (BookingCard, ProviderCard, FilterSheet, StatusBadge, DateSelect, etc.); `components/shared/` for cross-layout shared components (NotificationItem)
 - `hooks/` — TanStack Query hooks wrapping the API layer
 - `context/` — Auth context (JWT storage, user state) + ThemeContext
 - `features/` — Feature-scoped modules (currently `auth/`); preferred location for new feature code
