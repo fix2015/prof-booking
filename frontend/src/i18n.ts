@@ -221,6 +221,7 @@ const translations = {
     // Profile edit
     "profile.title": "Edit Profile",
     "profile.save": "Save Changes",
+    "profile.tap_to_change_photo": "Tap to change photo",
     "profile.bio": "Bio",
     "profile.experience": "Years of Experience",
     "profile.nationality": "Nationality",
@@ -671,6 +672,7 @@ const translations = {
     // Profile edit
     "profile.title": "Edytuj profil",
     "profile.save": "Zapisz zmiany",
+    "profile.tap_to_change_photo": "Dotknij, aby zmienić zdjęcie",
     "profile.bio": "Bio",
     "profile.experience": "Lata doświadczenia",
     "profile.nationality": "Narodowość",
@@ -1121,6 +1123,7 @@ const translations = {
     // Profile edit
     "profile.title": "Editează profilul",
     "profile.save": "Salvează modificările",
+    "profile.tap_to_change_photo": "Atinge pentru a schimba fotografia",
     "profile.bio": "Bio",
     "profile.experience": "Ani de experiență",
     "profile.nationality": "Naționalitate",
@@ -1571,6 +1574,7 @@ const translations = {
     // Profile edit
     "profile.title": "Редагувати профіль",
     "profile.save": "Зберегти зміни",
+    "profile.tap_to_change_photo": "Натисніть для зміни фото",
     "profile.bio": "Біографія",
     "profile.experience": "Роки досвіду",
     "profile.nationality": "Національність",
@@ -2021,6 +2025,7 @@ const translations = {
     // Profile edit
     "profile.title": "Editar perfil",
     "profile.save": "Guardar cambios",
+    "profile.tap_to_change_photo": "Toca para cambiar la foto",
     "profile.bio": "Biografía",
     "profile.experience": "Años de experiencia",
     "profile.nationality": "Nacionalidad",

@@ -1,9 +1,12 @@
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuthContext } from "@/context/AuthContext";
 import { useLogout } from "@/hooks/useAuth";
 import { useGuestSession } from "@/hooks/useGuestSession";
 import { bookingApi, BookingLookupResult } from "@/api/booking";
+import { usersApi } from "@/api/users";
+import { uploadsApi } from "@/api/uploads";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { t } from "@/i18n";
 
@@ -47,7 +50,7 @@ function MenuRow({ icon, label, subtitle, onClick }: MenuRowProps) {
   );
 }
 
-function InitialsAvatar({ name }: { name: string }) {
+function InitialsAvatar({ name, imageUrl, onClick }: { name: string; imageUrl?: string; onClick?: () => void }) {
   const initials = name
     .split(" ")
     .map((w) => w[0])
@@ -55,18 +58,46 @@ function InitialsAvatar({ name }: { name: string }) {
     .join("")
     .toUpperCase() || "G";
   return (
-    <div className="size-[72px] rounded-[10px] bg-ds-avatar-navy flex items-center justify-center shrink-0">
-      <span className="text-[28px] font-semibold text-ds-text-inverse leading-none">{initials}</span>
-    </div>
+    <button type="button" onClick={onClick} className="relative shrink-0" aria-label="Change avatar">
+      {imageUrl ? (
+        <img src={imageUrl} alt="avatar" className="size-[72px] rounded-[10px] object-cover" />
+      ) : (
+        <div className="size-[72px] rounded-[10px] bg-ds-avatar-navy flex items-center justify-center">
+          <span className="text-[28px] font-semibold text-ds-text-inverse leading-none">{initials}</span>
+        </div>
+      )}
+      {onClick && (
+        <div className="absolute -bottom-[6px] -right-[6px] size-[20px] rounded-full bg-ds-interactive flex items-center justify-center shadow-sm">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <path d="M1 11h10M6 1v8M6 1l-3 3M6 1l3 3" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+    </button>
   );
 }
 
 export function UserProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, role } = useAuthContext();
+  const { user, isAuthenticated, role, refreshUser } = useAuthContext();
   const logout = useLogout();
   const { guestProfile, guestBookings } = useGuestSession();
   const isClient = isAuthenticated && role === "client";
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      const url = await uploadsApi.uploadImage(file, 400);
+      await usersApi.updateMe({ avatar_url: url });
+      return url;
+    },
+    onSuccess: () => refreshUser(),
+  });
+
+  function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) uploadAvatar.mutate(file);
+  }
 
   const { data: clientBookings = [] } = useQuery<BookingLookupResult[]>({
     queryKey: ["client-bookings", user?.phone],
@@ -75,7 +106,7 @@ export function UserProfilePage() {
   });
 
   const displayName = isAuthenticated && user
-    ? (user.email.split("@")[0])
+    ? (user.name || user.email.split("@")[0])
     : (guestProfile?.name || t("profile.guest"));
 
   // For guests: count from localStorage; for auth clients: from API
@@ -97,22 +128,29 @@ export function UserProfilePage() {
     <div className={`flex flex-col min-h-full ${outerBg}`}>
       <AppHeader variant="title-action" title={t("profile.page_title")} rightElement={SettingsButton} />
 
+      {/* Hidden file input for avatar upload */}
+      {isAuthenticated && (
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
+      )}
+
       {/* Profile card */}
       <div className="bg-ds-bg-primary border border-ds-border flex flex-col items-center gap-[6px] pt-6 pb-5">
-        <InitialsAvatar name={displayName} />
+        <InitialsAvatar
+          name={displayName}
+          imageUrl={user?.avatar_url ?? undefined}
+          onClick={isAuthenticated ? () => fileRef.current?.click() : undefined}
+        />
         <p className="ds-h4 text-ds-text-primary mt-[2px]">{displayName}</p>
 
         {isAuthenticated && user ? (
           <div className="flex items-center gap-[6px]">
             <span className="ds-body-small text-ds-text-muted">{user.email}</span>
-            {!isClient && (
-              <button
-                onClick={() => navigate("/profile/professional")}
-                className="ds-label text-ds-text-primary"
-              >
-                · {t("profile.edit")}
-              </button>
-            )}
+            <button
+              onClick={() => navigate(isClient ? "/profile/client" : "/profile/professional")}
+              className="ds-label text-ds-text-primary"
+            >
+              · {t("profile.edit")}
+            </button>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-ds-2 mt-ds-1">
