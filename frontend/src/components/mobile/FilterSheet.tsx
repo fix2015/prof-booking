@@ -56,8 +56,8 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
     setLocal({ sort: "nearest", date: "", minPrice: "", maxPrice: "", nationality: "", minExperience: 0 });
   }
 
-  const pillActive = "bg-ds-interactive rounded-[20px] px-[14px] py-[8px] ds-label text-ds-text-inverse";
-  const pillInactive = "bg-ds-bg-primary border border-ds-border rounded-[20px] px-[14px] py-[8px] ds-label text-ds-text-secondary";
+  const pillActive = "bg-ds-interactive rounded-ds-full px-[14px] py-[8px] ds-label text-ds-text-inverse";
+  const pillInactive = "bg-ds-bg-primary border border-ds-border rounded-ds-full px-[14px] py-[8px] ds-label text-ds-text-secondary";
 
   return (
     <div className="fixed inset-0 z-50">
@@ -68,7 +68,7 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
       />
 
       {/* Sheet panel */}
-      <div className="absolute bottom-0 left-0 right-0 bg-ds-bg-primary rounded-t-[20px] flex flex-col gap-[14px] px-ds-5 pt-[10px] pb-[20px] max-h-[90vh] overflow-y-auto">
+      <div className="absolute bottom-0 left-0 right-0 bg-ds-bg-primary rounded-t-ds-2xl flex flex-col gap-[14px] px-ds-5 pt-[10px] pb-[20px] max-h-[90vh] overflow-y-auto">
 
         {/* Drag handle */}
         <div className="flex justify-center pt-[4px]">
