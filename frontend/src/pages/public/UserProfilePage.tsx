@@ -198,7 +198,7 @@ export function UserProfilePage() {
             </svg>
           }
           label={t("profile.help_support")}
-          onClick={() => {}}
+          onClick={() => navigate("/help")}
         />
       </div>
 
