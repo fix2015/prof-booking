@@ -43,35 +43,35 @@ export function OwnerAnalyticsPage() {
   );
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="space-y-ds-4 md:space-y-ds-6">
+      <div className="flex items-center justify-between flex-wrap gap-ds-3">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+          <h1 className="ds-h2 flex items-center gap-ds-2">
             <BarChart2 className="h-6 w-6" /> Worker Analytics
           </h1>
-          <p className="text-muted-foreground text-sm">Detailed breakdown by team member</p>
+          <p className="text-ds-text-secondary ds-body">Detailed breakdown by team member</p>
         </div>
 
         {/* Date range picker */}
-        <div className="flex items-center gap-2 text-sm flex-wrap">
+        <div className="flex items-center gap-ds-2 ds-body flex-wrap">
           <input
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
+            className="border border-ds-border rounded-ds-md px-ds-2 py-[6px] ds-body bg-ds-bg-primary text-ds-text-primary focus:outline-none focus:border-ds-interactive"
           />
-          <span className="text-muted-foreground">to</span>
+          <span className="text-ds-text-muted">to</span>
           <input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
+            className="border border-ds-border rounded-ds-md px-ds-2 py-[6px] ds-body bg-ds-bg-primary text-ds-text-primary focus:outline-none focus:border-ds-interactive"
           />
         </div>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-ds-3 md:gap-ds-4">
         <SummaryCard icon={<Users className="h-5 w-5" />} label="Workers" value={workers.length} />
         <SummaryCard icon={<BarChart2 className="h-5 w-5" />} label="Sessions" value={totals.sessions} />
         <SummaryCard icon={<Clock className="h-5 w-5" />} label="Hours Worked" value={`${totals.hours.toFixed(1)}h`} />
@@ -81,14 +81,14 @@ export function OwnerAnalyticsPage() {
       {/* Split summary */}
       {totals.revenue > 0 && (
         <Card>
-          <CardContent className="p-4 flex flex-wrap gap-6">
+          <CardContent className="p-ds-4 flex flex-wrap gap-ds-6">
             <div>
-              <p className="text-sm text-muted-foreground">Professionals earned</p>
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(totals.professionalEarnings)}</p>
+              <p className="ds-body text-ds-text-secondary">Professionals earned</p>
+              <p className="ds-h2 text-[var(--ds-feedback-success)]">{formatCurrency(totals.professionalEarnings)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Provider earned</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(totals.providerEarnings)}</p>
+              <p className="ds-body text-ds-text-secondary">Provider earned</p>
+              <p className="ds-h2 text-[var(--ds-feedback-info)]">{formatCurrency(totals.providerEarnings)}</p>
             </div>
           </CardContent>
         </Card>
@@ -98,46 +98,46 @@ export function OwnerAnalyticsPage() {
       {isLoading ? (
         <Spinner className="mx-auto" />
       ) : workers.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">No worker data for this period.</div>
+        <div className="text-center py-ds-16 text-ds-text-secondary ds-body">No worker data for this period.</div>
       ) : (
         <Card>
           <CardHeader>
             <CardTitle>Team Performance</CardTitle>
           </CardHeader>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full ds-body">
               <thead>
-                <tr className="border-b text-left text-muted-foreground text-xs">
-                  <th className="px-3 py-2 whitespace-nowrap">Professional</th>
-                  <th className="px-3 py-2 text-right whitespace-nowrap">Sessions</th>
-                  <th className="px-3 py-2 text-right whitespace-nowrap">Hours</th>
-                  <th className="px-3 py-2 text-right whitespace-nowrap">Revenue</th>
-                  <th className="px-3 py-2 text-right whitespace-nowrap">Pro Earns</th>
-                  <th className="px-3 py-2 text-right whitespace-nowrap">Prov Earns</th>
-                  <th className="px-3 py-2 text-right whitespace-nowrap">Split</th>
+                <tr className="border-b border-ds-border text-left text-ds-text-secondary ds-caption">
+                  <th className="px-ds-3 py-ds-2 whitespace-nowrap">Professional</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Sessions</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Hours</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Revenue</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Pro Earns</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Prov Earns</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Split</th>
                 </tr>
               </thead>
               <tbody>
                 {workers.map((w: WorkerAnalytics) => (
-                  <tr key={w.professional_id} className="border-b hover:bg-muted/40 text-xs sm:text-sm">
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-2 whitespace-nowrap">
+                  <tr key={w.professional_id} className="border-b border-ds-border hover:bg-ds-bg-secondary transition-colors ds-caption sm:ds-body">
+                    <td className="px-ds-3 py-ds-2">
+                      <div className="flex items-center gap-ds-2 whitespace-nowrap">
                         {w.avatar_url ? (
-                          <img src={w.avatar_url} alt={w.professional_name} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                          <img src={w.avatar_url} alt={w.professional_name} className="h-6 w-6 rounded-ds-full object-cover shrink-0" />
                         ) : (
-                          <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-700 shrink-0">
+                          <div className="h-6 w-6 rounded-ds-full bg-ds-bg-tertiary flex items-center justify-center ds-caption ds-body-strong text-ds-text-secondary shrink-0">
                             {w.professional_name.charAt(0)}
                           </div>
                         )}
                         <span className="truncate max-w-[100px] sm:max-w-none">{w.professional_name}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-right">{w.completed_sessions}</td>
-                    <td className="px-3 py-2 text-right">{w.total_hours}h</td>
-                    <td className="px-3 py-2 text-right">{formatCurrency(w.total_revenue)}</td>
-                    <td className="px-3 py-2 text-right text-green-600">{formatCurrency(w.professional_earnings)}</td>
-                    <td className="px-3 py-2 text-right text-blue-600">{formatCurrency(w.provider_earnings)}</td>
-                    <td className="px-3 py-2 text-right text-muted-foreground">{w.professional_percentage}%</td>
+                    <td className="px-ds-3 py-ds-2 text-right">{w.completed_sessions}</td>
+                    <td className="px-ds-3 py-ds-2 text-right">{w.total_hours}h</td>
+                    <td className="px-ds-3 py-ds-2 text-right">{formatCurrency(w.total_revenue)}</td>
+                    <td className="px-ds-3 py-ds-2 text-right text-[var(--ds-feedback-success)]">{formatCurrency(w.professional_earnings)}</td>
+                    <td className="px-ds-3 py-ds-2 text-right text-[var(--ds-feedback-info)]">{formatCurrency(w.provider_earnings)}</td>
+                    <td className="px-ds-3 py-ds-2 text-right text-ds-text-muted">{w.professional_percentage}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -152,11 +152,11 @@ export function OwnerAnalyticsPage() {
 function SummaryCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
     <Card>
-      <CardContent className="p-4 flex items-center gap-3">
-        <div className="rounded-full bg-gray-50 p-2 text-gray-700">{icon}</div>
+      <CardContent className="p-ds-4 flex items-center gap-ds-3">
+        <div className="rounded-ds-full bg-ds-bg-tertiary p-ds-2 text-ds-text-secondary">{icon}</div>
         <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="text-xl font-bold">{value}</p>
+          <p className="ds-caption text-ds-text-muted">{label}</p>
+          <p className="ds-h3 text-ds-text-primary">{value}</p>
         </div>
       </CardContent>
     </Card>

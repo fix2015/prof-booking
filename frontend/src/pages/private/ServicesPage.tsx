@@ -134,11 +134,11 @@ export function ServicesPage() {
         }));
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl md:text-2xl font-bold">{t("services.title")}</h1>
+    <div className="space-y-ds-4 md:space-y-ds-6">
+      <div className="flex items-center justify-between gap-ds-2">
+        <h1 className="ds-h2">{t("services.title")}</h1>
         <Button onClick={openAdd}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-ds-2 h-4 w-4" />
           {t("services.add")}
         </Button>
       </div>
@@ -149,21 +149,21 @@ export function ServicesPage() {
           <CardHeader>
             <CardTitle>{editing ? "Edit Service" : "New Service"}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-              <div className="space-y-1">
+          <CardContent className="space-y-ds-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-ds-3 md:gap-ds-4">
+              <div className="space-y-[4px]">
                 <Label>Name *</Label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Service name" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-[4px]">
                 <Label>Price (£) *</Label>
                 <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-[4px]">
                 <Label>Duration (minutes) *</Label>
                 <Input type="number" value={form.duration_minutes} onChange={(e) => setForm({ ...form, duration_minutes: Number(e.target.value) })} />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-[4px]">
                 <Label>Description</Label>
                 <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional description" />
               </div>
@@ -171,9 +171,9 @@ export function ServicesPage() {
 
             {/* Provider multi-select — professionals only; owners see single implicit provider */}
             {role === "professional" && availableProviders.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-ds-2">
                 <Label>Providers (optional — select all that apply)</Label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-ds-2">
                   {availableProviders.map((p) => {
                     const checked = form.provider_ids.includes(p.id);
                     return (
@@ -181,31 +181,31 @@ export function ServicesPage() {
                         key={p.id}
                         type="button"
                         onClick={() => toggleProvider(p.id)}
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors ${
+                        className={`inline-flex items-center gap-[6px] rounded-ds-full border px-ds-3 py-[4px] ds-body transition-colors ${
                           checked
-                            ? "bg-gray-900 text-white border-gray-900"
-                            : "bg-white text-gray-700 border-gray-300 hover:border-gray-500"
+                            ? "bg-ds-interactive text-ds-text-inverse border-ds-interactive"
+                            : "bg-ds-bg-primary text-ds-text-secondary border-ds-border hover:border-ds-interactive"
                         }`}
                       >
-                        {checked && <span className="text-xs">✓</span>}
+                        {checked && <span className="ds-caption">✓</span>}
                         {p.name}
                       </button>
                     );
                   })}
                 </div>
                 {form.provider_ids.length === 0 && (
-                  <p className="text-xs text-muted-foreground">No provider selected — this will be a personal service</p>
+                  <p className="ds-caption text-ds-text-muted">No provider selected — this will be a personal service</p>
                 )}
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-ds-2">
               <Button variant="outline" onClick={() => { setShowForm(false); setEditing(null); }}>Cancel</Button>
               <Button
                 onClick={() => editing ? updateMutation.mutate(editing.id) : createMutation.mutate()}
                 disabled={!form.name || createMutation.isPending || updateMutation.isPending}
               >
-                {createMutation.isPending || updateMutation.isPending ? <Spinner size="sm" className="mr-2" /> : null}
+                {createMutation.isPending || updateMutation.isPending ? <Spinner size="sm" className="mr-ds-2" /> : null}
                 {editing ? "Update" : "Create"}
               </Button>
             </div>
@@ -217,28 +217,28 @@ export function ServicesPage() {
       {isLoading ? (
         <Spinner className="mx-auto" />
       ) : (
-        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-ds-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {services.map((service) => (
             <Card key={service.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
+              <CardContent className="p-ds-4">
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{service.name}</p>
-                    {service.description && <p className="text-xs text-muted-foreground mt-0.5">{service.description}</p>}
-                    <p className="mt-2 text-lg font-bold text-gray-700">{formatCurrency(service.price)}</p>
-                    <p className="text-xs text-muted-foreground">{service.duration_minutes} min</p>
-                    <div className="mt-2 flex flex-wrap gap-1">
+                    <p className="ds-body-strong text-ds-text-primary">{service.name}</p>
+                    {service.description && <p className="ds-caption text-ds-text-muted mt-[2px]">{service.description}</p>}
+                    <p className="mt-ds-2 ds-h3 text-ds-text-primary">{formatCurrency(service.price)}</p>
+                    <p className="ds-caption text-ds-text-muted">{service.duration_minutes} min</p>
+                    <div className="mt-ds-2 flex flex-wrap gap-[4px]">
                       {service.provider_ids?.length > 0
                         ? service.provider_ids.map((pid) => (
-                            <span key={pid} className="inline-block text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">
+                            <span key={pid} className="inline-block ds-caption bg-ds-bg-tertiary text-ds-text-secondary rounded-ds-full px-ds-2 py-[2px]">
                               {providerLabel(pid)}
                             </span>
                           ))
-                        : <span className="text-xs text-purple-600">Personal service</span>
+                        : <span className="ds-caption text-ds-interactive">Personal service</span>
                       }
                     </div>
                   </div>
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex gap-[4px] shrink-0">
                     <Button size="icon" variant="ghost" onClick={() => openEdit(service)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -251,7 +251,7 @@ export function ServicesPage() {
             </Card>
           ))}
           {services.length === 0 && (
-            <p className="col-span-full text-center py-8 text-muted-foreground">
+            <p className="col-span-full text-center py-ds-8 text-ds-text-secondary ds-body">
               {t("services.no_services")}
             </p>
           )}
