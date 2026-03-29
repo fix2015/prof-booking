@@ -60,10 +60,10 @@ export function MasterAnalyticsPage() {
         <>
           {/* Summary cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <StatCard icon={<Users className="h-5 w-5" />} label="Clients" value={analytics.unique_clients} color="text-blue-600" bg="bg-blue-50" />
-            <StatCard icon={<Clock className="h-5 w-5" />} label="Hours Worked" value={`${analytics.total_hours}h`} color="text-purple-600" bg="bg-purple-50" />
-            <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Sessions" value={analytics.completed_sessions} color="text-green-600" bg="bg-green-50" />
-            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-gray-700" bg="bg-gray-50" />
+            <StatCard icon={<Users className="h-5 w-5" />} label="Clients" value={analytics.unique_clients} color="text-[var(--ds-feedback-info)]" bg="bg-[var(--ds-feedback-info-bg)]" />
+            <StatCard icon={<Clock className="h-5 w-5" />} label="Hours Worked" value={`${analytics.total_hours}h`} color="text-ds-interactive" bg="bg-ds-bg-tertiary" />
+            <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Sessions" value={analytics.completed_sessions} color="text-[var(--ds-feedback-success)]" bg="bg-[var(--ds-feedback-success-bg)]" />
+            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-ds-text-primary" bg="bg-ds-bg-secondary" />
           </div>
 
           {/* Monthly chart */}
@@ -79,7 +79,7 @@ export function MasterAnalyticsPage() {
                     <XAxis dataKey="month" tickLine={false} axisLine={false} />
                     <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
                     <Tooltip formatter={(v: number) => [`$${v}`, "Revenue"]} />
-                    <Bar dataKey="revenue" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" fill="var(--ds-interactive)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
