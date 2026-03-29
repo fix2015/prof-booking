@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
 import { useProviderProfessionalsPublic } from "@/hooks/useMaster";
 import { useAvailability, useAvailableDates, useCreateBooking } from "@/hooks/useBooking";
@@ -10,6 +10,7 @@ import { MobileAvatar } from "@/components/mobile/MobileAvatar";
 import { TimeSlotButton } from "@/components/mobile/TimeSlotButton";
 import { t } from "@/i18n";
 import { useGuestSession } from "@/hooks/useGuestSession";
+import { useAuthContext } from "@/context/AuthContext";
 import type { Service, Professional, AvailableSlot } from "@/types";
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -91,17 +92,17 @@ export function PublicBookingPage() {
 
   const createBooking = useCreateBooking();
   const { guestProfile, setGuestProfile, addGuestBooking } = useGuestSession();
+  const { user, isAuthenticated } = useAuthContext();
+  const queryClient = useQueryClient();
 
-  // Prefill form from guest profile when step 5 opens
+  // Prefill form from auth user or guest profile when step 5 opens
   useEffect(() => {
     if (step !== 5) return;
-    const source = guestProfile;
-    if (!source) return;
     setForm((f) => ({
       ...f,
-      name: f.name || source.name,
-      phone: f.phone || source.phone,
-      email: f.email || source.email,
+      name: f.name || (isAuthenticated ? (user?.name ?? user?.email?.split("@")[0] ?? "") : guestProfile?.name ?? ""),
+      phone: f.phone || (isAuthenticated ? (user?.phone ?? "") : guestProfile?.phone ?? ""),
+      email: f.email || (isAuthenticated ? (user?.email ?? "") : guestProfile?.email ?? ""),
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
@@ -132,6 +133,8 @@ export function PublicBookingPage() {
         onSuccess: (confirmation) => {
           setGuestProfile({ name: form.name, phone: form.phone, email: form.email });
           addGuestBooking(confirmation);
+          // Invalidate client bookings cache so /me shows the new booking immediately
+          queryClient.invalidateQueries({ queryKey: ["client-bookings"] });
           navigate("/me");
         },
       }
