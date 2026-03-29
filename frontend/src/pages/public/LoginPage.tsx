@@ -35,7 +35,7 @@ const HEADER_TITLE: Record<Tab, string> = {
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, role: currentRole } = useAuthContext();
   const { guestProfile, clearGuestSession } = useGuestSession();
 
   const login = useLogin();
@@ -48,7 +48,7 @@ export function LoginPage() {
 
   const [tab, setTab] = useState<Tab>(TABS.some((t) => t.value === initialTab) ? initialTab : "signin");
 
-  const [signInForm, setSignInForm] = useState({ email: "", password: "" });
+  const [signInForm, setSignInForm] = useState({ identifier: "", password: "" });
   const [clientForm, setClientForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [bizForm, setBizForm] = useState({ email: "", phone: "", password: "", provider_name: "", provider_address: "", worker_payment_amount: "" });
   const [proForm, setProForm] = useState({ name: "", email: "", phone: "", instagram: "", password: "" });
@@ -88,13 +88,13 @@ export function LoginPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to={currentRole === "client" ? "/me" : "/dashboard"} replace />;
 
   const inputCls =
     "w-full h-[48px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-lg ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive";
   const labelCls = "block mb-ds-1 text-[13px] font-semibold leading-[18px] text-ds-text-secondary";
 
-  const canSignIn = signInForm.email.trim() && signInForm.password.trim();
+  const canSignIn = signInForm.identifier.trim() && signInForm.password.trim();
   const canClient = clientForm.name.trim() && clientForm.email.trim() && clientForm.phone.trim() && clientForm.password.length >= 6;
   const canBiz = bizForm.email.trim() && bizForm.phone.trim() && bizForm.password.length >= 8 && bizForm.provider_name.trim() && bizForm.provider_address.trim();
   const canPro = proForm.name.trim() && proForm.email.trim() && proForm.phone.trim() && proForm.password.length >= 8;
@@ -102,7 +102,20 @@ export function LoginPage() {
   function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     if (!canSignIn) return;
-    login.mutate({ email: signInForm.email, password: signInForm.password });
+    const identifier = signInForm.identifier.trim();
+    const isEmail = identifier.includes("@");
+    login.mutate(
+      {
+        email: isEmail ? identifier : undefined,
+        phone: isEmail ? undefined : identifier,
+        password: signInForm.password,
+      },
+      {
+        onSuccess: (tokens) => {
+          navigate(tokens.role === "client" ? "/me" : "/dashboard", { replace: true });
+        },
+      }
+    );
   }
 
   function handleClient(e: React.FormEvent) {
@@ -202,9 +215,9 @@ export function LoginPage() {
                 <p className="ds-caption text-ds-feedback-saved text-center">{t("login.invalid_credentials")}</p>
               )}
               <div>
-                <label className={labelCls}>{t("login.email")}</label>
-                <input type="email" placeholder="you@example.com" value={signInForm.email}
-                  onChange={(e) => setSignInForm((f) => ({ ...f, email: e.target.value }))} className={inputCls} />
+                <label className={labelCls}>{t("login.email_or_phone")}</label>
+                <input type="text" placeholder="you@example.com or +1 555 000" value={signInForm.identifier}
+                  onChange={(e) => setSignInForm((f) => ({ ...f, identifier: e.target.value }))} className={inputCls} autoComplete="username" />
               </div>
               <div>
                 <label className={labelCls}>{t("login.password")}</label>

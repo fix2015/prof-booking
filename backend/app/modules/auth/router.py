@@ -24,7 +24,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=TokenResponse)
 def login(data: LoginRequest, db: Session = Depends(get_db)):
-    user = authenticate_user(db, data.email, data.password)
+    user = authenticate_user(db, data.password, email=data.email, phone=data.phone)
     access_token = create_access_token(user)
     refresh_token = create_refresh_token(db, user)
     return TokenResponse(

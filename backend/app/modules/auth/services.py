@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from app.config import settings
 from app.modules.users.models import User, RefreshToken
-from app.modules.users.services import get_user_by_email, verify_password
+from app.modules.users.services import get_user_by_email, get_user_by_phone, verify_password
 import secrets
 
 
@@ -29,12 +29,16 @@ def create_refresh_token(db: Session, user: User) -> str:
     return token_str
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User:
-    user = get_user_by_email(db, email)
+def authenticate_user(db: Session, password: str, email: str | None = None, phone: str | None = None) -> User:
+    user = None
+    if email:
+        user = get_user_by_email(db, email)
+    elif phone:
+        user = get_user_by_phone(db, phone)
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid credentials",
         )
     if not user.is_active:
         raise HTTPException(

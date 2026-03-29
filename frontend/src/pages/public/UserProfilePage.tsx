@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/context/AuthContext";
 import { useLogout } from "@/hooks/useAuth";
 import { useGuestSession } from "@/hooks/useGuestSession";
+import { bookingApi, BookingLookupResult } from "@/api/booking";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { t } from "@/i18n";
 
@@ -61,16 +63,24 @@ function InitialsAvatar({ name }: { name: string }) {
 
 export function UserProfilePage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthContext();
+  const { user, isAuthenticated, role } = useAuthContext();
   const logout = useLogout();
   const { guestProfile, guestBookings } = useGuestSession();
+  const isClient = isAuthenticated && role === "client";
+
+  const { data: clientBookings = [] } = useQuery<BookingLookupResult[]>({
+    queryKey: ["client-bookings", user?.phone],
+    queryFn: () => bookingApi.lookupByPhone(user!.phone!),
+    enabled: isClient && !!user?.phone,
+  });
 
   const displayName = isAuthenticated && user
     ? (user.email.split("@")[0])
     : (guestProfile?.name || t("profile.guest"));
 
-  // For guests: count from localStorage; for auth users: not shown (needs API)
+  // For guests: count from localStorage; for auth clients: from API
   const guestUpcomingCount = !isAuthenticated ? guestBookings.length : null;
+  const clientUpcomingCount = isClient ? clientBookings.filter((b) => new Date(b.starts_at) >= new Date()).length : null;
 
   const SettingsButton = (
     <button className="size-[32px] rounded-full bg-ds-bg-secondary flex items-center justify-center text-ds-text-primary">
@@ -95,12 +105,14 @@ export function UserProfilePage() {
         {isAuthenticated && user ? (
           <div className="flex items-center gap-[6px]">
             <span className="ds-body-small text-ds-text-muted">{user.email}</span>
-            <button
-              onClick={() => navigate("/profile/professional")}
-              className="ds-label text-ds-text-primary"
-            >
-              · {t("profile.edit")}
-            </button>
+            {!isClient && (
+              <button
+                onClick={() => navigate("/profile/professional")}
+                className="ds-label text-ds-text-primary"
+              >
+                · {t("profile.edit")}
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-ds-2 mt-ds-1">
@@ -135,9 +147,13 @@ export function UserProfilePage() {
               ? guestUpcomingCount > 0
                 ? t("profile.guest_bookings_count", { count: String(guestUpcomingCount) })
                 : t("profile.no_bookings")
-              : undefined
+              : clientUpcomingCount !== null
+                ? clientUpcomingCount > 0
+                  ? t("profile.guest_bookings_count", { count: String(clientUpcomingCount) })
+                  : t("profile.no_bookings")
+                : undefined
           }
-          onClick={() => isAuthenticated ? navigate("/sessions") : undefined}
+          onClick={() => isClient ? undefined : (isAuthenticated ? navigate("/sessions") : undefined)}
         />
         {isAuthenticated && (
           <MenuRow
@@ -201,12 +217,12 @@ export function UserProfilePage() {
         </div>
       )}
 
-      {/* Guest bookings list */}
-      {!isAuthenticated && guestBookings.length > 0 && (
+      {/* Bookings list — guest or authenticated client */}
+      {((!isAuthenticated && guestBookings.length > 0) || (isClient && clientBookings.length > 0)) && (
         <div className="mt-ds-3">
           <p className="ds-label text-ds-text-secondary px-ds-4 pb-ds-2">{t("profile.my_bookings")}</p>
           <div className="flex flex-col gap-ds-2">
-            {guestBookings.map((b) => (
+            {(isClient ? clientBookings : guestBookings).map((b) => (
               <div
                 key={b.confirmation_code}
                 className="bg-ds-bg-primary border border-ds-border rounded-ds-xl mx-ds-4 p-ds-3 flex flex-col gap-[6px]"
