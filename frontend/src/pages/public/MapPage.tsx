@@ -39,6 +39,7 @@ export function MapPage() {
   const [saved, setSaved] = useState<number[]>(getSaved);
   const [selected, setSelected] = useState<Provider | null>(null);
   const [bounds, setBounds] = useState<Bounds | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState("");
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
@@ -53,7 +54,6 @@ export function MapPage() {
     mapRef.current = map;
   }, []);
 
-  // Fires when map becomes idle after pan/zoom — read bounds and update state
   const handleIdle = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -72,6 +72,17 @@ export function MapPage() {
   const handleMarkerClick = useCallback((provider: Provider) => {
     setSelected(provider);
   }, []);
+
+  const handleSearch = useCallback(() => {
+    if (!isLoaded || !searchQuery.trim() || !mapRef.current) return;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address: searchQuery }, (results, status) => {
+      if (status === "OK" && results?.[0]) {
+        mapRef.current?.panTo(results[0].geometry.location);
+        mapRef.current?.setZoom(13);
+      }
+    });
+  }, [isLoaded, searchQuery]);
 
   const geoProviders = providers.filter((p) => p.latitude && p.longitude);
 
@@ -111,15 +122,36 @@ export function MapPage() {
           </div>
         )}
 
+        {/* Search bar overlay */}
+        <div className="absolute top-[12px] left-[16px] right-[16px] z-10">
+          <div className="flex items-center gap-ds-2 h-[46px] bg-ds-bg-primary border border-ds-border rounded-ds-full pl-[16px] pr-[5px] py-[7px] shadow-sm">
+            <div className="w-[8px] h-[8px] rounded-ds-full bg-ds-interactive flex-shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+              placeholder={t("map.search_placeholder")}
+              className="flex-1 ds-body text-ds-text-primary placeholder:text-ds-text-secondary bg-transparent outline-none min-w-0"
+            />
+            <button
+              onClick={handleSearch}
+              className="flex-shrink-0 h-[36px] px-[18px] bg-ds-interactive rounded-ds-full ds-label text-ds-text-inverse"
+            >
+              {t("map.search_btn")}
+            </button>
+          </div>
+        </div>
+
         {/* Searching indicator */}
         {isFetching && bounds && (
-          <div className="absolute top-ds-3 left-1/2 -translate-x-1/2 bg-ds-bg-primary rounded-ds-full px-ds-4 py-[6px] shadow-md">
+          <div className="absolute top-[68px] left-1/2 -translate-x-1/2 bg-ds-bg-primary rounded-ds-full px-ds-4 py-[6px] shadow-md z-10">
             <p className="ds-caption text-ds-text-secondary">{t("common.loading")}</p>
           </div>
         )}
 
         {/* Bottom sheet */}
-        <div className="absolute bottom-0 left-0 right-0 bg-ds-bg-primary rounded-t-ds-2xl shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 bg-ds-bg-primary rounded-t-ds-2xl shadow-lg z-10">
           <div className="flex justify-center pt-ds-2 pb-ds-1">
             <div className="w-8 h-1 bg-ds-border rounded-ds-full" />
           </div>
