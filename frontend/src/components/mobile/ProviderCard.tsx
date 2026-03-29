@@ -43,7 +43,7 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
             <span className="ds-caption text-ds-text-muted">4.8</span>
             <div className="flex-1" />
             {priceLabel && (
-              <span className="bg-ds-interactive rounded-[20px] px-[10px] py-[4px] ds-label-small text-ds-text-inverse">
+              <span className="bg-ds-interactive rounded-ds-full px-[10px] py-[4px] ds-label-small text-ds-text-inverse">
                 {priceLabel}
               </span>
             )}

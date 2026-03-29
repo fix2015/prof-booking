@@ -4,29 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookingApi } from "@/api/booking";
 import type { BookingLookupResult } from "@/api/booking";
 import type { BookingConfirmation } from "@/types";
+import { StatusBadge } from "./StatusBadge";
 
 type AnyBooking = BookingLookupResult | BookingConfirmation;
 
 function getBookingStatus(b: AnyBooking): string {
   return "status" in b ? b.status : "confirmed";
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  confirmed: "bg-[#e8f5e9] text-[#2e7d32]",
-  pending: "bg-[#fff8e1] text-[#f57f17]",
-  completed: "bg-ds-bg-secondary text-ds-text-secondary",
-  cancelled: "bg-[#fce4ec] text-[#c62828]",
-  in_progress: "bg-[#e3f2fd] text-[#1565c0]",
-  no_show: "bg-ds-bg-secondary text-ds-text-muted",
-};
-
-function StatusBadge({ status }: { status: string }) {
-  const cls = STATUS_STYLES[status] ?? STATUS_STYLES.confirmed;
-  return (
-    <span className={`ds-caption px-[8px] py-[2px] rounded-ds-full font-medium ${cls}`}>
-      {status.replace("_", " ")}
-    </span>
-  );
 }
 
 const CANCELLABLE = new Set(["confirmed", "pending"]);
@@ -180,7 +163,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
             <button
               type="button"
               onClick={() => setConfirmingCancel(true)}
-              className="ds-caption text-[#c62828] font-medium"
+              className="ds-caption text-[var(--ds-feedback-error)] font-medium"
             >
               Cancel booking
             </button>
@@ -192,7 +175,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
                   type="button"
                   onClick={() => cancelMutation.mutate()}
                   disabled={cancelMutation.isPending}
-                  className="h-[32px] px-ds-3 bg-[#c62828] rounded-ds-full ds-caption text-white font-semibold disabled:opacity-50"
+                  className="h-[32px] px-ds-3 bg-[var(--ds-feedback-error)] rounded-ds-full ds-caption text-ds-text-inverse font-semibold disabled:opacity-50"
                 >
                   {cancelMutation.isPending ? "Cancelling…" : "Yes, cancel"}
                 </button>
@@ -206,7 +189,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
                 </button>
               </div>
               {cancelMutation.isError && (
-                <p className="ds-caption text-[#c62828]">Failed to cancel. Please try again.</p>
+                <p className="ds-caption text-[var(--ds-feedback-error)]">Failed to cancel. Please try again.</p>
               )}
             </div>
           )}
