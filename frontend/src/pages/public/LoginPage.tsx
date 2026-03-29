@@ -222,10 +222,10 @@ export function LoginPage() {
             <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
               {registerClient.isError && <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>}
               {([
-                { key: "name" as const, label: t("login.full_name"), type: "text", ph: "Jane Smith" },
-                { key: "email" as const, label: t("login.email"), type: "email", ph: "you@example.com" },
-                { key: "phone" as const, label: t("login.phone"), type: "tel", ph: "+1 (555) 000-0000" },
-                { key: "password" as const, label: t("login.password"), type: "password", ph: t("login.password_hint") },
+                { key: "phone" as const, label: `${t("login.phone")} *`, type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "name" as const, label: `${t("login.full_name")} *`, type: "text", ph: "Jane Smith" },
+                { key: "email" as const, label: `${t("login.email")} *`, type: "email", ph: "you@example.com" },
+                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: t("login.password_hint") },
               ]).map(({ key, label, type, ph }) => (
                 <div key={key}>
                   <label className={labelCls}>{label}</label>
@@ -244,11 +244,11 @@ export function LoginPage() {
             <div className="bg-ds-bg-primary flex flex-col gap-ds-4 px-ds-4 pt-ds-5 pb-ds-4">
               {registerOwner.isError && <p className="ds-caption text-ds-feedback-saved text-center">{t("common.error")}</p>}
               {([
-                { key: "email" as const, label: t("login.email"), type: "email", ph: "owner@business.com" },
-                { key: "phone" as const, label: t("login.phone"), type: "tel", ph: "+1 (555) 000-0000" },
-                { key: "password" as const, label: t("login.password"), type: "password", ph: "At least 8 characters" },
-                { key: "provider_name" as const, label: t("register.business_name"), type: "text", ph: "My Salon" },
-                { key: "provider_address" as const, label: t("register.business_address"), type: "text", ph: "123 Main Street, City" },
+                { key: "phone" as const, label: `${t("login.phone")} *`, type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "email" as const, label: `${t("login.email")} *`, type: "email", ph: "owner@business.com" },
+                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: "At least 8 characters" },
+                { key: "provider_name" as const, label: `${t("register.business_name")} *`, type: "text", ph: "My Salon" },
+                { key: "provider_address" as const, label: `${t("register.business_address")} *`, type: "text", ph: "123 Main Street, City" },
                 { key: "worker_payment_amount" as const, label: t("register.worker_payment"), type: "number", ph: "0" },
               ]).map(({ key, label, type, ph }) => (
                 <div key={key}>
@@ -273,11 +273,11 @@ export function LoginPage() {
                 </p>
               )}
               {([
-                { key: "name" as const, label: t("login.full_name"), type: "text", ph: "Jane Smith" },
-                { key: "email" as const, label: t("login.email"), type: "email", ph: "jane@example.com" },
-                { key: "phone" as const, label: t("login.phone"), type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "phone" as const, label: `${t("login.phone")} *`, type: "tel", ph: "+1 (555) 000-0000" },
+                { key: "name" as const, label: `${t("login.full_name")} *`, type: "text", ph: "Jane Smith" },
+                { key: "email" as const, label: `${t("login.email")} *`, type: "email", ph: "jane@example.com" },
                 { key: "instagram" as const, label: t("register.pro.instagram"), type: "text", ph: "@yourusername" },
-                { key: "password" as const, label: t("login.password"), type: "password", ph: "At least 8 characters" },
+                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: "At least 8 characters" },
               ]).map(({ key, label, type, ph }) => (
                 <div key={key}>
                   <label className={labelCls}>{label}</label>
