@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { AppHeader } from "@/components/mobile/AppHeader";
+import { NotificationItem } from "@/components/shared/NotificationItem";
 import { formatDateTime } from "@/utils/dates";
 import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/useToast";
@@ -80,11 +81,7 @@ export function NotificationsPage() {
           ) : (
             <div className="flex flex-col gap-ds-2">
               {notifications.map((n) => (
-                <div key={n.id} className="bg-ds-bg-primary rounded-ds-xl border border-ds-border p-ds-3 flex flex-col gap-[4px]">
-                  <p className="ds-body-strong text-ds-text-primary">{n.subject || n.notification_type.replace(/_/g, " ")}</p>
-                  {n.body && <p className="ds-body text-ds-text-secondary">{n.body}</p>}
-                  <p className="ds-caption text-ds-text-muted">{formatDateTime(n.sent_at || n.created_at)}</p>
-                </div>
+                <NotificationItem key={n.id} notification={n} variant="card" />
               ))}
             </div>
           )}
@@ -195,21 +192,7 @@ export function NotificationsPage() {
               ) : (
                 <div className="divide-y divide-ds-border">
                   {notifications.map((n) => (
-                    <div key={n.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-ds-2 p-ds-3 md:p-ds-4">
-                      <div className="min-w-0">
-                        <p className="ds-body-strong text-ds-text-primary">{n.subject || n.notification_type.replace(/_/g, " ")}</p>
-                        {n.body && <p className="ds-body text-ds-text-secondary mt-[2px]">{n.body}</p>}
-                        <p className="ds-caption text-ds-text-muted mt-[2px]">{n.recipient}</p>
-                      </div>
-                      <div className="flex sm:flex-col items-center sm:items-end gap-ds-2 sm:gap-[4px] shrink-0">
-                        <Badge variant={n.status === "sent" ? "success" : n.status === "failed" ? "destructive" : "secondary"}>
-                          {n.status}
-                        </Badge>
-                        <span className="ds-caption text-ds-text-muted whitespace-nowrap">
-                          {formatDateTime(n.sent_at || n.created_at)}
-                        </span>
-                      </div>
-                    </div>
+                    <NotificationItem key={n.id} notification={n} variant="row" />
                   ))}
                 </div>
               )}
