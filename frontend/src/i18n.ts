@@ -58,6 +58,11 @@ const translations = {
     "bookings.field.price": "Price",
     "bookings.field.code": "Confirmation Code",
     "bookings.cancelled_reason": "Reason: {reason}",
+    "bookings.none_title": "No bookings yet",
+    "bookings.none_body": "Book your first appointment at a salon near you",
+    "bookings.browse_salons": "Browse Salons",
+    "bookings.upcoming": "Upcoming",
+    "bookings.past": "Past",
 
     // Onboarding
     "onboarding.step": "Step {current} of {total}",
@@ -511,6 +516,11 @@ const translations = {
     "bookings.field.price": "Cena",
     "bookings.field.code": "Kod potwierdzenia",
     "bookings.cancelled_reason": "Powód: {reason}",
+    "bookings.none_title": "Brak rezerwacji",
+    "bookings.none_body": "Zarezerwuj pierwszą wizytę w salonie w pobliżu",
+    "bookings.browse_salons": "Przeglądaj salony",
+    "bookings.upcoming": "Nadchodzące",
+    "bookings.past": "Przeszłe",
 
     // Onboarding
     "onboarding.step": "Krok {current} z {total}",
@@ -964,6 +974,11 @@ const translations = {
     "bookings.field.price": "Preț",
     "bookings.field.code": "Cod de confirmare",
     "bookings.cancelled_reason": "Motiv: {reason}",
+    "bookings.none_title": "Nicio rezervare încă",
+    "bookings.none_body": "Rezervați prima programare la un salon din apropiere",
+    "bookings.browse_salons": "Explorați saloanele",
+    "bookings.upcoming": "Viitoare",
+    "bookings.past": "Trecute",
 
     // Onboarding
     "onboarding.step": "Pasul {current} din {total}",
@@ -1417,6 +1432,11 @@ const translations = {
     "bookings.field.price": "Ціна",
     "bookings.field.code": "Код підтвердження",
     "bookings.cancelled_reason": "Причина: {reason}",
+    "bookings.none_title": "Немає записів",
+    "bookings.none_body": "Запишіться на першу процедуру в салоні поруч",
+    "bookings.browse_salons": "Переглянути салони",
+    "bookings.upcoming": "Майбутні",
+    "bookings.past": "Минулі",
 
     // Onboarding
     "onboarding.step": "Крок {current} з {total}",
@@ -1870,6 +1890,11 @@ const translations = {
     "bookings.field.price": "Precio",
     "bookings.field.code": "Código de confirmación",
     "bookings.cancelled_reason": "Motivo: {reason}",
+    "bookings.none_title": "Sin reservas aún",
+    "bookings.none_body": "Reserva tu primera cita en un salón cercano",
+    "bookings.browse_salons": "Explorar salones",
+    "bookings.upcoming": "Próximas",
+    "bookings.past": "Pasadas",
 
     // Onboarding
     "onboarding.step": "Paso {current} de {total}",

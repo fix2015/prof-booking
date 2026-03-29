@@ -17,6 +17,7 @@ import { PublicBookingPage } from "@/pages/public/PublicBookingPage";
 import { HelpPage } from "@/pages/public/HelpPage";
 import { ClientProfileEditPage } from "@/pages/public/ClientProfileEditPage";
 import { ClientReviewsPage } from "@/pages/public/ClientReviewsPage";
+import { ClientBookingsPage } from "@/pages/public/ClientBookingsPage";
 import { MasterDiscoveryPage } from "@/pages/public/MasterDiscoveryPage";
 import { FindProvidersPage } from "@/pages/public/FindProvidersPage";
 import { FindProfessionalsPage } from "@/pages/public/FindProfessionalsPage";
@@ -76,6 +77,7 @@ function AppRoutes() {
       <Route path="/help" element={<HelpPage />} />
       <Route path="/profile/client" element={<ClientProfileEditPage />} />
       <Route path="/reviews/client" element={<ClientReviewsPage />} />
+      <Route path="/bookings/client" element={<ClientBookingsPage />} />
       <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
       <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
       <Route path="/book/:providerId" element={<PublicBookingPage />} />
