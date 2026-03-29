@@ -21,6 +21,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     phone = Column(String(30), nullable=True, index=True)
+    name = Column(String(255), nullable=True)
+    avatar_url = Column(String(512), nullable=True)
     hashed_password = Column(String(255), nullable=False)
     role = Column(SAEnum(UserRole), nullable=False, default=UserRole.PROFESSIONAL)
     is_active = Column(Boolean, default=True, nullable=False)

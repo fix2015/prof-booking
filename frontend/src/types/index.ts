@@ -4,6 +4,8 @@ export interface User {
   id: number;
   email: string;
   phone?: string;
+  name?: string;
+  avatar_url?: string;
   role: UserRole;
   is_active: boolean;
   is_verified: boolean;

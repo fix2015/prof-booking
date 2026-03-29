@@ -24,11 +24,15 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
     is_active: Optional[bool] = None
 
 
 class UserResponse(UserBase):
     id: int
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
     is_active: bool
     is_verified: bool
     created_at: datetime

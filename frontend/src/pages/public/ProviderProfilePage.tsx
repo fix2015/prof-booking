@@ -144,9 +144,11 @@ export function ProviderProfilePage() {
           </div>
           <div>
             {displayedServices.map((service, idx) => (
-              <div
+              <button
                 key={service.id}
-                className={`flex items-center px-ds-4 py-ds-3 ${
+                type="button"
+                onClick={() => navigate(`/book/${provider.id}?service_id=${service.id}`)}
+                className={`w-full flex items-center px-ds-4 py-ds-3 text-left active:bg-ds-bg-secondary ${
                   idx < displayedServices.length - 1 ? "border-b border-ds-border" : ""
                 }`}
               >
@@ -154,8 +156,13 @@ export function ProviderProfilePage() {
                   <p className="ds-body text-ds-text-primary">{service.name}</p>
                   <p className="ds-caption text-ds-text-secondary">{t("providers.duration_min", { min: service.duration_minutes })}</p>
                 </div>
-                <p className="ds-body-strong text-ds-text-primary">${service.price}</p>
-              </div>
+                <div className="flex items-center gap-ds-2">
+                  <p className="ds-body-strong text-ds-text-primary">${service.price}</p>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ds-text-muted">
+                    <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </button>
             ))}
           </div>
           {services.length > 4 && (

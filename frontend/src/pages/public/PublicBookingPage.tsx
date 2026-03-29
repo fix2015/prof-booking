@@ -49,11 +49,18 @@ export function PublicBookingPage() {
   });
 
   const [step, setStep] = useState<Step>(1);
-  const [selectedService, setSelectedService] = useState<Service | null>(
-    preselectedServiceId
-      ? (services.find((s) => s.id === Number(preselectedServiceId)) ?? null)
-      : null
-  );
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+  // Auto-select service when services load and a preselected ID is in the URL
+  useEffect(() => {
+    if (!preselectedServiceId || selectedService) return;
+    const found = services.find((s) => s.id === Number(preselectedServiceId));
+    if (found) {
+      setSelectedService(found);
+      setStep(2); // skip to professional selection
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [services]);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
