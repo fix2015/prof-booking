@@ -45,9 +45,14 @@ class BookingLookupResponse(BaseModel):
     session_id: int
     client_name: str
     client_phone: str
+    provider_id: int
     provider_name: str
+    provider_address: Optional[str]
+    provider_phone: Optional[str]
     service_name: Optional[str]
+    professional_id: Optional[int]
     professional_name: Optional[str]
+    professional_phone: Optional[str]
     starts_at: datetime
     ends_at: datetime
     price: Optional[float]

@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import apiClient from "@/api/client";
 import { professionalsApi } from "@/api/masters";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { AppHeader } from "@/components/mobile/AppHeader";
 import { formatDateTime } from "@/utils/dates";
 import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/useToast";
@@ -34,6 +36,7 @@ interface ProviderInvite {
 
 export function NotificationsPage() {
   const { role } = useAuthContext();
+  const navigate = useNavigate();
   const qc = useQueryClient();
 
   const { data: notifications = [], isLoading } = useQuery({
@@ -64,6 +67,31 @@ export function NotificationsPage() {
 
   const pendingInvites = invites.filter((i) => i.status === "pending");
   const pastInvites = invites.filter((i) => i.status !== "pending");
+
+  if (role === "client") {
+    return (
+      <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary -m-3 md:-m-5 lg:-m-6">
+        <AppHeader variant="back-title" title={t("notifications.title")} onBack={() => navigate(-1)} />
+        <div className="flex-1 overflow-auto p-ds-4">
+          {isLoading ? (
+            <Spinner className="mx-auto mt-8" />
+          ) : notifications.length === 0 ? (
+            <p className="py-12 text-center ds-body text-ds-text-secondary">{t("notifications.empty")}</p>
+          ) : (
+            <div className="flex flex-col gap-ds-2">
+              {notifications.map((n) => (
+                <div key={n.id} className="bg-ds-bg-primary rounded-ds-xl border border-ds-border p-ds-3 flex flex-col gap-[4px]">
+                  <p className="ds-body-strong text-ds-text-primary">{n.subject || n.notification_type.replace(/_/g, " ")}</p>
+                  {n.body && <p className="ds-body text-ds-text-secondary">{n.body}</p>}
+                  <p className="ds-caption text-ds-text-muted">{formatDateTime(n.sent_at || n.created_at)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

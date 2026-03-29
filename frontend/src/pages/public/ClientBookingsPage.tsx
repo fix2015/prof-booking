@@ -4,6 +4,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useGuestSession } from "@/hooks/useGuestSession";
 import { bookingApi, BookingLookupResult } from "@/api/booking";
 import { AppHeader } from "@/components/mobile/AppHeader";
+import { BookingCard } from "@/components/mobile/BookingCard";
 import { t } from "@/i18n";
 import type { BookingConfirmation } from "@/types";
 
@@ -11,82 +12,6 @@ type AnyBooking = BookingLookupResult | BookingConfirmation;
 
 function getStatus(b: AnyBooking): string {
   return "status" in b ? b.status : "confirmed";
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  confirmed: "bg-[#e8f5e9] text-[#2e7d32]",
-  pending: "bg-[#fff8e1] text-[#f57f17]",
-  completed: "bg-ds-bg-secondary text-ds-text-secondary",
-  cancelled: "bg-[#fce4ec] text-[#c62828]",
-  in_progress: "bg-[#e3f2fd] text-[#1565c0]",
-  no_show: "bg-ds-bg-secondary text-ds-text-muted",
-};
-
-function StatusBadge({ status }: { status: string }) {
-  const cls = STATUS_STYLES[status] ?? STATUS_STYLES.confirmed;
-  return (
-    <span className={`ds-caption px-[8px] py-[2px] rounded-ds-full font-medium ${cls}`}>
-      {status.replace("_", " ")}
-    </span>
-  );
-}
-
-function BookingCard({ b, onNavigate }: { b: AnyBooking; onNavigate: (providerId?: number) => void }) {
-  const dateStr = new Date(b.starts_at).toLocaleDateString("en-US", {
-    weekday: "short", month: "short", day: "numeric",
-  });
-  const timeStr = new Date(b.starts_at).toLocaleTimeString("en-US", {
-    hour: "2-digit", minute: "2-digit",
-  });
-  const status = getStatus(b);
-
-  return (
-    <div className="bg-ds-bg-primary border border-ds-border rounded-ds-xl mx-ds-4 p-ds-3 flex flex-col gap-[8px]">
-      <div className="flex items-start justify-between gap-ds-2">
-        <div className="flex-1 min-w-0">
-          <p className="ds-body-strong text-ds-text-primary truncate">{b.service_name ?? t("profile.my_bookings")}</p>
-          <p className="ds-caption text-ds-text-secondary truncate">{b.provider_name}</p>
-        </div>
-        <StatusBadge status={status} />
-      </div>
-
-      <div className="flex items-center gap-[6px]">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-ds-text-muted">
-          <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-          <path d="M4 1v2M10 1v2M1 5h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-        </svg>
-        <span className="ds-caption text-ds-text-secondary">{dateStr} · {timeStr}</span>
-      </div>
-
-      {b.professional_name && (
-        <div className="flex items-center gap-[6px]">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0 text-ds-text-muted">
-            <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.3" />
-            <path d="M1.5 12.5c0-2.485 2.462-4.5 5.5-4.5s5.5 2.015 5.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-          </svg>
-          <span className="ds-caption text-ds-text-secondary">{b.professional_name}</span>
-        </div>
-      )}
-
-      <div className="flex items-center justify-between border-t border-ds-border pt-[8px] mt-[2px]">
-        <span className="ds-caption text-ds-text-muted">#{b.confirmation_code}</span>
-        <div className="flex items-center gap-ds-3">
-          {b.price != null && (
-            <span className="ds-body-strong text-ds-text-primary">${b.price}</span>
-          )}
-          {status === "confirmed" && (
-            <button
-              type="button"
-              onClick={() => onNavigate()}
-              className="ds-caption text-ds-interactive font-semibold"
-            >
-              Book again →
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function ClientBookingsPage() {
@@ -122,7 +47,6 @@ export function ClientBookingsPage() {
     <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
       <AppHeader variant="back-title" title={t("profile.my_bookings")} onBack={() => navigate(-1)} />
 
-      {/* Summary bar */}
       {totalCount > 0 && (
         <div className="bg-ds-bg-primary border-b border-ds-border px-ds-4 py-ds-3">
           <p className="ds-caption text-ds-text-secondary">{subtitleStr}</p>
@@ -159,7 +83,7 @@ export function ClientBookingsPage() {
           <p className="ds-label text-ds-text-secondary px-ds-4 pb-ds-2">{t("bookings.upcoming")}</p>
           <div className="flex flex-col gap-ds-2">
             {upcoming.map((b) => (
-              <BookingCard key={b.confirmation_code} b={b} onNavigate={() => navigate("/")} />
+              <BookingCard key={b.confirmation_code} b={b} />
             ))}
           </div>
         </div>
@@ -170,7 +94,7 @@ export function ClientBookingsPage() {
           <p className="ds-label text-ds-text-secondary px-ds-4 pb-ds-2">{t("bookings.past")}</p>
           <div className="flex flex-col gap-ds-2">
             {past.map((b) => (
-              <BookingCard key={b.confirmation_code} b={b} onNavigate={() => navigate("/")} />
+              <BookingCard key={b.confirmation_code} b={b} />
             ))}
           </div>
         </div>

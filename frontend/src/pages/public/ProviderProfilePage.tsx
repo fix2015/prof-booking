@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
 import { useProviderProfessionalsPublic } from "@/hooks/useMaster";
 import { servicesApi } from "@/api/services";
+import { reviewsApi } from "@/api/reviews";
+import { useAuthContext } from "@/context/AuthContext";
+import { useGuestSession } from "@/hooks/useGuestSession";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
 import { t } from "@/i18n";
+import type { Review } from "@/types";
 
 const SAVED_KEY = "pb_saved";
 
@@ -25,10 +29,58 @@ function toggleSaved(id: number): number[] {
   return next;
 }
 
+function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex gap-[4px]">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} type="button" onClick={() => onChange(n)} className="p-[2px]">
+          <svg width="28" height="28" viewBox="0 0 14 14" fill="none">
+            <path
+              d="M7 1l1.5 3.2L12 4.8l-2.5 2.4.6 3.4L7 9.1 3.9 10.6l.6-3.4L2 4.8l3.5-.6L7 1Z"
+              fill={n <= value ? "var(--ds-feedback-saved)" : "none"}
+              stroke={n <= value ? "var(--ds-feedback-saved)" : "var(--ds-border-strong)"}
+              strokeWidth="1"
+            />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewCard({ review }: { review: Review }) {
+  return (
+    <div className="px-ds-4 py-ds-3 border-b border-ds-border last:border-b-0">
+      <div className="flex items-center justify-between gap-ds-2 mb-[4px]">
+        <div className="flex gap-[2px]">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <svg key={n} width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path
+                d="M7 1l1.5 3.2L12 4.8l-2.5 2.4.6 3.4L7 9.1 3.9 10.6l.6-3.4L2 4.8l3.5-.6L7 1Z"
+                fill={n <= review.rating ? "var(--ds-feedback-saved)" : "none"}
+                stroke={n <= review.rating ? "var(--ds-feedback-saved)" : "var(--ds-border-strong)"}
+                strokeWidth="1"
+              />
+            </svg>
+          ))}
+        </div>
+        <span className="ds-caption text-ds-text-muted">
+          {new Date(review.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        </span>
+      </div>
+      <p className="ds-caption text-ds-text-secondary font-medium">{review.client_name}</p>
+      {review.comment && <p className="ds-body text-ds-text-secondary mt-[2px]">{review.comment}</p>}
+    </div>
+  );
+}
+
 export function ProviderProfilePage() {
   const { providerId } = useParams<{ providerId: string }>();
   const navigate = useNavigate();
   const id = Number(providerId);
+  const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuthContext();
+  const { guestProfile } = useGuestSession();
 
   const { data: provider, isLoading } = usePublicProvider(id);
   const { data: professionals = [] } = useProviderProfessionalsPublic(id);
@@ -37,9 +89,46 @@ export function ProviderProfilePage() {
     queryFn: () => servicesApi.listByProvider(id),
     enabled: !!id,
   });
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["reviews", "provider", id],
+    queryFn: () => reviewsApi.list({ provider_id: id }).then((r) => r.data),
+    enabled: !!id,
+  });
 
   const [saved, setSaved] = useState<number[]>(getSaved);
   const [showAllServices, setShowAllServices] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewName, setReviewName] = useState(
+    isAuthenticated && user ? (user.name || user.email.split("@")[0]) : (guestProfile?.name ?? "")
+  );
+  const [reviewPhone, setReviewPhone] = useState(
+    isAuthenticated && user?.phone ? user.phone : (guestProfile?.phone ?? "")
+  );
+  const [reviewProfessionalId, setReviewProfessionalId] = useState<number | "">("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewDone, setReviewDone] = useState(false);
+
+  const submitReview = useMutation({
+    mutationFn: () => reviewsApi.create({
+      professional_id: reviewProfessionalId !== "" ? Number(reviewProfessionalId) : (professionals[0]?.id ?? 0),
+      provider_id: id,
+      client_name: reviewName.trim(),
+      client_phone: reviewPhone.trim(),
+      rating: reviewRating,
+      comment: reviewComment.trim() || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews", "provider", id] });
+      setReviewDone(true);
+      setTimeout(() => {
+        setShowReviewForm(false);
+        setReviewDone(false);
+        setReviewComment("");
+        setReviewRating(5);
+      }, 1500);
+    },
+  });
 
   const isSaved = provider ? saved.includes(provider.id) : false;
 
@@ -196,6 +285,125 @@ export function ProviderProfilePage() {
                 )}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Reviews */}
+      <div className="bg-ds-bg-primary mt-ds-3 border-t border-ds-border mb-ds-4">
+        <div className="px-ds-4 pt-ds-4 pb-ds-3 flex items-center justify-between">
+          <p className="ds-h4 text-ds-text-primary">
+            {t("reviews.title")} {reviews.length > 0 && <span className="ds-caption text-ds-text-muted">({reviews.length})</span>}
+          </p>
+          <button
+            onClick={() => setShowReviewForm(true)}
+            className="h-[32px] px-ds-3 bg-ds-interactive rounded-ds-full ds-caption text-ds-text-inverse font-semibold"
+          >
+            {t("reviews.write_review")}
+          </button>
+        </div>
+        {reviews.length === 0 ? (
+          <p className="ds-body text-ds-text-secondary px-ds-4 pb-ds-4">{t("reviews.be_first")}</p>
+        ) : (
+          reviews.slice(0, 5).map((r) => <ReviewCard key={r.id} review={r} />)
+        )}
+      </div>
+
+      {/* Write Review Sheet */}
+      {showReviewForm && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40" onClick={() => setShowReviewForm(false)}>
+          <div
+            className="bg-ds-bg-primary rounded-t-[20px] px-ds-4 pt-ds-4 pb-[32px] flex flex-col gap-ds-3 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <p className="ds-h4 text-ds-text-primary">{t("reviews.write_review")}</p>
+              <button onClick={() => setShowReviewForm(false)} className="text-ds-text-muted p-[4px]">✕</button>
+            </div>
+
+            {reviewDone ? (
+              <div className="py-ds-6 flex flex-col items-center gap-ds-2">
+                <span className="text-[32px]">🎉</span>
+                <p className="ds-body-strong text-ds-text-primary">{t("reviews.success")}</p>
+              </div>
+            ) : (
+              <>
+                {/* Star rating */}
+                <div className="flex flex-col gap-[6px]">
+                  <p className="ds-label text-ds-text-secondary">{t("reviews.rating_label")}</p>
+                  <StarPicker value={reviewRating} onChange={setReviewRating} />
+                </div>
+
+                {/* Name */}
+                <div className="flex flex-col gap-[4px]">
+                  <label className="ds-label text-ds-text-secondary">{t("reviews.your_name")}</label>
+                  <input
+                    className="h-[44px] border border-ds-border rounded-ds-lg px-ds-3 ds-body text-ds-text-primary bg-ds-bg-primary outline-none focus:border-ds-interactive"
+                    value={reviewName}
+                    onChange={(e) => setReviewName(e.target.value)}
+                    placeholder={t("reviews.your_name")}
+                  />
+                </div>
+
+                {/* Phone — required, private */}
+                <div className="flex flex-col gap-[4px]">
+                  <label className="ds-label text-ds-text-secondary">
+                    {t("reviews.your_phone")}
+                    <span className="ml-[6px] ds-caption text-ds-text-muted">{t("reviews.phone_hint")}</span>
+                  </label>
+                  <input
+                    className="h-[44px] border border-ds-border rounded-ds-lg px-ds-3 ds-body text-ds-text-primary bg-ds-bg-primary outline-none focus:border-ds-interactive"
+                    value={reviewPhone}
+                    onChange={(e) => setReviewPhone(e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    type="tel"
+                  />
+                </div>
+
+                {/* Professional picker (only if multiple) */}
+                {professionals.length > 1 && (
+                  <div className="flex flex-col gap-[4px]">
+                    <label className="ds-label text-ds-text-secondary">{t("reviews.professional_label")}</label>
+                    <select
+                      className="h-[44px] border border-ds-border rounded-ds-lg px-ds-3 ds-body text-ds-text-primary bg-ds-bg-primary outline-none focus:border-ds-interactive"
+                      value={reviewProfessionalId}
+                      onChange={(e) => setReviewProfessionalId(e.target.value === "" ? "" : Number(e.target.value))}
+                    >
+                      <option value="">— select —</option>
+                      {professionals.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Comment */}
+                <div className="flex flex-col gap-[4px]">
+                  <label className="ds-label text-ds-text-secondary">{t("reviews.comment_label")}</label>
+                  <textarea
+                    className="border border-ds-border rounded-ds-lg px-ds-3 py-ds-2 ds-body text-ds-text-primary bg-ds-bg-primary outline-none focus:border-ds-interactive resize-none"
+                    rows={3}
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder={t("reviews.comment_placeholder")}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => submitReview.mutate()}
+                  disabled={
+                    !reviewName.trim() ||
+                    !reviewPhone.trim() ||
+                    (professionals.length > 1 && reviewProfessionalId === "") ||
+                    submitReview.isPending
+                  }
+                  className="h-[48px] bg-ds-interactive rounded-ds-2xl ds-body-large text-ds-text-inverse disabled:opacity-50"
+                >
+                  {submitReview.isPending ? t("reviews.submitting") : t("reviews.submit")}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
