@@ -106,8 +106,6 @@ export function UserProfilePage() {
     staleTime: 0,
   });
 
-  const bookingsRef = useRef<HTMLDivElement>(null);
-
   const displayName = isAuthenticated && user
     ? (user.name || user.email.split("@")[0])
     : (guestProfile?.name || t("profile.guest"));
@@ -195,8 +193,8 @@ export function UserProfilePage() {
                 : undefined
           }
           onClick={() => {
-            if (isClient) {
-              bookingsRef.current?.scrollIntoView({ behavior: "smooth" });
+            if (isClient || !isAuthenticated) {
+              navigate("/bookings/client");
             } else if (isAuthenticated) {
               navigate("/sessions");
             }
@@ -264,41 +262,35 @@ export function UserProfilePage() {
         </div>
       )}
 
-      {/* Bookings list — guest or authenticated client */}
-      {((!isAuthenticated && guestBookings.length > 0) || (isClient && clientBookings.length > 0)) && (
-        <div ref={bookingsRef} className="mt-ds-3">
-          <p className="ds-label text-ds-text-secondary px-ds-4 pb-ds-2">{t("profile.my_bookings")}</p>
-          <div className="flex flex-col gap-ds-2">
-            {(isClient ? clientBookings : guestBookings).map((b) => (
-              <div
-                key={b.confirmation_code}
-                className="bg-ds-bg-primary border border-ds-border rounded-ds-xl mx-ds-4 p-ds-3 flex flex-col gap-[6px]"
-              >
-                <div className="flex items-start justify-between gap-ds-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="ds-body-strong text-ds-text-primary truncate">{b.service_name ?? "Booking"}</p>
-                    <p className="ds-caption text-ds-text-secondary truncate">{b.provider_name}</p>
-                  </div>
-                  <span className="ds-caption text-ds-text-muted shrink-0">
-                    {new Date(b.starts_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    {" · "}
-                    {new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                </div>
-                {b.professional_name && (
-                  <p className="ds-caption text-ds-text-secondary">{b.professional_name}</p>
-                )}
-                <div className="flex items-center justify-between pt-[2px]">
-                  <span className="ds-caption text-ds-text-muted">#{b.confirmation_code}</span>
-                  {b.price != null && (
-                    <span className="ds-body-strong text-ds-text-primary">${b.price}</span>
-                  )}
-                </div>
+      {/* Next booking preview */}
+      {(() => {
+        const allBookings = isClient ? clientBookings : guestBookings;
+        const now = new Date();
+        const next = allBookings
+          .filter((b) => new Date(b.starts_at) >= now && ("status" in b ? b.status !== "cancelled" : true))
+          .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0];
+        if (!next) return null;
+        return (
+          <button
+            type="button"
+            onClick={() => navigate("/bookings/client")}
+            className="mt-ds-3 mx-ds-4 bg-ds-bg-primary border border-ds-border rounded-ds-xl p-ds-3 flex flex-col gap-[6px] text-left w-[calc(100%-32px)]"
+          >
+            <div className="flex items-start justify-between gap-ds-2">
+              <div className="flex-1 min-w-0">
+                <p className="ds-body-strong text-ds-text-primary truncate">{next.service_name ?? t("profile.my_bookings")}</p>
+                <p className="ds-caption text-ds-text-secondary truncate">{next.provider_name}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              <span className="ds-caption text-ds-interactive font-semibold shrink-0">View all →</span>
+            </div>
+            <span className="ds-caption text-ds-text-secondary">
+              {new Date(next.starts_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              {" · "}
+              {new Date(next.starts_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </button>
+        );
+      })()}
     </div>
   );
 }
