@@ -108,9 +108,14 @@ def _session_to_lookup_response(session: SessionModel) -> BookingLookupResponse:
         session_id=session.id,
         client_name=session.client_name,
         client_phone=session.client_phone,
+        provider_id=session.provider_id,
         provider_name=session.provider.name if session.provider else "",
+        provider_address=session.provider.address if session.provider else None,
+        provider_phone=session.provider.phone if session.provider else None,
         service_name=session.service.name if session.service else None,
+        professional_id=session.professional_id,
         professional_name=session.professional.name if session.professional else None,
+        professional_phone=session.professional.phone if session.professional else None,
         starts_at=session.starts_at,
         ends_at=session.ends_at,
         price=session.price,
@@ -157,6 +162,55 @@ def cancel_booking(db: Session, session_id: int, confirmation_code: str, phone: 
     session.cancellation_reason = reason
     db.commit()
     db.refresh(session)
+
+    # Send cancellation notifications
+    try:
+        from app.modules.notifications.models import Notification, NotificationType, NotificationStatus
+        from app.modules.masters.models import Professional
+
+        provider_name = session.provider.name if session.provider else "the salon"
+        date_str = session.starts_at.strftime("%b %d at %I:%M %p")
+        client_name = session.client_name
+        reason_str = f" Reason: {reason}" if reason else ""
+
+        notifs = [
+            Notification(
+                session_id=session.id,
+                notification_type=NotificationType.SMS_CONFIRMATION,
+                recipient=session.client_phone,
+                subject="Booking Cancelled",
+                body=f"Your appointment on {date_str} at {provider_name} has been cancelled.{reason_str}",
+                status=NotificationStatus.SENT,
+            ),
+        ]
+
+        if session.professional_id:
+            pro = db.query(Professional).filter(Professional.id == session.professional_id).first()
+            notifs.append(Notification(
+                session_id=session.id,
+                notification_type=NotificationType.SMS_CONFIRMATION,
+                recipient=pro.phone if pro and pro.phone else "app",
+                subject="Booking Cancelled",
+                body=f"Booking cancelled: {client_name} on {date_str}.{reason_str}",
+                status=NotificationStatus.SENT,
+            ))
+
+        if session.provider_id:
+            notifs.append(Notification(
+                session_id=session.id,
+                notification_type=NotificationType.SMS_CONFIRMATION,
+                recipient="app",
+                subject="Booking Cancelled",
+                body=f"Booking cancelled at {provider_name}: {client_name} · {date_str}.{reason_str}",
+                status=NotificationStatus.SENT,
+            ))
+
+        for n in notifs:
+            db.add(n)
+        db.commit()
+    except Exception:
+        pass  # Non-critical
+
     # Re-fetch with joins after refresh clears the instance state
     return _session_to_lookup_response(
         db.query(SessionModel).options(*_session_joins()).filter(SessionModel.id == session_id).first()

@@ -16,9 +16,14 @@ export interface BookingLookupResult {
   session_id: number;
   client_name: string;
   client_phone: string;
+  provider_id: number;
   provider_name: string;
+  provider_address?: string;
+  provider_phone?: string;
   service_name?: string;
+  professional_id?: number;
   professional_name?: string;
+  professional_phone?: string;
   starts_at: string;
   ends_at: string;
   price?: number;

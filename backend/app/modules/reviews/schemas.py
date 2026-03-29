@@ -20,7 +20,6 @@ class ReviewResponse(BaseModel):
     professional_id: int
     provider_id: int
     client_name: str
-    client_phone: Optional[str]
     rating: int
     comment: Optional[str]
     images: Optional[List[str]] = None

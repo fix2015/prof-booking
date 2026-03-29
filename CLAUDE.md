@@ -119,7 +119,9 @@ Vite dev server proxies `/api/*` to `http://localhost:8000`.
 - `<MobileLayout>` — consumer-facing tab bar (bottom nav). Routes: `/` (SalonSelectorPage), `/map` (MapPage), `/saved`, `/me` (UserProfilePage). No auth required.
 - `<AppLayout>` — authenticated B2B dashboard shell. Routes: `/dashboard`, `/calendar`, `/sessions`, `/professionals`, `/services`, `/reports`, `/notifications`, `/reviews`, `/analytics/*`, `/invoices`, `/clients/*`, `/admin`, `/profile/*`.
 
-Detail/booking routes render without a layout wrapper: `/providers/:id`, `/professionals/:id`, `/book/:providerId`.
+Consumer-only routes (no layout wrapper): `/providers/:id`, `/professionals/:id`, `/book/:providerId`, `/my-bookings`, `/my-reviews`, `/me/edit`, `/login`, `/help`.
+
+Detail/booking routes render without a layout wrapper (in addition to the consumer-only routes above).
 
 `DashboardRouter` dispatches based on role: `provider_owner` → `OwnerDashboardPage`, `platform_admin` → `AdminPanelPage`, else `MasterDashboardPage`.
 
@@ -153,6 +155,8 @@ POST /api/v1/payments/webhook ← Stripe posts on success/failure → updates se
 
 Celery workers (backed by Redis) handle SMS (Twilio) and email notifications. Beat scheduler runs nightly reminders.
 
+**Notification rules** (who gets what, when, implementation status): `docs/notification-rules.md`.
+
 ```bash
 celery -A app.modules.notifications.tasks worker --loglevel=info
 celery -A app.modules.notifications.tasks beat --loglevel=info
@@ -183,7 +187,7 @@ sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --ta
 
 Migration chain in `backend/alembic/versions/`:
 ```
-0001 → ec54709d7c95 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 → 0010 → 0011 (head)
+0001 → ec54709d7c95 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 → 0010 → 0011 → 0012 (head)
 ```
 | Revision | Description |
 |---|---|
@@ -199,6 +203,7 @@ Migration chain in `backend/alembic/versions/`:
 | `0009` | Add client CRM tables: `client_profiles`, `client_notes`, `client_photos` |
 | `0010` | Make `services.provider_id` nullable, add `professional_id` |
 | `0011` | Services many-to-many providers: replace `provider_id` with `service_providers` join table |
+| `0012` | Add `name` and `avatar_url` columns to `users` table |
 
 ---
 
