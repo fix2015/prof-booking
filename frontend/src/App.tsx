@@ -14,6 +14,7 @@ import { UserProfilePage } from "@/pages/public/UserProfilePage";
 import { ProviderProfilePage } from "@/pages/public/ProviderProfilePage";
 import { MasterProfilePage } from "@/pages/public/MasterProfilePage";
 import { PublicBookingPage } from "@/pages/public/PublicBookingPage";
+import { HelpPage } from "@/pages/public/HelpPage";
 import { MasterDiscoveryPage } from "@/pages/public/MasterDiscoveryPage";
 import { FindProvidersPage } from "@/pages/public/FindProvidersPage";
 import { FindProfessionalsPage } from "@/pages/public/FindProfessionalsPage";
@@ -70,6 +71,7 @@ function AppRoutes() {
       </Route>
 
       {/* Detail + booking routes (no tab bar) */}
+      <Route path="/help" element={<HelpPage />} />
       <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
       <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
       <Route path="/book/:providerId" element={<PublicBookingPage />} />
