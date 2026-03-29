@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchProviders, useProviderCategories } from "@/hooks/useSalon";
+import { useAuthContext } from "@/context/AuthContext";
+import { useLogout } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
@@ -30,6 +32,8 @@ function toggleSaved(id: number): number[] {
 
 export function SalonSelectorPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthContext();
+  const logout = useLogout();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [saved, setSaved] = useState<number[]>(getSaved);
@@ -74,14 +78,25 @@ export function SalonSelectorPage() {
   const HeaderRight = (
     <div className="flex items-center gap-ds-2">
       <LanguageSwitcher />
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
-        onClick={() => navigate("/login")}
-      >
-        {t("providers.sign_in")}
-      </Button>
+      {isAuthenticated ? (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
+          onClick={() => logout.mutate(undefined)}
+        >
+          {t("profile.sign_out")}
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
+          onClick={() => navigate("/login")}
+        >
+          {t("providers.sign_in")}
+        </Button>
+      )}
     </div>
   );
 

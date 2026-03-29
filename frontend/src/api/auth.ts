@@ -2,7 +2,8 @@ import apiClient from "./client";
 import { AuthTokens, User } from "@/types";
 
 export interface LoginPayload {
-  email: string;
+  email?: string;
+  phone?: string;
   password: string;
 }
 
