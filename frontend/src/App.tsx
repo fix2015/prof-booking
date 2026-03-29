@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuthContext } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,8 +6,6 @@ import { AppLayout } from "@/components/layout/AppLayout";
 
 // Public pages (no auth required)
 import { LoginPage } from "@/pages/public/LoginPage";
-import { RegisterPage } from "@/pages/public/RegisterPage";
-import { MasterRegisterPage } from "@/pages/public/MasterRegisterPage";
 import { MobileLayout } from "@/pages/public/MobileLayout";
 import { SalonSelectorPage } from "@/pages/public/SalonSelectorPage";
 import { MapPage } from "@/pages/public/MapPage";
@@ -40,6 +38,12 @@ import { ProfessionalSplitPage } from "@/pages/private/ProfessionalSplitPage";
 import { ClientsPage } from "@/pages/private/ClientsPage";
 import { ClientDetailPage } from "@/pages/private/ClientDetailPage";
 
+function ProRegisterRedirect() {
+  const [searchParams] = useSearchParams();
+  const invite = searchParams.get("invite");
+  return <Navigate to={invite ? `/login?tab=pro&invite=${invite}` : "/login?tab=pro"} replace />;
+}
+
 function DashboardRouter() {
   const { role } = useAuthContext();
   if (role === "provider_owner") return <OwnerDashboardPage />;
@@ -52,10 +56,10 @@ function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/register/professional" element={<MasterRegisterPage />} />
-      <Route path="/register/master" element={<MasterRegisterPage />} />
-      <Route path="/register/client" element={<Navigate to="/login" replace />} />
+      <Route path="/register" element={<Navigate to="/login?tab=business" replace />} />
+      <Route path="/register/professional" element={<ProRegisterRedirect />} />
+      <Route path="/register/master" element={<ProRegisterRedirect />} />
+      <Route path="/register/client" element={<Navigate to="/login?tab=client" replace />} />
 
       {/* Public discovery — tab layout */}
       <Route element={<MobileLayout />}>

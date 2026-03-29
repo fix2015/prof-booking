@@ -107,6 +107,8 @@ Key files:
 
 Vite dev server proxies `/api/*` to `http://localhost:8000`.
 
+**i18n:** Custom zero-dependency utility in `src/i18n.ts`. Supported locales: `en`, `pl`, `ro`, `uk`, `es`. Add new keys to all locale objects in that file. Language is persisted in `localStorage` and switched via `<LanguageSwitcher>`.
+
 **Notable frontend deps:**
 - `yet-another-react-lightbox` — portfolio/photo gallery lightbox
 - `@react-google-maps/api` — Google Maps integration
