@@ -76,12 +76,17 @@ def create_review(
 def list_reviews(
     professional_id: Optional[int] = Query(None),
     provider_id: Optional[int] = Query(None),
+    client_phone: Optional[str] = Query(None),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, le=200),
     db: Session = Depends(get_db),
 ):
     """Public endpoint — list published reviews."""
-    q = db.query(Review).filter(Review.is_published == True)  # noqa: E712
+    q = db.query(Review)
+    if client_phone:
+        q = q.filter(Review.client_phone == client_phone)
+    else:
+        q = q.filter(Review.is_published == True)  # noqa: E712
     if professional_id:
         q = q.filter(Review.professional_id == professional_id)
     if provider_id:

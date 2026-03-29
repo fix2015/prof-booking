@@ -2,7 +2,7 @@ import { apiClient } from "./client";
 import type { Review, ReviewStats } from "@/types";
 
 export const reviewsApi = {
-  list: (params?: { professional_id?: number; provider_id?: number; skip?: number; limit?: number }) =>
+  list: (params?: { professional_id?: number; provider_id?: number; client_phone?: string; skip?: number; limit?: number }) =>
     apiClient.get<Review[]>("/reviews/", { params }),
 
   create: (data: {

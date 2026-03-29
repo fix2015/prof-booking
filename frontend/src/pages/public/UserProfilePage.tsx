@@ -103,7 +103,10 @@ export function UserProfilePage() {
     queryKey: ["client-bookings", user?.phone],
     queryFn: () => bookingApi.lookupByPhone(user!.phone!),
     enabled: isClient && !!user?.phone,
+    staleTime: 0,
   });
+
+  const bookingsRef = useRef<HTMLDivElement>(null);
 
   const displayName = isAuthenticated && user
     ? (user.name || user.email.split("@")[0])
@@ -191,7 +194,13 @@ export function UserProfilePage() {
                   : t("profile.no_bookings")
                 : undefined
           }
-          onClick={() => isClient ? undefined : (isAuthenticated ? navigate("/sessions") : undefined)}
+          onClick={() => {
+            if (isClient) {
+              bookingsRef.current?.scrollIntoView({ behavior: "smooth" });
+            } else if (isAuthenticated) {
+              navigate("/sessions");
+            }
+          }}
         />
         {isAuthenticated && (
           <MenuRow
@@ -201,7 +210,7 @@ export function UserProfilePage() {
               </svg>
             }
             label={t("profile.my_reviews")}
-            onClick={() => {}}
+            onClick={() => navigate("/reviews/client")}
           />
         )}
         {isAuthenticated && (
@@ -257,7 +266,7 @@ export function UserProfilePage() {
 
       {/* Bookings list — guest or authenticated client */}
       {((!isAuthenticated && guestBookings.length > 0) || (isClient && clientBookings.length > 0)) && (
-        <div className="mt-ds-3">
+        <div ref={bookingsRef} className="mt-ds-3">
           <p className="ds-label text-ds-text-secondary px-ds-4 pb-ds-2">{t("profile.my_bookings")}</p>
           <div className="flex flex-col gap-ds-2">
             {(isClient ? clientBookings : guestBookings).map((b) => (
