@@ -14,6 +14,7 @@ function padTime(h: number, m: number) {
 
 interface WeekViewProps {
   weekStart: Date;
+  dayCount?: number;
   workSlots: WorkSlot[];
   sessions: Session[];
   onAddSlot?: (date: Date, start: string, end: string) => void;
@@ -30,6 +31,7 @@ interface SlotForm {
 
 export function WeekView({
   weekStart,
+  dayCount = 7,
   workSlots,
   sessions,
   onAddSlot,
@@ -37,7 +39,7 @@ export function WeekView({
   onSessionClick,
   onDayClick,
 }: WeekViewProps) {
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const days = Array.from({ length: dayCount }, (_, i) => addDays(weekStart, i));
   const [form, setForm] = useState<SlotForm | null>(null);
 
   const now = new Date();
@@ -115,7 +117,10 @@ export function WeekView({
       {/* Calendar grid */}
       <div className="overflow-auto rounded-lg border bg-white">
         {/* Header */}
-        <div className="grid grid-cols-8 border-b sticky top-0 bg-white z-10">
+        <div
+          className="grid border-b sticky top-0 bg-white z-10"
+          style={{ gridTemplateColumns: `auto repeat(${dayCount}, 1fr)` }}
+        >
           <div className="border-r p-2 text-xs text-muted-foreground" />
           {days.map((day) => {
             const isPastDay = isBefore(day, new Date(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -144,7 +149,10 @@ export function WeekView({
         </div>
 
         {/* Time grid */}
-        <div className="grid grid-cols-8">
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: `auto repeat(${dayCount}, 1fr)` }}
+        >
           {/* Time labels */}
           <div className="border-r">
             {HOURS.map((h) => (
