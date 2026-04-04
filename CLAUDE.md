@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Multi-tenant SaaS for nail salon booking & worker management. Monorepo with a FastAPI backend and React frontend.
 
-**Stack:** React 18 + TypeScript + Vite + TanStack Query v5 / FastAPI + SQLAlchemy 2 + PostgreSQL + Redis + Celery
+**Stack:** React 18 + TypeScript + Vite + TailwindCSS + ShadCN + TanStack Query v5 / FastAPI + SQLAlchemy 2 + PostgreSQL + Redis + Celery
 
 ---
 
@@ -62,6 +62,7 @@ cd backend && python scripts/seed_mock_data.py
 ```bash
 cd frontend && yarn install   # yarn.lock is the tracked lock file
 
+cd frontend
 yarn dev             # Dev server on http://localhost:5174
 yarn typecheck       # tsc --noEmit
 yarn lint            # ESLint (zero warnings allowed)
@@ -99,7 +100,8 @@ Key files:
 ### Frontend (`frontend/src/`)
 
 - `api/` — Typed Axios layer, one file per domain (mirrors backend modules)
-- `pages/` — Route-level components
+- `pages/public/` — Consumer-facing route components (no auth required)
+- `pages/private/` — Authenticated B2B dashboard route components
 - `components/` — Shared UI; `components/ui/` contains ShadCN primitives; `components/mobile/` contains DS-compliant consumer-facing components (BookingCard, ProviderCard, FilterSheet, StatusBadge, DateSelect, etc.); `components/shared/` for cross-layout shared components (NotificationItem)
 - `hooks/` — TanStack Query hooks wrapping the API layer
 - `context/` — Auth context (JWT storage, user state) + ThemeContext
@@ -117,12 +119,10 @@ Vite dev server proxies `/api/*` to `http://localhost:8000`.
 - `react-hook-form` + `zod` — form validation
 
 **Routing:** Two layout contexts exist in `App.tsx`:
-- `<MobileLayout>` — consumer-facing tab bar (bottom nav). Routes: `/` (SalonSelectorPage), `/map` (MapPage), `/saved`, `/me` (UserProfilePage). No auth required.
-- `<AppLayout>` — authenticated B2B dashboard shell. Routes: `/dashboard`, `/calendar`, `/sessions`, `/professionals`, `/services`, `/reports`, `/notifications`, `/reviews`, `/analytics/*`, `/invoices`, `/clients/*`, `/admin`, `/profile/*`.
+- `<MobileLayout>` — consumer-facing tab bar (bottom nav). Routes: `/` (SalonSelectorPage), `/map`, `/saved`, `/me` (UserProfilePage). No auth required.
+- `<AppLayout>` — authenticated B2B dashboard shell. Routes: `/dashboard`, `/calendar`, `/sessions`, `/professionals`, `/services`, `/reports`, `/notifications`, `/reviews`, `/analytics/owner`, `/analytics/professional`, `/invoices`, `/clients`, `/clients/:clientId`, `/admin`, `/profile/professional`, `/profile/provider`.
 
-Consumer-only routes (no layout wrapper): `/providers/:id`, `/professionals/:id`, `/book/:providerId`, `/my-bookings`, `/my-reviews`, `/me/edit`, `/login`, `/help`.
-
-Detail/booking routes render without a layout wrapper (in addition to the consumer-only routes above).
+Routes without a layout wrapper: `/login`, `/help`, `/providers/:providerId`, `/professionals/:professionalId`, `/book/:providerId`, `/profile/client`, `/reviews/client`, `/bookings/client`, `/discover`, `/find-providers`, `/find-professionals`, `/professionals/:professionalId/split`.
 
 `DashboardRouter` dispatches based on role: `provider_owner` → `OwnerDashboardPage`, `platform_admin` → `AdminPanelPage`, else `MasterDashboardPage`.
 
@@ -186,25 +186,9 @@ sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --ta
 
 ## Database Migrations (Alembic)
 
-Migration chain in `backend/alembic/versions/`:
-```
-0001 → ec54709d7c95 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 → 0010 → 0011 → 0012 (head)
-```
-| Revision | Description |
-|---|---|
-| `0001` | Initial schema |
-| `ec54709d7c95` | Add master extended fields, photos |
-| `0002` | Rename master/salon to professional/provider |
-| `0003` | Add `is_independent` to professionals |
-| `0004` | Add client_phone index to sessions |
-| `0005` | Add provider-professional invites |
-| `0006` | Add images to reviews |
-| `0007` | Rename `master_percentage` to `professional_percentage` |
-| `0008` | Rename `master_earnings`/`salon_earnings` to `professional_earnings`/`provider_earnings` in invoices |
-| `0009` | Add client CRM tables: `client_profiles`, `client_notes`, `client_photos` |
-| `0010` | Make `services.provider_id` nullable, add `professional_id` |
-| `0011` | Services many-to-many providers: replace `provider_id` with `service_providers` join table |
-| `0012` | Add `name` and `avatar_url` columns to `users` table |
+Versions live in `backend/alembic/versions/`. Files are numbered `0001_`, `0002_`, etc. (one exception: `ec54709d7c95` sits between `0001` and `0002`). Current head: `0013`. Run `alembic history` to see the full chain.
+
+When creating a new migration: `cd backend && alembic revision --autogenerate -m "description"` — then rename the file to follow the `NNNN_description.py` convention and set `down_revision` to the previous head.
 
 ---
 

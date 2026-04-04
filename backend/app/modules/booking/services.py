@@ -119,6 +119,36 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
     except Exception:
         pass  # Non-critical
 
+    # Send Web Push notification to the professional (non-blocking)
+    try:
+        from app.modules.masters.models import Professional as ProfModel
+        if session.professional_id:
+            wp_prof = db.query(ProfModel).filter(ProfModel.id == session.professional_id).first()
+            if wp_prof and wp_prof.user_id:
+                _wp_user_id = wp_prof.user_id
+                _wp_session_id = session.id
+                _wp_title = "New Booking"
+                _wp_body = (
+                    f"{session.client_name} on "
+                    f"{session.starts_at.strftime('%b %d, %Y at %I:%M %p')}"
+                    f" — {service.name}"
+                )
+
+                def _send_wp():
+                    from app.database import SessionLocal
+                    from app.modules.notifications.webpush import send_web_push
+                    wp_db = SessionLocal()
+                    try:
+                        send_web_push(wp_db, _wp_user_id, _wp_title, _wp_body,
+                                      url="/sessions", session_id=_wp_session_id)
+                    finally:
+                        wp_db.close()
+
+                from threading import Thread as WpThread
+                WpThread(target=_send_wp, daemon=True).start()
+    except Exception:
+        pass  # Non-critical
+
     confirmation_code = _generate_confirmation_code(session.id)
 
     return BookingConfirmation(
@@ -241,6 +271,13 @@ def cancel_booking(db: Session, session_id: int, confirmation_code: str, phone: 
         for n in notifs:
             db.add(n)
         db.commit()
+    except Exception:
+        pass  # Non-critical
+
+    # Send instant cancellation alert to professional
+    try:
+        from app.modules.notifications.scheduled_alerts import send_cancellation_alert
+        send_cancellation_alert(db, session)
     except Exception:
         pass  # Non-critical
 

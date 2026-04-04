@@ -14,6 +14,7 @@ class NotificationType(str, enum.Enum):
     EMAIL_CONFIRMATION = "email_confirmation"
     EMAIL_REMINDER = "email_reminder"
     TELEGRAM = "telegram"
+    WEB_PUSH = "web_push"
 
 
 class NotificationStatus(str, enum.Enum):
@@ -41,6 +42,41 @@ class Notification(Base):
     __table_args__ = (
         Index("ix_notifications_session", "session_id"),
         Index("ix_notifications_status", "status"),
+    )
+
+
+class NotificationPreference(Base):
+    """Per-user notification alert preferences (toggles)."""
+    __tablename__ = "notification_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    daily_morning = Column(Integer, default=1, nullable=False)       # Tomorrow's bookings at 8 AM
+    weekly_schedule = Column(Integer, default=0, nullable=False)     # Next week agenda Sunday 7 PM
+    eod_recap = Column(Integer, default=1, nullable=False)           # End-of-day recap at 9 PM
+    cancellation = Column(Integer, default=1, nullable=False)        # Instant cancellation alerts
+    new_review = Column(Integer, default=0, nullable=False)          # Instant new review alerts
+    appointment_reminder = Column(Integer, default=1, nullable=False)  # 1 hour before session
+
+    user = relationship("User")
+
+
+class PushSubscription(Base):
+    """Stores browser push subscription info for Web Push notifications."""
+    __tablename__ = "push_subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    endpoint = Column(Text, nullable=False)
+    p256dh = Column(String(255), nullable=False)
+    auth = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("User")
+
+    __table_args__ = (
+        Index("ix_push_sub_user", "user_id"),
+        Index("ix_push_sub_endpoint", "endpoint", unique=True),
     )
 
 

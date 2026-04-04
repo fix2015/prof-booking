@@ -50,8 +50,13 @@ async def telegram_webhook(request: Request, db: Session = Depends(get_db)):
     username = message.get("from", {}).get("username")
 
     if not text.startswith("/start"):
-        # Reply with help
-        send_telegram_message(chat_id, "Use the link from your ProBook app to connect your account.")
+        # Handle bot commands
+        if text.startswith("/"):
+            from app.modules.notifications.telegram_commands import handle_command
+            reply = handle_command(db, chat_id, text)
+            send_telegram_message(chat_id, reply)
+            return {"ok": True}
+        send_telegram_message(chat_id, "Type /help to see available commands.")
         return {"ok": True}
 
     # /start or /start <payload>

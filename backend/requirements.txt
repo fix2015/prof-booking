@@ -17,6 +17,8 @@ emails==0.6
 openpyxl==3.1.5
 reportlab==4.2.5
 httpx==0.28.1
+pywebpush==2.0.1
+py-vapid==1.9.4
 boto3==1.35.76
 Pillow==11.1.0
 pytest==8.3.4
