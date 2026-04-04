@@ -31,8 +31,13 @@ export function useAvailability(
 }
 
 export function useCreateBooking() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: PublicBookingPayload) => bookingApi.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["available-dates"] });
+      qc.invalidateQueries({ queryKey: ["availability"] });
+    },
   });
 }
 
