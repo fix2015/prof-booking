@@ -133,9 +133,17 @@ export function PublicBookingPage() {
         onSuccess: (confirmation) => {
           setGuestProfile({ name: form.name, phone: form.phone, email: form.email });
           addGuestBooking(confirmation);
-          // Invalidate client bookings cache so /me shows the new booking immediately
           queryClient.invalidateQueries({ queryKey: ["client-bookings"] });
+          queryClient.invalidateQueries({ queryKey: ["availability"] });
+          queryClient.invalidateQueries({ queryKey: ["available-dates"] });
           navigate("/me");
+        },
+        onError: () => {
+          // Slot was already booked — refetch availability to remove it
+          queryClient.invalidateQueries({ queryKey: ["availability"] });
+          queryClient.invalidateQueries({ queryKey: ["available-dates"] });
+          setSelectedSlot(null);
+          setStep(4);
         },
       }
     );
