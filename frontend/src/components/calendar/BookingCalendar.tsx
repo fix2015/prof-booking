@@ -9,7 +9,7 @@ import {
 } from "@/utils/dates";
 import { WorkSlot, Session } from "@/types";
 
-type CalendarView = "week" | "day";
+type CalendarView = "week" | "5day" | "day";
 
 interface BookingCalendarProps {
   workSlots: WorkSlot[];
@@ -39,15 +39,23 @@ export function BookingCalendar({
   };
 
   const goToday = () => navigate(new Date());
-  const goPrev = () =>
-    navigate(view === "week" ? subWeeks(currentDate, 1) : addDays(currentDate, -1));
-  const goNext = () =>
-    navigate(view === "week" ? addWeeks(currentDate, 1) : addDays(currentDate, 1));
+  const goPrev = () => {
+    if (view === "week") navigate(subWeeks(currentDate, 1));
+    else if (view === "5day") navigate(addDays(currentDate, -7));
+    else navigate(addDays(currentDate, -1));
+  };
+  const goNext = () => {
+    if (view === "week") navigate(addWeeks(currentDate, 1));
+    else if (view === "5day") navigate(addDays(currentDate, 7));
+    else navigate(addDays(currentDate, 1));
+  };
 
   const dateLabel =
     view === "week"
       ? `${formatDate(weekStart, "MMM d")} – ${formatDate(addDays(weekStart, 6), "MMM d, yyyy")}`
-      : formatDate(currentDate, "EEEE, MMMM d, yyyy");
+      : view === "5day"
+        ? `${formatDate(weekStart, "MMM d")} – ${formatDate(addDays(weekStart, 4), "MMM d, yyyy")}`
+        : formatDate(currentDate, "EEEE, MMMM d, yyyy");
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,25 +73,29 @@ export function BookingCalendar({
           </Button>
           <span className="ml-2 text-sm font-medium">{dateLabel}</span>
         </div>
-        <div className="flex gap-1 rounded-md border p-1">
-          {(["week", "day"] as CalendarView[]).map((v) => (
+        <div className="flex gap-1 rounded-md bg-muted p-1">
+          {([
+            { key: "week", label: "Week" },
+            { key: "5day", label: "5 Day" },
+            { key: "day", label: "Day" },
+          ] as { key: CalendarView; label: string }[]).map(({ key, label }) => (
             <Button
-              key={v}
-              variant={view === v ? "default" : "ghost"}
+              key={key}
+              variant={view === key ? "default" : "ghost"}
               size="sm"
-              className="capitalize"
-              onClick={() => setView(v)}
+              onClick={() => setView(key)}
             >
-              {v}
+              {label}
             </Button>
           ))}
         </div>
       </div>
 
       {/* Calendar Body */}
-      {view === "week" ? (
+      {view === "week" || view === "5day" ? (
         <WeekView
           weekStart={weekStart}
+          dayCount={view === "5day" ? 5 : 7}
           workSlots={workSlots}
           sessions={sessions}
           onAddSlot={onAddSlot}
