@@ -12,7 +12,8 @@ import { formatDateTime } from "@/utils/dates";
 import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "@/hooks/useToast";
 import { t } from "@/i18n";
-import { Building2, Check, X } from "lucide-react";
+import { Building2, Check, X, MessageCircle, Unlink } from "lucide-react";
+import { telegramApi } from "@/api/telegram";
 
 interface Notification {
   id: number;
@@ -93,6 +94,9 @@ export function NotificationsPage() {
   return (
     <div className="space-y-ds-6">
       <h1 className="ds-h2">{t("notifications.title")}</h1>
+
+      {/* Telegram link section */}
+      <TelegramLinkSection />
 
       {/* Provider invites — professionals only */}
       {role === "professional" && (
@@ -201,5 +205,74 @@ export function NotificationsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+
+/** Telegram link/unlink card shown on the notifications page. */
+function TelegramLinkSection() {
+  const qc = useQueryClient();
+
+  const { data: linkStatus, isLoading } = useQuery({
+    queryKey: ["telegram-link"],
+    queryFn: telegramApi.getLinkStatus,
+  });
+
+  const unlinkMutation = useMutation({
+    mutationFn: telegramApi.unlink,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["telegram-link"] });
+      toast({ title: "Telegram unlinked" });
+    },
+    onError: () => toast({ title: "Failed to unlink", variant: "destructive" }),
+  });
+
+  if (isLoading || !linkStatus) return null;
+
+  return (
+    <Card className="border-ds-border">
+      <CardContent className="p-ds-4">
+        <div className="flex items-center gap-ds-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-ds-full bg-[#229ED9]/10">
+            <MessageCircle className="h-5 w-5 text-[#229ED9]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="ds-body-strong text-ds-text-primary">Telegram Notifications</p>
+            {linkStatus.linked ? (
+              <p className="ds-caption text-ds-text-secondary">
+                Linked{linkStatus.username ? ` as @${linkStatus.username}` : ""}
+              </p>
+            ) : (
+              <p className="ds-caption text-ds-text-muted">
+                Get instant notifications via Telegram
+              </p>
+            )}
+          </div>
+          {linkStatus.linked ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-[6px] text-destructive"
+              onClick={() => unlinkMutation.mutate()}
+              disabled={unlinkMutation.isPending}
+            >
+              <Unlink className="h-3.5 w-3.5" />
+              Unlink
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="gap-[6px] bg-[#229ED9] hover:bg-[#1a8bc2]"
+              asChild
+            >
+              <a href={linkStatus.deeplink_url} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-3.5 w-3.5" />
+                Authorize
+              </a>
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

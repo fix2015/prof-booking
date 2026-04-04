@@ -23,6 +23,7 @@ from app.modules.analytics.router import router as analytics_router
 from app.modules.uploads.router import router as uploads_router
 from app.modules.admin.router import router as admin_router
 from app.modules.clients.router import router as clients_router
+from app.modules.notifications.telegram_router import router as telegram_router
 
 
 @asynccontextmanager
@@ -92,6 +93,7 @@ app.include_router(analytics_router, prefix=f"{API_PREFIX}/analytics", tags=["an
 app.include_router(uploads_router, prefix=f"{API_PREFIX}/upload", tags=["upload"])
 app.include_router(admin_router, prefix=f"{API_PREFIX}/admin", tags=["admin"])
 app.include_router(clients_router, prefix=f"{API_PREFIX}/clients", tags=["clients"])
+app.include_router(telegram_router, prefix=f"{API_PREFIX}/telegram", tags=["telegram"])
 
 
 @app.get(f"{API_PREFIX}/health")
