@@ -1,0 +1,175 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: ProBook Alerts
+    folder: ProBook
+    interval: 1m
+    rules:
+      # High CPU usage (>85% for 5 minutes)
+      - uid: alert-high-cpu
+        title: "High CPU Usage"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: "CPU usage above 85% for 5 minutes"
+        labels:
+          severity: warning
+
+      # High memory usage (>90% for 5 minutes)
+      - uid: alert-high-memory
+        title: "High Memory Usage"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100"
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: "Memory usage above 90% for 5 minutes"
+        labels:
+          severity: critical
+
+      # Disk almost full (>85%)
+      - uid: alert-disk-full
+        title: "Disk Almost Full"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "(1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}) * 100"
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: "Disk usage above 85%"
+        labels:
+          severity: critical
+
+      # PostgreSQL too many connections (>80)
+      - uid: alert-pg-connections
+        title: "PostgreSQL High Connections"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "sum(pg_stat_activity_count)"
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          summary: "PostgreSQL has more than 80 active connections"
+        labels:
+          severity: warning
+
+      # PostgreSQL down
+      - uid: alert-pg-down
+        title: "PostgreSQL Down"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "pg_up"
+              refId: A
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "PostgreSQL is not responding"
+        labels:
+          severity: critical
+
+      # Redis down
+      - uid: alert-redis-down
+        title: "Redis Down"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "redis_up"
+              refId: A
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "Redis is not responding"
+        labels:
+          severity: critical
+
+      # Redis high memory (>256MB)
+      - uid: alert-redis-memory
+        title: "Redis High Memory"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "redis_memory_used_bytes"
+              refId: A
+        noDataState: OK
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          summary: "Redis using more than 256MB memory"
+        labels:
+          severity: warning
+
+      # Backend container down
+      - uid: alert-backend-down
+        title: "Backend Container Down"
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 60
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              expr: "absent(container_memory_usage_bytes{name=\"nail_backend\"})"
+              refId: A
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "Backend container is not running"
+        labels:
+          severity: critical
