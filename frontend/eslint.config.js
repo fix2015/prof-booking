@@ -6,7 +6,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 
 export default [
-  { ignores: ["dist", "node_modules", "playwright-report", "test-results"] },
+  { ignores: ["dist", "node_modules", "playwright-report", "test-results", "public/sw-push.js"] },
   js.configs.recommended,
   {
     files: ["*.config.js", "*.config.cjs", "postcss.config.js"],
