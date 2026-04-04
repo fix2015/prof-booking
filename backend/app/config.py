@@ -43,8 +43,12 @@ class Settings(BaseSettings):
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
-    EMAIL_FROM: str = "noreply@nailsalonplatform.com"
+    EMAIL_FROM: str = "noreply@probooking.com"
     EMAIL_FROM_NAME: str = "NailSalon Platform"
+
+    # Telegram Bot
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_BOT_USERNAME: str = ""
 
     # AWS S3
     AWS_ACCESS_KEY_ID: str = ""

@@ -13,6 +13,7 @@ class NotificationType(str, enum.Enum):
     SMS_REMINDER = "sms_reminder"
     EMAIL_CONFIRMATION = "email_confirmation"
     EMAIL_REMINDER = "email_reminder"
+    TELEGRAM = "telegram"
 
 
 class NotificationStatus(str, enum.Enum):
@@ -41,3 +42,16 @@ class Notification(Base):
         Index("ix_notifications_session", "session_id"),
         Index("ix_notifications_status", "status"),
     )
+
+
+class TelegramLink(Base):
+    """Maps an app user to their Telegram chat ID for bot notifications."""
+    __tablename__ = "telegram_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    chat_id = Column(String(64), nullable=False, index=True)
+    username = Column(String(255), nullable=True)
+    linked_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("User")
