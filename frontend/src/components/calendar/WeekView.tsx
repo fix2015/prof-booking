@@ -119,26 +119,32 @@ export function WeekView({
         {/* Header */}
         <div
           className="grid border-b sticky top-0 bg-white z-10"
-          style={{ gridTemplateColumns: `auto repeat(${dayCount}, 1fr)` }}
+          style={{ gridTemplateColumns: `44px repeat(${dayCount}, 1fr)` }}
         >
-          <div className="border-r p-2 text-xs text-muted-foreground" />
+          <div className="border-r" />
           {days.map((day) => {
             const isPastDay = isBefore(day, new Date(now.getFullYear(), now.getMonth(), now.getDate()));
             return (
               <button
                 key={day.toISOString()}
                 className={cn(
-                  "border-r p-2 text-center text-sm font-medium hover:bg-gray-50 transition-colors",
-                  isToday(day) && "bg-gray-50 text-gray-700",
+                  "border-r py-1 text-center hover:bg-gray-50 transition-colors",
                   isPastDay && "opacity-50"
                 )}
                 onClick={() => onDayClick?.(day)}
               >
-                <div className="text-xs text-muted-foreground">{formatDate(day, "EEE")}</div>
+                <div className={cn(
+                  "text-[11px] text-muted-foreground",
+                  isToday(day) && "text-gray-900 font-semibold"
+                )}>
+                  {formatDate(day, "EEE")}
+                </div>
                 <div
                   className={cn(
-                    "mx-auto mt-1 flex h-7 w-7 items-center justify-center rounded-full text-sm",
-                    isToday(day) && "bg-gray-900 text-white font-bold"
+                    "mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
+                    isToday(day)
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-900"
                   )}
                 >
                   {formatDate(day, "d")}
@@ -151,12 +157,12 @@ export function WeekView({
         {/* Time grid */}
         <div
           className="grid"
-          style={{ gridTemplateColumns: `auto repeat(${dayCount}, 1fr)` }}
+          style={{ gridTemplateColumns: `44px repeat(${dayCount}, 1fr)` }}
         >
           {/* Time labels */}
           <div className="border-r">
             {HOURS.map((h) => (
-              <div key={h} className="h-16 border-b px-2 pt-1 text-xs text-muted-foreground">
+              <div key={h} className="h-16 border-b flex items-start justify-center pt-1 text-[11px] text-muted-foreground">
                 {h === 12 ? "12 PM" : h > 12 ? `${h - 12} PM` : `${h} AM`}
               </div>
             ))}
