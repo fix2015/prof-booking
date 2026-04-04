@@ -76,8 +76,8 @@ async def telegram_webhook(request: Request, db: Session = Depends(get_db)):
     link_telegram(db, user_id, chat_id, username)
     send_telegram_message(
         chat_id,
-        f"Telegram successfully linked to your account!\n\n"
-        f"You'll now receive ProBook notifications here."
+        "Telegram successfully linked to your account!\n\n"
+        "You'll now receive ProBook notifications here."
     )
 
     return {"ok": True}
