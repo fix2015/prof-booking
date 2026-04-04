@@ -21,6 +21,7 @@ from app.modules.notifications.models import TelegramLink, NotificationPreferenc
 from app.modules.users.models import User
 from app.modules.masters.models import Professional
 from app.modules.sessions.models import Session as BookingSession, SessionStatus
+from sqlalchemy.orm import joinedload
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ def _format_session_line(s: BookingSession) -> str:
 def _sessions_in_range(db: Session, prof_id: int, dt_start: datetime, dt_end: datetime) -> list[BookingSession]:
     return (
         db.query(BookingSession)
+        .options(joinedload(BookingSession.service))
         .filter(
             BookingSession.professional_id == prof_id,
             BookingSession.starts_at >= dt_start,
@@ -112,8 +114,10 @@ def cmd_me(user: User, prof: Professional | None) -> str:
     lines.append(f"Role: {user.role.value}")
     if prof:
         lines.append(f"Professional ID: #{prof.id}")
-        if prof.specialization:
-            lines.append(f"Specialization: {prof.specialization}")
+        if prof.bio:
+            lines.append(f"Bio: {prof.bio[:100]}")
+        if prof.experience_years:
+            lines.append(f"Experience: {prof.experience_years} years")
     return "\n".join(lines)
 
 
@@ -274,6 +278,7 @@ def cmd_next(db: Session, prof: Professional | None) -> str:
     now = datetime.utcnow()
     session = (
         db.query(BookingSession)
+        .options(joinedload(BookingSession.service))
         .filter(
             BookingSession.professional_id == prof.id,
             BookingSession.starts_at >= now,
