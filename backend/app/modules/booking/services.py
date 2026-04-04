@@ -87,6 +87,38 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
     except Exception:
         pass  # Non-critical
 
+    # Send Telegram notification to the professional (non-blocking)
+    try:
+        from app.modules.masters.models import Professional
+        if session.professional_id:
+            prof = db.query(Professional).filter(Professional.id == session.professional_id).first()
+            if prof and prof.user_id:
+                _prof_user_id = prof.user_id
+                _session_id = session.id
+                _tg_text = (
+                    f"📅 <b>New Booking</b>\n\n"
+                    f"Client: {session.client_name}\n"
+                    f"Phone: {session.client_phone}\n"
+                    f"Date: {session.starts_at.strftime('%b %d, %Y at %I:%M %p')}\n"
+                    f"Service: {service.name}"
+                )
+                if session.price:
+                    _tg_text += f"\nPrice: ${session.price:.2f}"
+
+                def _send_tg():
+                    from app.database import SessionLocal
+                    from app.modules.notifications.telegram import send_telegram
+                    tg_db = SessionLocal()
+                    try:
+                        send_telegram(tg_db, _prof_user_id, _tg_text, _session_id)
+                    finally:
+                        tg_db.close()
+
+                from threading import Thread as TgThread
+                TgThread(target=_send_tg, daemon=True).start()
+    except Exception:
+        pass  # Non-critical
+
     confirmation_code = _generate_confirmation_code(session.id)
 
     return BookingConfirmation(
