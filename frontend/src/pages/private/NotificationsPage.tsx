@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { AppHeader } from "@/components/mobile/AppHeader";
-import { NotificationItem } from "@/components/shared/NotificationItem";
+import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { formatDateTime } from "@/utils/dates";
 import { useAuthContext } from "@/context/AuthContext";
+import { useWebNotifications } from "@/hooks/useWebNotifications";
 import { toast } from "@/hooks/useToast";
 import { t } from "@/i18n";
-import { Building2, Check, X, MessageCircle, Unlink } from "lucide-react";
+import { Building2, Check, X, MessageCircle, Unlink, Bell, BellOff } from "lucide-react";
 import { telegramApi } from "@/api/telegram";
 
 interface Notification {
@@ -70,6 +71,7 @@ export function NotificationsPage() {
   const pendingInvites = invites.filter((i) => i.status === "pending");
   const pastInvites = invites.filter((i) => i.status !== "pending");
 
+  // Client view — mobile layout
   if (role === "client") {
     return (
       <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary -m-3 md:-m-5 lg:-m-6">
@@ -80,9 +82,9 @@ export function NotificationsPage() {
           ) : notifications.length === 0 ? (
             <p className="py-ds-12 text-center ds-body text-ds-text-secondary">{t("notifications.empty")}</p>
           ) : (
-            <div className="flex flex-col gap-ds-2">
+            <div className="flex flex-col gap-ds-3">
               {notifications.map((n) => (
-                <NotificationItem key={n.id} notification={n} variant="card" />
+                <NotificationCard key={n.id} notification={n} />
               ))}
             </div>
           )}
@@ -91,12 +93,16 @@ export function NotificationsPage() {
     );
   }
 
+  // B2B dashboard view
   return (
-    <div className="space-y-ds-6">
+    <div className="space-y-ds-4">
       <h1 className="ds-h2">{t("notifications.title")}</h1>
 
-      {/* Telegram link section */}
-      <TelegramLinkSection />
+      {/* Notification channels */}
+      <div className="space-y-ds-3">
+        <TelegramLinkSection />
+        <WebNotificationSection />
+      </div>
 
       {/* Provider invites — professionals only */}
       {role === "professional" && (
@@ -181,27 +187,19 @@ export function NotificationsPage() {
         </div>
       )}
 
-      {/* Regular session notifications */}
+      {/* Session notifications */}
       <div>
-        {pendingInvites.length > 0 && role === "professional" && (
-          <h2 className="ds-body-strong mb-ds-3">Session Notifications</h2>
-        )}
+        <h2 className="ds-body-strong mb-ds-3">Session Notifications</h2>
         {isLoading ? (
           <Spinner className="mx-auto" />
+        ) : notifications.length === 0 ? (
+          <p className="py-ds-12 text-center text-ds-text-secondary ds-body">{t("notifications.empty")}</p>
         ) : (
-          <Card>
-            <CardContent className="p-0">
-              {notifications.length === 0 ? (
-                <p className="py-ds-12 text-center text-ds-text-secondary ds-body">{t("notifications.empty")}</p>
-              ) : (
-                <div className="divide-y divide-ds-border">
-                  {notifications.map((n) => (
-                    <NotificationItem key={n.id} notification={n} variant="row" />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-ds-3">
+            {notifications.map((n) => (
+              <NotificationCard key={n.id} notification={n} />
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -209,7 +207,7 @@ export function NotificationsPage() {
 }
 
 
-/** Telegram link/unlink card shown on the notifications page. */
+/** Telegram link/unlink card */
 function TelegramLinkSection() {
   const qc = useQueryClient();
 
@@ -230,49 +228,102 @@ function TelegramLinkSection() {
   if (isLoading || !linkStatus) return null;
 
   return (
-    <Card className="border-ds-border">
-      <CardContent className="p-ds-4">
-        <div className="flex items-center gap-ds-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-ds-full bg-[#229ED9]/10">
-            <MessageCircle className="h-5 w-5 text-[#229ED9]" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="ds-body-strong text-ds-text-primary">Telegram Notifications</p>
-            {linkStatus.linked ? (
-              <p className="ds-caption text-ds-text-secondary">
-                Linked{linkStatus.username ? ` as @${linkStatus.username}` : ""}
-              </p>
-            ) : (
-              <p className="ds-caption text-ds-text-muted">
-                Get instant notifications via Telegram
-              </p>
-            )}
-          </div>
+    <div className="rounded-[12px] border border-ds-border bg-ds-bg-primary p-ds-3 md:p-ds-4 shadow-sm">
+      <div className="flex items-center gap-ds-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#229ED9]/10 shrink-0">
+          <MessageCircle className="h-5 w-5 text-[#229ED9]" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="ds-body-strong text-ds-text-primary">Telegram Notifications</p>
           {linkStatus.linked ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-[6px] text-destructive"
-              onClick={() => unlinkMutation.mutate()}
-              disabled={unlinkMutation.isPending}
-            >
-              <Unlink className="h-3.5 w-3.5" />
-              Unlink
-            </Button>
+            <p className="ds-caption text-ds-text-secondary">
+              Linked{linkStatus.username ? ` as @${linkStatus.username}` : ""}
+            </p>
           ) : (
-            <Button
-              size="sm"
-              className="gap-[6px] bg-[#229ED9] hover:bg-[#1a8bc2]"
-              asChild
-            >
-              <a href={linkStatus.deeplink_url} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="h-3.5 w-3.5" />
-                Authorize
-              </a>
-            </Button>
+            <p className="ds-caption text-ds-text-muted">
+              Get instant notifications via Telegram
+            </p>
           )}
         </div>
-      </CardContent>
-    </Card>
+        {linkStatus.linked ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-[6px] text-destructive shrink-0"
+            onClick={() => unlinkMutation.mutate()}
+            disabled={unlinkMutation.isPending}
+          >
+            <Unlink className="h-3.5 w-3.5" />
+            Unlink
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            className="gap-[6px] bg-[#229ED9] hover:bg-[#1a8bc2] shrink-0"
+            asChild
+          >
+            <a href={linkStatus.deeplink_url} target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="h-3.5 w-3.5" />
+              Authorize
+            </a>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+/** Web push notifications enable/disable card */
+function WebNotificationSection() {
+  const { supported, permission, enabled, requestPermission } = useWebNotifications();
+
+  if (!supported) return null;
+
+  const handleEnable = async () => {
+    const result = await requestPermission();
+    if (result === "granted") {
+      toast({ title: "Web notifications enabled" });
+    } else if (result === "denied") {
+      toast({ title: "Notifications blocked", description: "Enable them in browser settings", variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="rounded-[12px] border border-ds-border bg-ds-bg-primary p-ds-3 md:p-ds-4 shadow-sm">
+      <div className="flex items-center gap-ds-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 shrink-0">
+          <Bell className="h-5 w-5 text-amber-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="ds-body-strong text-ds-text-primary">Web Notifications</p>
+          <p className="ds-caption text-ds-text-muted">
+            {enabled
+              ? "Browser push notifications are enabled"
+              : permission === "denied"
+                ? "Blocked — enable in browser settings"
+                : "Get browser push notifications"}
+          </p>
+        </div>
+        {enabled ? (
+          <div className="flex items-center gap-ds-2 shrink-0">
+            <span className="ds-caption text-green-600 font-medium">Enabled</span>
+          </div>
+        ) : permission === "denied" ? (
+          <div className="flex items-center gap-ds-2 shrink-0">
+            <BellOff className="h-4 w-4 text-ds-text-muted" />
+            <span className="ds-caption text-ds-text-muted">Blocked</span>
+          </div>
+        ) : (
+          <Button
+            size="sm"
+            className="shrink-0"
+            onClick={handleEnable}
+          >
+            Enable
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
