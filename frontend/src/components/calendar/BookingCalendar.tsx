@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
 import {
@@ -63,31 +62,47 @@ export function BookingCalendar({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Toolbar — wraps to 2 lines on small screens */}
+      {/* Toolbar — row 1: nav + date, row 2: view toggle (on small screens) */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={goPrev}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={goNext}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 px-3" onClick={goToday}>
-            Today
-          </Button>
-        </div>
-        <span className="text-xs font-medium whitespace-nowrap">{dateLabel}</span>
-        <span className="flex-1" />
-        <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
+        {/* Arrow buttons */}
+        <button
+          onClick={goPrev}
+          className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4 text-gray-700" />
+        </button>
+        <button
+          onClick={goNext}
+          className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+        >
+          <ChevronRight className="h-4 w-4 text-gray-700" />
+        </button>
+
+        {/* Today button */}
+        <button
+          onClick={goToday}
+          className="h-[32px] px-3 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
+        >
+          Today
+        </button>
+
+        {/* Date label */}
+        <span className="text-xs font-medium text-gray-900 whitespace-nowrap">{dateLabel}</span>
+
+        {/* Spacer pushes toggle right */}
+        <span className="flex-1 min-w-[8px]" />
+
+        {/* View toggle */}
+        <div className="flex rounded-lg bg-gray-100 p-1 gap-0.5">
           {VIEW_OPTIONS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setView(key)}
               className={cn(
-                "px-2.5 py-1 text-xs rounded-md transition-colors",
+                "px-2.5 py-1 text-xs rounded-md transition-colors whitespace-nowrap",
                 view === key
-                  ? "bg-gray-900 text-white font-medium"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-gray-900 text-white font-medium shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
               )}
             >
               {label}
