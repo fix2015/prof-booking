@@ -69,6 +69,13 @@ def create_review(
     except Exception:
         pass  # Non-critical
 
+    # Send instant review alert to professional via Telegram/Web Push
+    try:
+        from app.modules.notifications.scheduled_alerts import send_new_review_alert
+        send_new_review_alert(db, review.professional_id, review.client_name, review.rating, review.comment)
+    except Exception:
+        pass  # Non-critical
+
     return review
 
 

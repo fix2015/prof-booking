@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/api/client";
@@ -13,7 +14,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useWebNotifications } from "@/hooks/useWebNotifications";
 import { toast } from "@/hooks/useToast";
 import { t } from "@/i18n";
-import { Building2, Check, X, MessageCircle, Unlink, Bell, BellOff } from "lucide-react";
+import { Building2, Check, X, MessageCircle, Unlink, Bell, BellOff, ChevronDown, ChevronUp, Sun, CalendarDays, TrendingUp, XCircle, Star, Clock } from "lucide-react";
 import { telegramApi } from "@/api/telegram";
 
 interface Notification {
@@ -103,6 +104,9 @@ export function NotificationsPage() {
         <TelegramLinkSection />
         <WebNotificationSection />
       </div>
+
+      {/* Scheduled alert preferences */}
+      <ScheduledAlertsSection />
 
       {/* Provider invites — professionals only */}
       {role === "professional" && (
@@ -207,6 +211,119 @@ export function NotificationsPage() {
 }
 
 
+type PrefsData = Record<string, boolean>;
+
+const ALERT_PREFS = [
+  { key: "daily_morning", icon: Sun, bg: "bg-orange-500", label: "Daily Morning Brief", desc: "Tomorrow's bookings — sent at 8:00 AM" },
+  { key: "weekly_schedule", icon: CalendarDays, bg: "bg-blue-600", label: "Weekly Schedule", desc: "Next week's full agenda — sent Sunday 7 PM" },
+  { key: "eod_recap", icon: TrendingUp, bg: "bg-purple-600", label: "End-of-Day Recap", desc: "Completed sessions + revenue — sent 9 PM" },
+  { key: "cancellation", icon: XCircle, bg: "bg-red-500", label: "Cancellation Alerts", desc: "Instant alert when a booking is cancelled" },
+  { key: "new_review", icon: Star, bg: "bg-yellow-500", label: "New Review Alert", desc: "Notified when a client leaves a review" },
+  { key: "appointment_reminder", icon: Clock, bg: "bg-sky-500", label: "Appointment Reminder", desc: "1 hour before each session starts" },
+] as const;
+
+function ScheduledAlertsSection() {
+  const [expanded, setExpanded] = useState(false);
+  const qc = useQueryClient();
+
+  const { data: prefs } = useQuery<PrefsData>({
+    queryKey: ["notification-prefs"],
+    queryFn: () => apiClient.get("/notifications/preferences").then((r) => r.data),
+  });
+
+  const mutation = useMutation({
+    mutationFn: (update: Partial<PrefsData>) =>
+      apiClient.put("/notifications/preferences", update).then((r) => r.data),
+    onMutate: async (update) => {
+      await qc.cancelQueries({ queryKey: ["notification-prefs"] });
+      const prev = qc.getQueryData<PrefsData>(["notification-prefs"]);
+      qc.setQueryData<PrefsData>(["notification-prefs"], (old) => {
+        if (!old) return old;
+        const next = { ...old };
+        for (const [k, v] of Object.entries(update)) {
+          if (v !== undefined) next[k] = v;
+        }
+        return next;
+      });
+      return { prev };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prev) qc.setQueryData(["notification-prefs"], context.prev);
+      toast({ title: "Failed to update preference", variant: "destructive" });
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["notification-prefs"] }),
+  });
+
+  const toggle = useCallback((key: string) => {
+    if (!prefs) return;
+    mutation.mutate({ [key]: !prefs[key] });
+  }, [prefs, mutation]);
+
+  if (!prefs) return null;
+
+  const activeCount = Object.values(prefs).filter(Boolean).length;
+
+  return (
+    <div>
+      <button
+        onClick={() => setExpanded((e) => !e)}
+        className="flex w-full items-center gap-ds-2 py-ds-2"
+      >
+        <h2 className="ds-body-strong flex-1 text-left">Scheduled Alerts</h2>
+        <span className="ds-caption font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+          {activeCount} active
+        </span>
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 text-ds-text-muted" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-ds-text-muted" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="space-y-ds-2 mt-ds-2">
+          {ALERT_PREFS.map((pref) => {
+            const Icon = pref.icon;
+            const isOn = !!prefs[pref.key];
+            return (
+              <div
+                key={pref.key}
+                className="flex items-center gap-[10px] rounded-[10px] border border-ds-border bg-ds-bg-primary px-3 py-ds-3 shadow-sm overflow-hidden"
+              >
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${pref.bg}`}>
+                  <Icon className="h-[18px] w-[18px] text-white" />
+                </div>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <p className="text-[13px] font-semibold leading-[18px] tracking-[-0.065px] text-ds-text-primary truncate">
+                    {pref.label}
+                  </p>
+                  <p className="text-[11px] leading-[15px] tracking-[-0.055px] text-ds-text-muted truncate">
+                    {pref.desc}
+                  </p>
+                </div>
+                <button
+                  onClick={() => toggle(pref.key)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
+                    isOn ? "bg-green-600" : "bg-gray-300"
+                  }`}
+                  aria-label={`Toggle ${pref.label}`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      isOn ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 /** Telegram link/unlink card */
 function TelegramLinkSection() {
   const qc = useQueryClient();
@@ -276,7 +393,7 @@ function TelegramLinkSection() {
 
 /** Web push notifications enable/disable card */
 function WebNotificationSection() {
-  const { supported, permission, enabled, requestPermission } = useWebNotifications();
+  const { supported, permission, enabled, requestPermission, unsubscribe } = useWebNotifications();
 
   if (!supported) return null;
 
@@ -287,6 +404,11 @@ function WebNotificationSection() {
     } else if (result === "denied") {
       toast({ title: "Notifications blocked", description: "Enable them in browser settings", variant: "destructive" });
     }
+  };
+
+  const handleDisable = async () => {
+    await unsubscribe();
+    toast({ title: "Web notifications disabled" });
   };
 
   return (
@@ -306,9 +428,14 @@ function WebNotificationSection() {
           </p>
         </div>
         {enabled ? (
-          <div className="flex items-center gap-ds-2 shrink-0">
-            <span className="ds-caption text-green-600 font-medium">Enabled</span>
-          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0"
+            onClick={handleDisable}
+          >
+            Disable
+          </Button>
         ) : permission === "denied" ? (
           <div className="flex items-center gap-ds-2 shrink-0">
             <BellOff className="h-4 w-4 text-ds-text-muted" />
