@@ -37,14 +37,9 @@ export function BookingCalendar({
   };
 
   const goToday = () => navigate(new Date());
-  const goPrev = () => {
-    if (view === "day") navigate(addDays(currentDate, -1));
-    else navigate(addDays(currentDate, -7));
-  };
-  const goNext = () => {
-    if (view === "day") navigate(addDays(currentDate, 1));
-    else navigate(addDays(currentDate, 7));
-  };
+  const step = view === "day" ? 1 : view === "5day" ? 5 : 7;
+  const goPrev = () => navigate(addDays(currentDate, -step));
+  const goNext = () => navigate(addDays(currentDate, step));
 
   const dateLabel =
     view === "day"
