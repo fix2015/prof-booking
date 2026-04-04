@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
 import {
-  getWeekStart, addWeeks, subWeeks, addDays, toISODateString,
+  getWeekStart, addDays, toISODateString,
   formatDate, isSameDay,
 } from "@/utils/dates";
 import { WorkSlot, Session } from "@/types";
+import { cn } from "@/utils/cn";
 
 type CalendarView = "week" | "5day" | "day";
 
@@ -19,6 +20,12 @@ interface BookingCalendarProps {
   onSessionClick?: (session: Session) => void;
   onDateChange?: (date: Date) => void;
 }
+
+const VIEW_OPTIONS: { key: CalendarView; label: string }[] = [
+  { key: "week", label: "Week" },
+  { key: "5day", label: "5 Day" },
+  { key: "day", label: "Day" },
+];
 
 export function BookingCalendar({
   workSlots,
@@ -32,6 +39,7 @@ export function BookingCalendar({
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const weekStart = getWeekStart(currentDate);
+  const dayCount = view === "5day" ? 5 : 7;
 
   const navigate = (date: Date) => {
     setCurrentDate(date);
@@ -40,53 +48,50 @@ export function BookingCalendar({
 
   const goToday = () => navigate(new Date());
   const goPrev = () => {
-    if (view === "week") navigate(subWeeks(currentDate, 1));
-    else if (view === "5day") navigate(addDays(currentDate, -7));
-    else navigate(addDays(currentDate, -1));
+    if (view === "day") navigate(addDays(currentDate, -1));
+    else navigate(addDays(currentDate, -7));
   };
   const goNext = () => {
-    if (view === "week") navigate(addWeeks(currentDate, 1));
-    else if (view === "5day") navigate(addDays(currentDate, 7));
-    else navigate(addDays(currentDate, 1));
+    if (view === "day") navigate(addDays(currentDate, 1));
+    else navigate(addDays(currentDate, 7));
   };
 
   const dateLabel =
-    view === "week"
-      ? `${formatDate(weekStart, "MMM d")} – ${formatDate(addDays(weekStart, 6), "MMM d, yyyy")}`
-      : view === "5day"
-        ? `${formatDate(weekStart, "MMM d")} – ${formatDate(addDays(weekStart, 4), "MMM d, yyyy")}`
-        : formatDate(currentDate, "EEEE, MMMM d, yyyy");
+    view === "day"
+      ? formatDate(currentDate, "EEEE, MMMM d, yyyy")
+      : `${formatDate(weekStart, "MMM d")} – ${formatDate(addDays(weekStart, dayCount - 1), "MMM d, yyyy")}`;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={goPrev}>
+    <div className="flex flex-col gap-3">
+      {/* Toolbar — wraps to 2 lines on small screens */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={goPrev}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={goNext}>
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={goNext}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={goToday}>
+          <Button variant="outline" size="sm" className="h-8 px-3" onClick={goToday}>
             Today
           </Button>
-          <span className="ml-2 text-sm font-medium">{dateLabel}</span>
         </div>
-        <div className="flex gap-1 rounded-md bg-muted p-1">
-          {([
-            { key: "week", label: "Week" },
-            { key: "5day", label: "5 Day" },
-            { key: "day", label: "Day" },
-          ] as { key: CalendarView; label: string }[]).map(({ key, label }) => (
-            <Button
+        <span className="text-xs font-medium whitespace-nowrap">{dateLabel}</span>
+        <span className="flex-1" />
+        <div className="flex gap-0.5 rounded-md bg-muted p-0.5">
+          {VIEW_OPTIONS.map(({ key, label }) => (
+            <button
               key={key}
-              variant={view === key ? "default" : "ghost"}
-              size="sm"
               onClick={() => setView(key)}
+              className={cn(
+                "px-2.5 py-1 text-xs rounded-md transition-colors",
+                view === key
+                  ? "bg-gray-900 text-white font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
               {label}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
@@ -95,7 +100,7 @@ export function BookingCalendar({
       {view === "week" || view === "5day" ? (
         <WeekView
           weekStart={weekStart}
-          dayCount={view === "5day" ? 5 : 7}
+          dayCount={dayCount}
           workSlots={workSlots}
           sessions={sessions}
           onAddSlot={onAddSlot}

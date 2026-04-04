@@ -6,8 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDateTime } from "@/utils/dates";
-import { formatCurrency, statusColorMap, statusLabel } from "@/utils/formatters";
+import { SessionCard } from "@/components/sessions/SessionCard";
 import { cn } from "@/utils/cn";
 import { toast } from "@/hooks/useToast";
 import { t } from "@/i18n";
@@ -53,6 +52,7 @@ function matchesDateFilter(session: Session, filter: DateFilter): boolean {
 export function SessionsPage() {
   const { role } = useAuthContext();
   const isOwner = role === "provider_owner";
+  const isProfessional = role === "professional";
   const [statusFilter, setStatusFilter] = useState<SessionStatus | "all">("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [earningsModal, setEarningsModal] = useState<Session | null>(null);
@@ -67,13 +67,27 @@ export function SessionsPage() {
   const updateSession = useUpdateSession();
   const recordEarnings = useRecordEarnings();
 
-  const handleStatusChange = async (session: Session, newStatus: SessionStatus) => {
+  const handleCancel = async (session: Session) => {
     try {
-      await updateSession.mutateAsync({ id: session.id, data: { status: newStatus } });
-      toast({ title: "Session updated", variant: "success" });
+      await updateSession.mutateAsync({ id: session.id, data: { status: "cancelled" } });
+      toast({ title: "Session cancelled", variant: "success" });
     } catch {
-      toast({ title: "Failed to update session", variant: "destructive" });
+      toast({ title: "Failed to cancel session", variant: "destructive" });
     }
+  };
+
+  const handleConfirm = async (session: Session) => {
+    try {
+      await updateSession.mutateAsync({ id: session.id, data: { status: "confirmed" } });
+      toast({ title: "Session confirmed", variant: "success" });
+    } catch {
+      toast({ title: "Failed to confirm session", variant: "destructive" });
+    }
+  };
+
+  const handleComplete = (session: Session) => {
+    setEarningsModal(session);
+    setEarningsAmount(String(session.price || ""));
   };
 
   const handleRecordEarnings = async () => {
@@ -89,25 +103,29 @@ export function SessionsPage() {
   };
 
   return (
-    <div className="space-y-ds-4 md:space-y-ds-6">
+    <div className="space-y-ds-3 md:space-y-ds-4">
       <h1 className="ds-h2">{t("sessions.title")}</h1>
 
-      {/* Status filter */}
-      <div className="flex gap-[6px] md:gap-ds-2 flex-wrap">
+      {/* Status filter chips */}
+      <div className="flex gap-ds-2 flex-wrap">
         {STATUS_FILTERS.map((f) => (
-          <Button
+          <button
             key={f.value}
-            variant={statusFilter === f.value ? "default" : "outline"}
-            size="sm"
             onClick={() => setStatusFilter(f.value)}
+            className={cn(
+              "px-ds-3 py-[6px] rounded-ds-full ds-body-small border transition-colors",
+              statusFilter === f.value
+                ? "bg-ds-interactive border-ds-interactive text-ds-text-inverse"
+                : "bg-ds-bg-primary border-ds-border text-ds-text-secondary hover:border-ds-interactive"
+            )}
           >
             {f.label}
-          </Button>
+          </button>
         ))}
       </div>
 
-      {/* Date filter */}
-      <div className="flex gap-[6px] md:gap-ds-2 flex-wrap">
+      {/* Date filter chips */}
+      <div className="flex gap-ds-2 flex-wrap">
         {DATE_FILTERS.map((f) => (
           <button
             key={f.value}
@@ -124,6 +142,7 @@ export function SessionsPage() {
         ))}
       </div>
 
+      {/* Session list */}
       {isLoading ? (
         <Spinner className="mx-auto mt-12" />
       ) : sessions.length === 0 ? (
@@ -131,63 +150,16 @@ export function SessionsPage() {
       ) : (
         <div className="space-y-ds-3">
           {sessions.map((session) => (
-            <Card key={session.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-ds-3 md:p-ds-4">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-ds-3">
-                  <div>
-                    <p className="ds-body-strong text-ds-text-primary">{session.client_name}</p>
-                    <p className="ds-body text-ds-text-secondary">{session.client_phone}</p>
-                    <p className="ds-body text-ds-text-secondary">
-                      {session.starts_at ? formatDateTime(session.starts_at) : "—"}
-                    </p>
-                    {session.price && (
-                      <p className="ds-body-strong text-ds-text-primary">{formatCurrency(session.price)}</p>
-                    )}
-                  </div>
-                  <div className="flex sm:flex-col items-center sm:items-end gap-ds-2 flex-wrap">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-ds-full px-ds-2 py-[2px] ds-badge",
-                        statusColorMap[session.status]
-                      )}
-                    >
-                      {statusLabel[session.status]}
-                    </span>
-                    <div className="flex gap-ds-1">
-                      {session.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleStatusChange(session, "confirmed")}
-                        >
-                          Confirm
-                        </Button>
-                      )}
-                      {!isOwner && session.status === "confirmed" && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setEarningsModal(session);
-                            setEarningsAmount(String(session.price || ""));
-                          }}
-                        >
-                          Complete
-                        </Button>
-                      )}
-                      {session.status === "pending" && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleStatusChange(session, "cancelled")}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SessionCard
+              key={session.id}
+              session={session}
+              showCancel
+              showConfirm={isOwner || isProfessional}
+              showComplete={isProfessional}
+              onCancel={handleCancel}
+              onConfirm={handleConfirm}
+              onComplete={handleComplete}
+            />
           ))}
         </div>
       )}
