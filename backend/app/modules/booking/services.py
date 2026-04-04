@@ -79,10 +79,11 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
     except Exception:
         pass  # Non-critical
 
-    # Queue async SMS/email notifications
+    # Queue async SMS/email notifications (non-blocking)
     try:
         from app.modules.notifications.tasks import queue_booking_confirmation
-        queue_booking_confirmation(session.id)
+        from threading import Thread
+        Thread(target=queue_booking_confirmation, args=(session.id,), daemon=True).start()
     except Exception:
         pass  # Non-critical
 

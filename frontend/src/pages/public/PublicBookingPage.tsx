@@ -139,10 +139,11 @@ export function PublicBookingPage() {
           navigate("/me");
         },
         onError: () => {
-          // Slot was already booked — refetch availability to remove it
+          // Slot was already booked — refetch availability to remove stale slots
           queryClient.invalidateQueries({ queryKey: ["availability"] });
           queryClient.invalidateQueries({ queryKey: ["available-dates"] });
           setSelectedSlot(null);
+          createBooking.reset();
           setStep(4);
         },
       }
