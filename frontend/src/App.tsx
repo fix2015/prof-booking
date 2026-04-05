@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-r
 import { AuthProvider, useAuthContext } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
+import { CookieConsent } from "@/components/shared/CookieConsent";
 import { AppLayout } from "@/components/layout/AppLayout";
 
 // Public pages (no auth required)
@@ -15,6 +16,8 @@ import { ProviderProfilePage } from "@/pages/public/ProviderProfilePage";
 import { MasterProfilePage } from "@/pages/public/MasterProfilePage";
 import { PublicBookingPage } from "@/pages/public/PublicBookingPage";
 import { HelpPage } from "@/pages/public/HelpPage";
+import { TermsPage } from "@/pages/public/TermsPage";
+import { PrivacyPage } from "@/pages/public/PrivacyPage";
 import { ClientProfileEditPage } from "@/pages/public/ClientProfileEditPage";
 import { ClientReviewsPage } from "@/pages/public/ClientReviewsPage";
 import { ClientBookingsPage } from "@/pages/public/ClientBookingsPage";
@@ -75,6 +78,8 @@ function AppRoutes() {
 
       {/* Detail + booking routes (no tab bar) */}
       <Route path="/help" element={<HelpPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/profile/client" element={<ClientProfileEditPage />} />
       <Route path="/reviews/client" element={<ClientReviewsPage />} />
       <Route path="/bookings/client" element={<ClientBookingsPage />} />
@@ -128,6 +133,7 @@ export default function App() {
         <BrowserRouter>
           <AppRoutes />
           <Toaster />
+          <CookieConsent />
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>

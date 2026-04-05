@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
+import { useNavigate, Navigate, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useLogin, useRegisterClient, useRegisterOwner, useRegisterProfessional } from "@/hooks/useAuth";
@@ -364,9 +364,17 @@ export function LoginPage() {
               {t("login.guest_link")}
             </button>
           ) : (
-            <button onClick={() => setTab("signin")} className="ds-body-small text-ds-interactive">
-              {t("login.already_account")}
-            </button>
+            <>
+              <p className="text-[11px] leading-[16px] text-center text-gray-400 px-4">
+                By creating an account, you agree to our{" "}
+                <Link to="/terms" className="text-gray-500 underline">Terms of Service</Link>
+                {" "}and{" "}
+                <Link to="/privacy" className="text-gray-500 underline">Privacy Policy</Link>.
+              </p>
+              <button onClick={() => setTab("signin")} className="ds-body-small text-ds-interactive">
+                {t("login.already_account")}
+              </button>
+            </>
           )}
         </div>
       </div>

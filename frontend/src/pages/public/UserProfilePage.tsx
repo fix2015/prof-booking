@@ -247,6 +247,17 @@ export function UserProfilePage() {
         />
       </div>
 
+      {/* Legal links */}
+      <div className="flex items-center justify-center gap-4 mt-ds-3 px-ds-4">
+        <button onClick={() => navigate("/terms")} className="text-[12px] text-gray-400 hover:text-gray-600">
+          Terms of Service
+        </button>
+        <span className="text-gray-300">|</span>
+        <button onClick={() => navigate("/privacy")} className="text-[12px] text-gray-400 hover:text-gray-600">
+          Privacy Policy
+        </button>
+      </div>
+
       {/* Sign out — only when authenticated */}
       {isAuthenticated && (
         <div className="bg-ds-bg-primary border border-ds-border mt-ds-3">

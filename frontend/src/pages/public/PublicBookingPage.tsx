@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
 import { useProviderProfessionalsPublic } from "@/hooks/useMaster";
@@ -430,6 +430,12 @@ export function PublicBookingPage() {
           >
             {createBooking.isPending ? t("booking.in_progress") : t("booking.confirm_cta")}
           </button>
+          <p className="text-[11px] leading-[16px] text-center text-gray-400 mt-ds-2">
+            By booking, you agree to our{" "}
+            <Link to="/terms" className="underline text-gray-500">Terms</Link>
+            {" "}&{" "}
+            <Link to="/privacy" className="underline text-gray-500">Privacy Policy</Link>.
+          </p>
           {createBooking.isError && (
             <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">{t("booking.failed")}</p>
           )}
