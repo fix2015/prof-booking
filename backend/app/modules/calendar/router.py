@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -17,6 +19,7 @@ from app.modules.calendar.services import (
 from app.modules.masters.services import get_professional_by_user_id
 from app.modules.users.models import User
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -138,16 +141,23 @@ def google_callback(
 ):
     """OAuth2 callback — Google redirects here after user consent."""
     from app.modules.calendar.google_sync import exchange_code, save_tokens
+
+    # Derive frontend URL from redirect URI (same domain, no /api path)
+    from urllib.parse import urlparse
+    parsed = urlparse(settings.GOOGLE_REDIRECT_URI)
+    base_url = f"{parsed.scheme}://{parsed.netloc}"
+
     try:
         token_data = exchange_code(code)
-    except Exception:
-        return RedirectResponse("/calendar?google=error")
+    except Exception as e:
+        logger.error("Google OAuth code exchange failed: %s", e)
+        return RedirectResponse(f"{base_url}/calendar?google=error")
     try:
         user_id = int(state)
     except ValueError:
-        return RedirectResponse("/calendar?google=error")
+        return RedirectResponse(f"{base_url}/calendar?google=error")
     save_tokens(db, user_id, token_data)
-    return RedirectResponse("/calendar?google=connected")
+    return RedirectResponse(f"{base_url}/calendar?google=connected")
 
 
 @router.post("/google/sync")
