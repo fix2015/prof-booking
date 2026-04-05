@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date, timedelta
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_professional_or_owner
 from app.modules.calendar.schemas import (
@@ -113,3 +115,81 @@ def copy_period(
         raise HTTPException(status_code=404, detail="Professional profile not found")
     created = copy_period_schedule(db, professional.id, data)
     return {"created": created}
+
+
+# ── Google Calendar Sync ────────────────────────────────────────────
+
+@router.get("/google/auth-url")
+def google_auth_url(current_user: User = Depends(get_current_user)):
+    """Return the Google OAuth2 consent URL. Frontend redirects user there."""
+    if not settings.GOOGLE_CLIENT_ID:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=501, detail="Google Calendar integration not configured")
+    from app.modules.calendar.google_sync import get_auth_url
+    url = get_auth_url(state=str(current_user.id))
+    return {"auth_url": url}
+
+
+@router.get("/google/callback")
+def google_callback(
+    code: str = Query(...),
+    state: str = Query(""),
+    db: Session = Depends(get_db),
+):
+    """OAuth2 callback — Google redirects here after user consent."""
+    from app.modules.calendar.google_sync import exchange_code, save_tokens
+    try:
+        token_data = exchange_code(code)
+    except Exception:
+        return RedirectResponse("/calendar?google=error")
+    try:
+        user_id = int(state)
+    except ValueError:
+        return RedirectResponse("/calendar?google=error")
+    save_tokens(db, user_id, token_data)
+    return RedirectResponse("/calendar?google=connected")
+
+
+@router.post("/google/sync")
+def google_sync(
+    days_ahead: int = Query(30, ge=7, le=90),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Fetch Google Calendar events and create blocked work slots."""
+    from app.modules.calendar.google_sync import sync_google_calendar
+    result = sync_google_calendar(db, current_user.id, days_ahead)
+    if "error" in result:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+@router.get("/google/status")
+def google_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Check if Google Calendar is connected for the current user."""
+    from app.modules.calendar.models import GoogleCalendarToken
+    token = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == current_user.id).first()
+    if not token:
+        return {"connected": False}
+    return {
+        "connected": True,
+        "last_synced_at": token.last_synced_at.isoformat() if token.last_synced_at else None,
+    }
+
+
+@router.delete("/google/disconnect")
+def google_disconnect(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Remove Google Calendar connection and synced blocked slots."""
+    from app.modules.calendar.models import GoogleCalendarToken
+    token = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == current_user.id).first()
+    if token:
+        db.delete(token)
+        db.commit()
+    return {"ok": True}
