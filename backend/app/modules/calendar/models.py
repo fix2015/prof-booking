@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, Boolean, DateTime, Date, Time, ForeignKey, Index,
+    String, Text,
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -28,3 +29,19 @@ class WorkSlot(Base):
 
     def __repr__(self) -> str:
         return f"<WorkSlot professional={self.professional_id} date={self.slot_date} {self.start_time}-{self.end_time}>"
+
+
+class GoogleCalendarToken(Base):
+    """Stores Google OAuth2 tokens for calendar sync."""
+    __tablename__ = "google_calendar_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    access_token = Column(Text, nullable=False)
+    refresh_token = Column(Text, nullable=True)
+    token_expiry = Column(DateTime, nullable=True)
+    calendar_id = Column(String(255), default="primary", nullable=False)
+    last_synced_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("User")
