@@ -26,7 +26,34 @@ def upgrade() -> None:
     op.create_index("ix_push_sub_user", "push_subscriptions", ["user_id"])
     op.create_index("ix_push_sub_endpoint", "push_subscriptions", ["endpoint"], unique=True)
 
-    # Add WEB_PUSH to notification_type enum (PostgreSQL only)
+    # Convert notification_type from varchar to enum if needed, ensure web_push exists
+    op.execute("""
+        DO $$
+        BEGIN
+            -- Create notificationtype enum if it doesn't exist
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationtype') THEN
+                CREATE TYPE notificationtype AS ENUM (
+                    'sms_confirmation', 'sms_reminder',
+                    'email_confirmation', 'email_reminder',
+                    'telegram', 'web_push'
+                );
+                ALTER TABLE notifications
+                    ALTER COLUMN notification_type TYPE notificationtype
+                    USING notification_type::notificationtype;
+            END IF;
+
+            -- Create notificationstatus enum if it doesn't exist
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationstatus') THEN
+                CREATE TYPE notificationstatus AS ENUM ('pending', 'sent', 'failed');
+                ALTER TABLE notifications
+                    ALTER COLUMN status TYPE notificationstatus
+                    USING status::notificationstatus;
+            END IF;
+        END
+        $$;
+    """)
+    # ADD VALUE cannot run inside a transaction block in older PG,
+    # but with IF NOT EXISTS it's safe on PG 12+.
     op.execute("ALTER TYPE notificationtype ADD VALUE IF NOT EXISTS 'web_push'")
 
 
