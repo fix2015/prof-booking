@@ -111,8 +111,12 @@ jobs:
             # Login to GHCR with the workflow token (expanded by runner before SSH)
             echo "${GHCR_TOKEN}" | sudo docker login ghcr.io -u fix2015 --password-stdin
 
-            # Stop old containers
+            # Stop old containers (compose-managed)
             sudo docker compose -f docker-compose.prod.yml down --remove-orphans || true
+
+            # Remove any leftover nail_ containers not in current compose file
+            sudo docker ps -a --filter "name=nail_" --format '{{.Names}}' \
+              | xargs -r sudo docker rm -f || true
 
             # Pull latest pre-built images first
             sudo docker compose -f docker-compose.prod.yml pull
