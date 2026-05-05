@@ -45,9 +45,11 @@ def upgrade() -> None:
             -- Create notificationstatus enum if it doesn't exist
             IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationstatus') THEN
                 CREATE TYPE notificationstatus AS ENUM ('pending', 'sent', 'failed');
+                ALTER TABLE notifications ALTER COLUMN status DROP DEFAULT;
                 ALTER TABLE notifications
                     ALTER COLUMN status TYPE notificationstatus
                     USING status::notificationstatus;
+                ALTER TABLE notifications ALTER COLUMN status SET DEFAULT 'pending'::notificationstatus;
             END IF;
         END
         $$;
