@@ -186,7 +186,7 @@ sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --ta
 
 ## Database Migrations (Alembic)
 
-Versions live in `backend/alembic/versions/`. Files are numbered `0001_`, `0002_`, etc. (one exception: `ec54709d7c95` sits between `0001` and `0002`). Current head: `0013`. Run `alembic history` to see the full chain.
+Versions live in `backend/alembic/versions/`. Files are numbered `0001_`, `0002_`, etc. (one exception: `ec54709d7c95` sits between `0001` and `0002`). Current head: `0016`. Run `alembic history` to see the full chain.
 
 When creating a new migration: `cd backend && alembic revision --autogenerate -m "description"` — then rename the file to follow the `NNNN_description.py` convention and set `down_revision` to the previous head.
 
