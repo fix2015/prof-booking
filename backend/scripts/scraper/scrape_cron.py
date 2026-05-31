@@ -20,7 +20,6 @@ Or run manually:
 import argparse
 import json
 import sys
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -83,7 +82,7 @@ def main():
     now = datetime.now().astimezone().isoformat()
     print(f"\n{'='*60}")
     print(f"  Cron scraper run — {now}")
-    print(f"  Cost: $0.00")
+    print("  Cost: $0.00")
     print(f"{'='*60}")
 
     if args.reset:
