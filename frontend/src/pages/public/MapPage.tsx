@@ -110,7 +110,7 @@ export function MapPage() {
                 position={{ lat: p.latitude!, lng: p.longitude! }}
                 onClick={() => handleMarkerClick(p)}
                 label={{
-                  text: p.worker_payment_amount > 0 ? `$${p.worker_payment_amount}` : p.name.slice(0, 3),
+                  text: p.worker_payment_amount > 0 ? `£${p.worker_payment_amount}` : p.name.slice(0, 3),
                   className: "map-price-label",
                 }}
               />

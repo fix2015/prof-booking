@@ -77,8 +77,8 @@ export function MasterAnalyticsPage() {
                   <BarChart data={analytics.monthly_breakdown} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                    <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
-                    <Tooltip formatter={(v: number) => [`$${v}`, "Revenue"]} />
+                    <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `£${v}`} />
+                    <Tooltip formatter={(v: number) => [`£${v}`, "Revenue"]} />
                     <Bar dataKey="revenue" fill="var(--ds-interactive)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>

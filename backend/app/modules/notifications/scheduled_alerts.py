@@ -159,7 +159,7 @@ def run_eod_recap(db: Session):
         else:
             body = (
                 f"Completed: {completed} session{'s' if completed > 1 else ''}\n"
-                f"Revenue: ${total_revenue:.2f}"
+                f"Revenue: £{total_revenue:.2f}"
             )
 
         _send_to_user(db, user_id, "End-of-Day Recap", body, url="/sessions")

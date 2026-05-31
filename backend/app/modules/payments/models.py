@@ -30,7 +30,7 @@ class Payment(Base):
     stripe_payment_intent_id = Column(String(255), unique=True, nullable=True, index=True)
     stripe_checkout_session_id = Column(String(255), unique=True, nullable=True, index=True)
     amount = Column(Float, nullable=False)
-    currency = Column(String(3), default="usd", nullable=False)
+    currency = Column(String(3), default="gbp", nullable=False)
     payment_type = Column(SAEnum(PaymentType), default=PaymentType.FULL, nullable=False)
     status = Column(SAEnum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
     stripe_receipt_url = Column(String(512), nullable=True)

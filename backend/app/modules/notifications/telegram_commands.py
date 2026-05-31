@@ -39,7 +39,7 @@ def _get_user_by_chat(db: Session, chat_id: str) -> tuple[User | None, Professio
 def _format_session_line(s: BookingSession) -> str:
     t = s.starts_at.strftime("%I:%M %p")
     svc = s.service.name if s.service else "Service"
-    price = f" · ${s.price:.0f}" if s.price else ""
+    price = f" · £{s.price:.0f}" if s.price else ""
     return f"  {t} — {s.client_name} ({svc}{price})"
 
 
@@ -234,9 +234,9 @@ def cmd_revenue(db: Session, prof: Professional | None) -> str:
 
     return (
         f"<b>💰 Revenue</b>\n\n"
-        f"Today: ${today_rev:.2f} ({today_count} sessions)\n"
-        f"This week: ${week_rev:.2f} ({week_count} sessions)\n"
-        f"This month: ${month_rev:.2f} ({month_count} sessions)"
+        f"Today: £{today_rev:.2f} ({today_count} sessions)\n"
+        f"This week: £{week_rev:.2f} ({week_count} sessions)\n"
+        f"This month: £{month_rev:.2f} ({month_count} sessions)"
     )
 
 
@@ -301,7 +301,7 @@ def cmd_next(db: Session, prof: Professional | None) -> str:
         time_str = f"in {mins} min"
 
     svc = session.service.name if session.service else "N/A"
-    price = f"${session.price:.2f}" if session.price else "N/A"
+    price = f"£{session.price:.2f}" if session.price else "N/A"
 
     return (
         f"<b>⏭ Next Appointment</b> ({time_str})\n\n"

@@ -1,0 +1,148 @@
+name: Scrape UK Businesses & Deploy to Prod
+
+# Runs every Sunday at 3am UTC — scrapes all UK nail/beauty businesses,
+# cleans old test data from prod, imports real businesses.
+# Cost: $0.00 (uses free OpenStreetMap Nominatim API)
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday 3am UTC
+  workflow_dispatch:       # Manual trigger from GitHub UI
+
+jobs:
+  scrape-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install scraper deps
+        run: pip install requests beautifulsoup4
+
+      - name: Scrape UK businesses (FREE — Nominatim)
+        run: |
+          cd backend
+          python scripts/scraper/scrape_uk_businesses.py --no-images
+          echo "TOTAL=$(python3 -c "import json; print(json.load(open('scripts/scraper/output/scraped_businesses.json'))['total_count'])")" >> $GITHUB_ENV
+
+      - name: Upload scraped data as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraped-businesses
+          path: backend/scripts/scraper/output/scraped_businesses.json
+          retention-days: 30
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/service.pem
+          chmod 600 ~/.ssh/service.pem
+          ssh-keyscan -H 3.90.215.126 >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Copy scraped data to prod
+        run: |
+          scp -i ~/.ssh/service.pem \
+            backend/scripts/scraper/output/scraped_businesses.json \
+            ubuntu@3.90.215.126:/tmp/scraped_businesses.json
+
+      - name: Clean old data & import to prod DB
+        run: |
+          ssh -i ~/.ssh/service.pem ubuntu@3.90.215.126 << 'ENDSSH'
+          set -e
+
+          # Copy into backend container
+          sudo docker cp /tmp/scraped_businesses.json nail_backend:/tmp/scraped_businesses.json
+
+          # Clean old seed + previously imported data, then import new
+          sudo docker exec nail_backend python -c "
+          import sys, json
+          sys.path.insert(0, '/app')
+          from datetime import datetime
+          from app.database import SessionLocal
+          from app.modules.salons.models import Provider
+          from app.modules.services.models import Service
+          from sqlalchemy import text
+
+          db = SessionLocal()
+          try:
+              # 1. Clean old seed data (probook-demo) + old imports
+              rows = db.execute(text(
+                  \"SELECT id FROM providers WHERE email LIKE '%probook-demo%' OR settings::text LIKE '%scraped-uk-import%'\"
+              )).fetchall()
+              if rows:
+                  ids = [r[0] for r in rows]
+                  id_list = ','.join(str(i) for i in ids)
+                  db.execute(text(f'DELETE FROM work_slots WHERE provider_id IN ({id_list})'))
+                  db.execute(text(f'DELETE FROM professional_providers WHERE provider_id IN ({id_list})'))
+                  db.execute(text(f'DELETE FROM services WHERE provider_id IN ({id_list})'))
+                  db.execute(text(f'DELETE FROM sessions WHERE provider_id IN ({id_list})'))
+                  db.execute(text(f'DELETE FROM providers WHERE id IN ({id_list})'))
+                  db.commit()
+                  print(f'Cleaned {len(ids)} old providers')
+
+              # 2. Import new scraped data
+              with open('/tmp/scraped_businesses.json') as f:
+                  businesses = json.load(f).get('businesses', [])
+
+              SERVICES = [
+                  ('Gel Manicure', 45, 35.00), ('Acrylic Full Set', 90, 55.00),
+                  ('Gel Pedicure', 50, 40.00), ('Nail Art Design', 60, 45.00),
+                  ('Dip Powder Manicure', 45, 38.00), ('French Manicure', 40, 30.00),
+                  ('Shellac Manicure', 35, 28.00), ('Nail Extensions', 75, 50.00),
+                  ('Classic Manicure', 30, 22.00), ('Classic Pedicure', 40, 28.00),
+                  ('Nail Removal', 20, 15.00), ('Nail Repair', 20, 12.00),
+                  ('Infill Acrylic', 60, 40.00), ('Chrome Powder Nails', 50, 42.00),
+                  ('Ombre Nails', 60, 48.00), ('Builder Gel Overlay', 50, 38.00),
+                  ('Cuticle Care Treatment', 25, 18.00), ('3D Nail Art', 75, 55.00),
+                  ('Luxury Manicure & Spa', 60, 50.00), ('Polygel Application', 70, 52.00),
+                  ('Hard Gel Nails', 65, 45.00), ('Russian Manicure', 50, 35.00),
+                  ('Nail Stamping Art', 45, 32.00), ('Encapsulated Nail Art', 70, 58.00),
+                  ('Paraffin Wax Treatment', 30, 25.00),
+              ]
+
+              created = 0
+              for b in businesses:
+                  if not b.get('name'):
+                      continue
+                  slug = b['name'].lower().replace(' ', '').replace('&', '')[:20]
+                  logo = b.get('logo_url') or f'https://picsum.photos/seed/{slug}/200/200'
+                  provider = Provider(
+                      name=b['name'], address=b.get('address'), phone=b.get('phone'),
+                      email=b.get('email'), description=b.get('description', ''),
+                      logo_url=logo, category=b.get('category', 'Beauty & Nails'),
+                      latitude=b.get('latitude'), longitude=b.get('longitude'),
+                      is_active=True, worker_payment_amount=0.0, deposit_percentage=10.0,
+                      settings={'osm_id': b.get('osm_id', ''), 'import_source': 'scraped-uk-import',
+                                'source': 'openstreetmap', 'website': b.get('website', ''),
+                                'opening_hours': b.get('opening_hours', [])},
+                  )
+                  db.add(provider)
+                  db.flush()
+                  for svc_name, dur, price in SERVICES:
+                      db.add(Service(provider_id=provider.id, name=svc_name,
+                                     duration_minutes=dur, price=price, is_active=True,
+                                     created_at=datetime.utcnow()))
+                  created += 1
+              db.commit()
+              print(f'Imported {created} providers with {created * len(SERVICES)} services')
+          finally:
+              db.close()
+          "
+
+          # Cleanup
+          rm -f /tmp/scraped_businesses.json
+          ENDSSH
+
+      - name: Summary
+        run: |
+          echo "### Scraper Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Businesses scraped: ${{ env.TOTAL }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Cost: \$0.00" >> $GITHUB_STEP_SUMMARY
+          echo "- Source: OpenStreetMap Nominatim (free)" >> $GITHUB_STEP_SUMMARY
+          echo "- Deployed to: https://probooking.app" >> $GITHUB_STEP_SUMMARY
