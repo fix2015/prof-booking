@@ -72,15 +72,19 @@ HEADERS = {
     "Accept-Language": "en-GB,en;q=0.9",
 }
 
-# UK cities to search
+# UK cities to search — Hemel Hempstead first, then nearby, then major cities
 DEFAULT_CITIES = [
+    # Primary area
+    "Hemel Hempstead", "St Albans", "Watford", "Luton", "Aylesbury",
+    "High Wycombe", "Hitchin", "Stevenage", "Hatfield", "Welwyn Garden City",
+    "Berkhamsted", "Harpenden", "Chesham", "Amersham", "Rickmansworth",
     # England — major
     "London", "Manchester", "Birmingham", "Leeds", "Liverpool",
     "Bristol", "Sheffield", "Newcastle upon Tyne", "Nottingham", "Leicester",
     "Southampton", "Brighton", "Oxford", "Cambridge", "York",
     "Bath", "Reading", "Coventry", "Plymouth", "Norwich",
     "Exeter", "Derby", "Wolverhampton", "Milton Keynes", "Northampton",
-    "Luton", "Bournemouth", "Swindon", "Peterborough", "Cheltenham",
+    "Bournemouth", "Swindon", "Peterborough", "Cheltenham",
     # Scotland
     "Edinburgh", "Glasgow", "Aberdeen", "Dundee",
     # Wales
@@ -97,6 +101,16 @@ SEARCH_QUERIES = [
     "beauty salon",
     "beauty nails",
     "nail spa",
+    "hair salon",
+    "hairdresser",
+    "barber",
+    "spa",
+    "beauty therapist",
+    "lash extensions",
+    "waxing salon",
+    "tanning salon",
+    "massage",
+    "aesthetics clinic",
 ]
 
 
@@ -139,17 +153,24 @@ def search_nominatim(query: str, city: str) -> list[dict]:
 def extract_category(result: dict) -> str:
     """Map Nominatim class/type to our app categories."""
     osm_type = result.get("type", "")
-    osm_class = result.get("class", "")
     name = result.get("display_name", "").lower()
 
     if "nail" in osm_type or "nail" in name:
         return "Nails"
-    if osm_type in ("beauty_salon", "beauty"):
-        return "Beauty & Nails"
-    if osm_type == "spa":
-        return "Spa & Nails"
     if osm_type in ("hairdresser", "hair_care"):
         return "Hair & Beauty"
+    if osm_type == "spa" or "spa" in name:
+        return "Spa & Wellness"
+    if "barber" in osm_type or "barber" in name:
+        return "Barber"
+    if "massage" in osm_type or "massage" in name:
+        return "Massage & Wellness"
+    if "tanning" in name:
+        return "Tanning"
+    if "lash" in name or "brow" in name:
+        return "Lashes & Brows"
+    if osm_type in ("beauty_salon", "beauty"):
+        return "Beauty & Nails"
     return "Beauty & Nails"
 
 
@@ -492,11 +513,25 @@ def scrape(
             if extras:
                 log(f"  -> {', '.join(extras)}")
 
-    # Generate placeholder logos for businesses without images
-    for b in all_businesses:
+    # Generate category-specific placeholder logos for businesses without images.
+    # Uses Unsplash source with relevant search terms per category so images
+    # look realistic instead of random stock photos.
+    _CATEGORY_TERMS = {
+        "Nails": "nail+salon+manicure",
+        "Beauty & Nails": "beauty+salon+interior",
+        "Hair & Beauty": "hair+salon+interior",
+        "Spa & Wellness": "spa+wellness+interior",
+        "Barber": "barber+shop+interior",
+        "Massage & Wellness": "massage+spa+room",
+        "Tanning": "tanning+salon",
+        "Lashes & Brows": "beauty+lashes+salon",
+    }
+    for i, b in enumerate(all_businesses):
         if not b.get("logo_url"):
-            slug = b["name"].lower().replace(" ", "").replace("&", "")[:20]
-            b["logo_url"] = f"https://picsum.photos/seed/{slug}/200/200"
+            terms = _CATEGORY_TERMS.get(b.get("category", ""), "beauty+salon")
+            # Use a stable seed per business so the same business always gets the same image
+            seed = abs(hash(b.get("osm_id", str(i)))) % 1000
+            b["logo_url"] = f"https://picsum.photos/seed/{terms}{seed}/400/400"
 
     return all_businesses
 
