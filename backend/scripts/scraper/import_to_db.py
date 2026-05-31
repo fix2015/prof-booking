@@ -49,34 +49,79 @@ DEFAULT_INPUT = Path(__file__).parent / "output" / "scraped_businesses.json"
 # Tag to identify imported records (for easy cleanup)
 IMPORT_TAG = "scraped-uk-import"
 
-# Default services we create for each imported provider
-DEFAULT_SERVICES = [
-    ("Gel Manicure",            45,  35.00),
-    ("Acrylic Full Set",        90,  55.00),
-    ("Gel Pedicure",            50,  40.00),
-    ("Nail Art Design",         60,  45.00),
-    ("Dip Powder Manicure",     45,  38.00),
-    ("French Manicure",         40,  30.00),
-    ("Shellac Manicure",        35,  28.00),
-    ("Nail Extensions",         75,  50.00),
-    ("Classic Manicure",        30,  22.00),
-    ("Classic Pedicure",        40,  28.00),
-    ("Nail Removal",            20,  15.00),
-    ("Nail Repair",             20,  12.00),
-    ("Infill Acrylic",          60,  40.00),
-    ("Chrome Powder Nails",     50,  42.00),
-    ("Ombre Nails",             60,  48.00),
-    ("Builder Gel Overlay",     50,  38.00),
-    ("Cuticle Care Treatment",  25,  18.00),
-    ("3D Nail Art",             75,  55.00),
-    ("Luxury Manicure & Spa",   60,  50.00),
-    ("Polygel Application",     70,  52.00),
-    ("Hard Gel Nails",          65,  45.00),
-    ("Russian Manicure",        50,  35.00),
-    ("Nail Stamping Art",       45,  32.00),
-    ("Encapsulated Nail Art",   70,  58.00),
-    ("Paraffin Wax Treatment",  30,  25.00),
-]
+# Category-specific services: (name, duration_minutes, price_gbp)
+SERVICES_BY_CATEGORY: dict[str, list[tuple[str, int, float]]] = {
+    "Nails": [
+        ("Gel Manicure",           45, 35.00), ("Acrylic Full Set",       90, 55.00),
+        ("Gel Pedicure",           50, 40.00), ("Nail Art Design",        60, 45.00),
+        ("Dip Powder Manicure",    45, 38.00), ("French Manicure",        40, 30.00),
+        ("Shellac Manicure",       35, 28.00), ("Nail Extensions",        75, 50.00),
+        ("Classic Manicure",       30, 22.00), ("Classic Pedicure",       40, 28.00),
+        ("Nail Removal",           20, 15.00), ("Nail Repair",            20, 12.00),
+        ("Infill Acrylic",         60, 40.00), ("Chrome Powder Nails",    50, 42.00),
+        ("Ombre Nails",            60, 48.00), ("Builder Gel Overlay",    50, 38.00),
+        ("Cuticle Care Treatment", 25, 18.00), ("3D Nail Art",            75, 55.00),
+        ("Luxury Manicure & Spa",  60, 50.00), ("Russian Manicure",       50, 35.00),
+    ],
+    "Hair & Beauty": [
+        ("Women's Cut & Blow Dry", 60, 45.00), ("Men's Haircut",          30, 22.00),
+        ("Blow Dry & Style",       45, 30.00), ("Full Colour",            90, 75.00),
+        ("Highlights (Half Head)", 90, 65.00), ("Highlights (Full Head)",120, 95.00),
+        ("Balayage",              120,110.00), ("Root Touch-Up",          45, 40.00),
+        ("Hair Treatment & Mask",  30, 25.00), ("Keratin Treatment",      90, 85.00),
+        ("Bridal Hair",           120,120.00), ("Hair Extensions Fitting",180,200.00),
+        ("Scalp Treatment",        30, 20.00), ("Kids Haircut",           20, 15.00),
+        ("Trim & Tidy",            20, 18.00),
+    ],
+    "Barber": [
+        ("Gents Haircut",          30, 18.00), ("Skin Fade",              30, 20.00),
+        ("Beard Trim",             15, 10.00), ("Haircut & Beard Trim",   45, 25.00),
+        ("Hot Towel Shave",        30, 22.00), ("Hair Wash & Cut",        40, 22.00),
+        ("Boys Haircut (Under 12)",20, 12.00), ("Head Shave",             20, 15.00),
+        ("Beard Shape & Line Up",  20, 12.00), ("Eyebrow Trim",           10,  8.00),
+    ],
+    "Spa & Wellness": [
+        ("Swedish Massage (60min)",60, 55.00), ("Deep Tissue Massage",    60, 65.00),
+        ("Hot Stone Massage",      75, 75.00), ("Aromatherapy Massage",   60, 60.00),
+        ("Facial Treatment",       60, 50.00), ("Body Wrap",              75, 70.00),
+        ("Body Scrub & Polish",    45, 45.00), ("Spa Day Package",       180,150.00),
+        ("Couples Massage",        60,110.00), ("Back Neck & Shoulder",   30, 35.00),
+    ],
+    "Massage & Wellness": [
+        ("Swedish Massage (60min)",60, 55.00), ("Deep Tissue Massage",    60, 65.00),
+        ("Sports Massage",         45, 50.00), ("Back Neck & Shoulder",   30, 35.00),
+        ("Hot Stone Massage",      75, 75.00), ("Aromatherapy Massage",   60, 60.00),
+        ("Reflexology",            45, 40.00), ("Indian Head Massage",    30, 30.00),
+        ("Pregnancy Massage",      60, 55.00), ("Lymphatic Drainage",     60, 60.00),
+    ],
+    "Lashes & Brows": [
+        ("Classic Lash Extensions",90, 55.00), ("Hybrid Lash Set",       105, 65.00),
+        ("Volume Lash Set",       120, 75.00), ("Lash Lift & Tint",       60, 35.00),
+        ("Lash Infill (2 week)",   60, 35.00), ("Lash Infill (3 week)",   75, 45.00),
+        ("Brow Wax & Shape",       15, 10.00), ("Brow Lamination",        45, 30.00),
+        ("Brow Tint",              15,  8.00), ("Lash & Brow Tint",       20, 15.00),
+    ],
+    "Tanning": [
+        ("Spray Tan (Full Body)",  30, 25.00), ("Spray Tan (Half Body)",  20, 18.00),
+        ("Express Spray Tan",      15, 22.00), ("Sunbed Session (6 min)", 10,  5.00),
+        ("Sunbed Session (9 min)", 15,  7.00), ("Sunbed Course (10)",     10, 40.00),
+    ],
+    "Beauty & Nails": [
+        ("Gel Manicure",           45, 35.00), ("Gel Pedicure",           50, 40.00),
+        ("Classic Manicure",       30, 22.00), ("Classic Pedicure",       40, 28.00),
+        ("Facial Treatment",       60, 50.00), ("Eyebrow Wax & Tint",    20, 15.00),
+        ("Lash Lift & Tint",       60, 35.00), ("Full Body Wax",          60, 45.00),
+        ("Leg Wax",                30, 25.00), ("Shellac Manicure",       35, 28.00),
+        ("Nail Art Design",        60, 45.00), ("Acrylic Full Set",       90, 55.00),
+        ("Brow Lamination",        45, 30.00), ("Spray Tan (Full Body)",  30, 25.00),
+        ("Back Neck & Shoulder",   30, 35.00),
+    ],
+}
+
+
+def get_services_for_category(category: str) -> list[tuple[str, int, float]]:
+    """Return the right service list for a provider's category."""
+    return SERVICES_BY_CATEGORY.get(category, SERVICES_BY_CATEGORY["Beauty & Nails"])
 
 
 def load_scraped_data(input_path: Path) -> list[dict]:
@@ -203,9 +248,11 @@ def import_businesses(
                 db.add(provider)
                 db.flush()  # Get provider.id
 
-                # Create default services
+                # Create category-specific services
                 if with_services:
-                    for svc_name, duration, price in DEFAULT_SERVICES:
+                    category = b.get("category", "Beauty & Nails")
+                    services = get_services_for_category(category)
+                    for svc_name, duration, price in services:
                         db.add(Service(
                             provider_id=provider.id,
                             name=svc_name,
@@ -214,7 +261,7 @@ def import_businesses(
                             is_active=True,
                             created_at=datetime.utcnow(),
                         ))
-                    stats["services_created"] += len(DEFAULT_SERVICES)
+                    stats["services_created"] += len(services)
 
                 existing_ids.add(source_id)
                 stats["created"] += 1
@@ -247,7 +294,7 @@ def cleanup_imported(dry_run: bool = False) -> int:
 
         # Find providers imported by this script
         rows = db.execute(text(
-            f"SELECT id, name FROM providers WHERE settings->>'import_source' = :tag"
+            "SELECT id, name FROM providers WHERE settings->>'import_source' = :tag"
         ), {"tag": IMPORT_TAG}).fetchall()
 
         if not rows:

@@ -35,7 +35,6 @@ Output:
 import argparse
 import json
 import re
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -500,7 +499,6 @@ def scrape(
 
         for i, business in enumerate(with_website, 1):
             name = business["name"]
-            website = business["website"]
             log(f"[{i}/{len(with_website)}] {name}")
 
             enrich_from_website(business, download_images=download_images)
@@ -561,8 +559,8 @@ def print_summary(businesses: list[dict]) -> None:
     print("  SCRAPING COMPLETE")
     print("=" * 60)
     print(f"  Total businesses:  {len(businesses)}")
-    print(f"  Data source:       OpenStreetMap Nominatim (100% free)")
-    print(f"  Cost:              $0.00")
+    print("  Data source:       OpenStreetMap Nominatim (100% free)")
+    print("  Cost:              $0.00")
 
     cities = set(b.get("city", "") for b in businesses if b.get("city"))
     print(f"  Cities found:      {len(cities)}")
@@ -576,7 +574,7 @@ def print_summary(businesses: list[dict]) -> None:
     with_coords = sum(1 for b in businesses if b.get("latitude"))
     total = max(len(businesses), 1)
 
-    print(f"\n  Field coverage:")
+    print("\n  Field coverage:")
     print(f"    Address:         {with_address:>5} ({100*with_address//total}%)")
     print(f"    Coordinates:     {with_coords:>5} ({100*with_coords//total}%)")
     print(f"    Phone:           {with_phone:>5} ({100*with_phone//total}%)")
@@ -589,12 +587,12 @@ def print_summary(businesses: list[dict]) -> None:
     for b in businesses:
         cat = b.get("category", "Unknown")
         categories[cat] = categories.get(cat, 0) + 1
-    print(f"\n  Categories:")
+    print("\n  Categories:")
     for cat, count in sorted(categories.items(), key=lambda x: -x[1]):
         print(f"    {cat}: {count}")
 
     if cities:
-        print(f"\n  Top cities:")
+        print("\n  Top cities:")
         city_counts: dict[str, int] = {}
         for b in businesses:
             c = b.get("city", "")
@@ -646,12 +644,10 @@ def main():
 
     # Resume support
     existing: list[dict] = []
-    existing_ids: set[str] = set()
     if args.resume and (OUTPUT_DIR / "scraped_businesses.json").exists():
         with open(OUTPUT_DIR / "scraped_businesses.json") as f:
             data = json.load(f)
             existing = data.get("businesses", [])
-            existing_ids = {b["osm_id"] for b in existing if b.get("osm_id")}
         print(f"\nResuming: {len(existing)} businesses already scraped")
 
     businesses = scrape(
