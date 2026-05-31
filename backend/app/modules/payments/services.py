@@ -28,7 +28,7 @@ def create_checkout_session(db: Session, data: CreatePaymentIntent) -> tuple[str
             line_items=[
                 {
                     "price_data": {
-                        "currency": "usd",
+                        "currency": "gbp",
                         "product_data": {"name": f"Booking #{session.id}"},
                         "unit_amount": int(amount * 100),
                     },
@@ -47,7 +47,7 @@ def create_checkout_session(db: Session, data: CreatePaymentIntent) -> tuple[str
         session_id=session.id,
         stripe_checkout_session_id=checkout.id,
         amount=amount,
-        currency="usd",
+        currency="gbp",
         payment_type=data.payment_type,
         status=PaymentStatus.PENDING,
     )

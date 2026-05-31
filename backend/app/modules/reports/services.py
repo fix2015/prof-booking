@@ -178,7 +178,7 @@ _HEADER_FILL = PatternFill("solid", fgColor="831843")
 _ALT_FILL = PatternFill("solid", fgColor="FDF2F8")
 _HEADER_FONT = Font(bold=True, color="FFFFFF", size=11)
 _TITLE_FONT = Font(bold=True, color="831843", size=13)
-_CURRENCY_FMT = '"$"#,##0.00'
+_CURRENCY_FMT = '"£"#,##0.00'
 
 
 def _header_row(ws, cols: list[str], row: int = 1) -> None:

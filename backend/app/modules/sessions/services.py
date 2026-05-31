@@ -179,7 +179,7 @@ def build_confirmation_pdf(session: Session) -> io.BytesIO:
     date_str = session.starts_at.strftime("%B %d, %Y")
     time_str = session.starts_at.strftime("%I:%M %p")
     duration = f"{session.duration_minutes} min"
-    price = f"${session.price:.2f}" if session.price else "—"
+    price = f"£{session.price:.2f}" if session.price else "—"
 
     ref = f"#{session.id:06d}"
 

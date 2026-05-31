@@ -164,6 +164,55 @@
   }
 }
 
+/* ─────────────────────────────────────────────
+   Map Markers
+───────────────────────────────────────────── */
+.map-marker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: var(--ds-bg-primary);
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-full);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.map-marker:hover {
+  background: var(--ds-bg-inverse);
+  border-color: var(--ds-bg-inverse);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.map-marker:hover .map-marker__icon,
+.map-marker:hover .map-marker__label {
+  color: var(--ds-text-inverse);
+}
+.map-marker--active {
+  background: var(--ds-bg-inverse);
+  border-color: var(--ds-bg-inverse);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.map-marker--active .map-marker__icon,
+.map-marker--active .map-marker__label {
+  color: var(--ds-text-inverse);
+}
+.map-marker__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--ds-interactive-default);
+}
+.map-marker__label {
+  font-size: var(--ds-fs-label-small);
+  font-weight: 600;
+  line-height: var(--ds-lh-label-small);
+  color: var(--ds-text-primary);
+}
+
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }

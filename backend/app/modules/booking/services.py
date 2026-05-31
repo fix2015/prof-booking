@@ -103,7 +103,7 @@ def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingCon
                     f"Service: {service.name}"
                 )
                 if session.price:
-                    _tg_text += f"\nPrice: ${session.price:.2f}"
+                    _tg_text += f"\nPrice: £{session.price:.2f}"
 
                 def _send_tg():
                     from app.database import SessionLocal

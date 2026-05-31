@@ -391,7 +391,7 @@ export function AdminPanelPage() {
                         <td className="py-ds-2 text-ds-text-muted">#{s.id}</td>
                         <td className="py-ds-2 ds-body-strong">{s.name}</td>
                         <td className="py-ds-2 text-ds-text-secondary">Provider #{s.provider_id}</td>
-                        <td className="py-ds-2">${s.price}</td>
+                        <td className="py-ds-2">£{s.price}</td>
                         <td className="py-ds-2">
                           <Badge variant={s.is_active ? "success" : "secondary"}>
                             {s.is_active ? "Active" : "Inactive"}

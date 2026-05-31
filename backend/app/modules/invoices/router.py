@@ -258,9 +258,9 @@ def download_invoice_pdf(
     breakdown = [
         ["Description", "Amount"],
         ["Total Sessions", str(invoice.total_sessions)],
-        ["Total Revenue", f"${invoice.total_revenue:,.2f}"],
-        [f"Professional Earnings ({invoice.professional_percentage:.0f}%)", f"${invoice.professional_earnings:,.2f}"],
-        [f"Provider Earnings ({100 - invoice.professional_percentage:.0f}%)", f"${invoice.provider_earnings:,.2f}"],
+        ["Total Revenue", f"£{invoice.total_revenue:,.2f}"],
+        [f"Professional Earnings ({invoice.professional_percentage:.0f}%)", f"£{invoice.professional_earnings:,.2f}"],
+        [f"Provider Earnings ({100 - invoice.professional_percentage:.0f}%)", f"£{invoice.provider_earnings:,.2f}"],
     ]
     t = Table(breakdown, colWidths=[10*cm, 6*cm])
     t.setStyle(TableStyle([

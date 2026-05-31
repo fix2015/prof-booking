@@ -1,5 +1,5 @@
-export const formatCurrency = (amount: number, currency = "USD") =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+export const formatCurrency = (amount: number, currency = "GBP") =>
+  new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount);
 
 export const formatPhone = (phone: string) => {
   const digits = phone.replace(/\D/g, "");

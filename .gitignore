@@ -50,3 +50,7 @@ logs/
 # Alembic
 backend/alembic/versions/*.pyc
 claude_bridge.py
+
+# Scraper output (images + JSON data)
+backend/scripts/scraper/output/*
+!backend/scripts/scraper/output/.gitkeep

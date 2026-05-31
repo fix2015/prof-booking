@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, OverlayView } from "@react-google-maps/api";
 import { useSearchProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
@@ -105,15 +105,21 @@ export function MapPage() {
             onIdle={handleIdle}
           >
             {geoProviders.map((p) => (
-              <Marker
+              <OverlayView
                 key={p.id}
                 position={{ lat: p.latitude!, lng: p.longitude! }}
-                onClick={() => handleMarkerClick(p)}
-                label={{
-                  text: p.worker_payment_amount > 0 ? `$${p.worker_payment_amount}` : p.name.slice(0, 3),
-                  className: "map-price-label",
-                }}
-              />
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+              >
+                <button
+                  onClick={() => handleMarkerClick(p)}
+                  className={`map-marker ${selected?.id === p.id ? "map-marker--active" : ""}`}
+                >
+                  <svg className="map-marker__icon" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5Zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" fill="currentColor"/>
+                  </svg>
+                  <span className="map-marker__label">{p.name.length > 12 ? p.name.slice(0, 12) + "…" : p.name}</span>
+                </button>
+              </OverlayView>
             ))}
           </GoogleMap>
         ) : (
