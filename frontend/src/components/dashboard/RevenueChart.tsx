@@ -42,7 +42,7 @@ export function RevenueChart({ data, title = "Revenue", type = "area" }: Revenue
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `£${v}`} />
               <Tooltip
                 formatter={(value: number) => [formatCurrency(value), "Revenue"]}
                 contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0" }}

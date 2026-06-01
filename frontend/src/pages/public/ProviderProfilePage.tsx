@@ -246,7 +246,7 @@ export function ProviderProfilePage() {
                   <p className="ds-caption text-ds-text-secondary">{t("providers.duration_min", { min: service.duration_minutes })}</p>
                 </div>
                 <div className="flex items-center gap-ds-2">
-                  <p className="ds-body-strong text-ds-text-primary">${service.price}</p>
+                  <p className="ds-body-strong text-ds-text-primary">£{service.price}</p>
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ds-text-muted">
                     <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>

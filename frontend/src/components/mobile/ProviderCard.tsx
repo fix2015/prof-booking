@@ -14,7 +14,7 @@ interface Props {
 
 export function ProviderCard({ provider, variant = "default", saved = false, onToggleSave, onClick, servicePrice }: Props) {
   const displayPrice = servicePrice ?? (provider.worker_payment_amount > 0 ? provider.worker_payment_amount : null);
-  const priceLabel = servicePrice != null ? `$${servicePrice}` : displayPrice != null ? `from $${displayPrice}` : null;
+  const priceLabel = servicePrice != null ? `£${servicePrice}` : displayPrice != null ? `from £${displayPrice}` : null;
   if (variant === "list") {
     return (
       <div

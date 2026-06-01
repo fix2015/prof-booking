@@ -585,7 +585,7 @@ export function ClientDetailPage() {
                     {s.status}
                   </Badge>
                   {s.price != null && (
-                    <div className="ds-caption text-ds-text-muted">${s.price.toFixed(2)}</div>
+                    <div className="ds-caption text-ds-text-muted">£{s.price.toFixed(2)}</div>
                   )}
                 </div>
               </div>

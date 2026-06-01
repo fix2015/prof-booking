@@ -209,7 +209,7 @@ function BookingCard({ booking }: { booking: BookingLookupResult }) {
           <Detail
             icon={null}
             label={t("bookings.field.price")}
-            value={booking.price === 0 ? t("common.free") : `$${booking.price.toFixed(2)}`}
+            value={booking.price === 0 ? t("common.free") : `£${booking.price.toFixed(2)}`}
           />
         )}
       </dl>

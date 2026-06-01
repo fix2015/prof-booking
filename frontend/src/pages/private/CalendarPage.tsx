@@ -345,7 +345,7 @@ export function CalendarPage() {
               <p><span className="font-medium">Client:</span> {selectedSession.client_name}</p>
               <p><span className="font-medium">Phone:</span> {selectedSession.client_phone}</p>
               <p><span className="font-medium">Status:</span> {selectedSession.status}</p>
-              <p><span className="font-medium">Price:</span> ${selectedSession.price ?? "N/A"}</p>
+              <p><span className="font-medium">Price:</span> £{selectedSession.price ?? "N/A"}</p>
               {selectedSession.client_notes && (
                 <p><span className="font-medium">Notes:</span> {selectedSession.client_notes}</p>
               )}
