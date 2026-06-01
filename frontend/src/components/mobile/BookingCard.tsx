@@ -142,7 +142,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
         <span className="ds-caption text-ds-text-muted">#{b.confirmation_code}</span>
         <div className="flex items-center gap-ds-3">
           {b.price != null && (
-            <span className="ds-body-strong text-ds-text-primary">${b.price}</span>
+            <span className="ds-body-strong text-ds-text-primary">£{b.price}</span>
           )}
           {status === "confirmed" && providerId && (
             <button

@@ -224,7 +224,7 @@ export function PublicBookingPage() {
                     </p>
                   </div>
                   <p className={`ds-body-strong ${selectedService?.id === service.id ? "text-ds-text-inverse" : "text-ds-text-primary"}`}>
-                    ${service.price}
+                    £{service.price}
                   </p>
                 </button>
               ))
@@ -376,7 +376,7 @@ export function PublicBookingPage() {
               {selectedService && (
                 <div className="flex justify-between border-t border-ds-border pt-ds-2">
                   <span className="ds-body-strong text-ds-text-primary">{t("booking.summary_total")}</span>
-                  <span className="ds-body-strong text-ds-text-primary">${selectedService.price}</span>
+                  <span className="ds-body-strong text-ds-text-primary">£{selectedService.price}</span>
                 </div>
               )}
             </div>
