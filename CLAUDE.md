@@ -27,7 +27,8 @@ Multi-tenant SaaS for nail salon booking & worker management. Monorepo with a Fa
 
 ```bash
 # Setup (first time)
-cd backend && python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+cd backend && cp .env.example .env   # then edit .env with real values
+python3.12 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
 # Run dev server (requires postgres + redis running)
 cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -60,7 +61,8 @@ cd backend && python scripts/seed_mock_data.py
 ### Frontend
 
 ```bash
-cd frontend && yarn install   # yarn.lock is the tracked lock file
+cd frontend && cp .env.example .env  # configure VITE_API_URL, Stripe key, Google Maps key
+yarn install   # yarn.lock is the tracked lock file
 
 cd frontend
 yarn dev             # Dev server on http://localhost:5174
@@ -199,3 +201,5 @@ When creating a new migration: `cd backend && alembic revision --autogenerate -m
 - **SQLAlchemy 2**: import `declarative_base` from `sqlalchemy.orm`, not `sqlalchemy.ext.declarative`
 - **SQLite tests**: `pool_size`/`max_overflow` are skipped via `_is_sqlite` check in `database.py`
 - **Frontend dev port**: `5174` (not 5173) — Playwright config targets this port
+- **Currency is GBP (£)** — all prices display in pounds sterling, not dollars. Use `£` in UI strings and formatters.
+- **Husky pre-commit hook** runs `npm test` — commits will fail if tests don't pass
