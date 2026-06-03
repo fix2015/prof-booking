@@ -7,11 +7,20 @@ on:
   schedule:
     - cron: '0 3 * * 0'  # Every Sunday 3am UTC
   workflow_dispatch:       # Manual trigger from GitHub UI
+    inputs:
+      skip_scrape:
+        description: 'Skip scraping and use existing JSON from repo'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   scrape-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -23,13 +32,21 @@ jobs:
           python-version: '3.12'
 
       - name: Install scraper deps
+        if: inputs.skip_scrape != 'true'
         run: pip install requests beautifulsoup4
 
       - name: Scrape UK businesses (FREE — Nominatim)
+        if: inputs.skip_scrape != 'true'
         run: |
           cd backend
           python scripts/scraper/scrape_uk_businesses.py --no-images
           echo "TOTAL=$(python3 -c "import json; print(json.load(open('scripts/scraper/output/scraped_businesses.json'))['total_count'])")" >> $GITHUB_ENV
+
+      - name: Use existing scraped data from repo
+        if: inputs.skip_scrape == 'true'
+        run: |
+          echo "TOTAL=$(python3 -c "import json; print(json.load(open('backend/scripts/scraper/output/scraped_businesses.json'))['total_count'])")" >> $GITHUB_ENV
+          echo "Using pre-scraped data: ${{ env.TOTAL }} businesses"
 
       - name: Upload scraped data as artifact
         uses: actions/upload-artifact@v4
@@ -40,20 +57,19 @@ jobs:
 
       - name: Setup SSH key
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/service.pem
-          chmod 600 ~/.ssh/service.pem
-          ssh-keyscan -H 3.90.215.126 >> ~/.ssh/known_hosts 2>/dev/null
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | base64 -d > /tmp/deploy_key.pem
+          chmod 600 /tmp/deploy_key.pem
 
       - name: Copy scraped data to prod
         run: |
-          scp -i ~/.ssh/service.pem \
+          scp -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no \
             backend/scripts/scraper/output/scraped_businesses.json \
-            ubuntu@3.90.215.126:/tmp/scraped_businesses.json
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/scraped_businesses.json
 
       - name: Clean old data & import to prod DB
         run: |
-          ssh -i ~/.ssh/service.pem ubuntu@3.90.215.126 << 'ENDSSH'
+          ssh -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
           set -e
 
           # Copy into backend container
@@ -138,6 +154,10 @@ jobs:
           # Cleanup
           rm -f /tmp/scraped_businesses.json
           ENDSSH
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f /tmp/deploy_key.pem
 
       - name: Summary
         run: |
