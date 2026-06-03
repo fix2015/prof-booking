@@ -82,6 +82,7 @@ jobs:
           from datetime import datetime
           from app.database import SessionLocal
           from app.modules.salons.models import Provider
+          from app.modules.masters.models import ProfessionalProvider
           from app.modules.services.models import Service
           from sqlalchemy import text
 
