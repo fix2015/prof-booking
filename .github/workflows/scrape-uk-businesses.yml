@@ -129,7 +129,8 @@ jobs:
               ]
 
               created = 0
-              for b in businesses:
+              BATCH = 50
+              for i, b in enumerate(businesses):
                   if not b.get('name'):
                       continue
                   slug = b['name'].lower().replace(' ', '').replace('&', '')[:20]
@@ -154,6 +155,9 @@ jobs:
                       db.execute(text('INSERT INTO service_providers (service_id, provider_id) VALUES (:sid, :pid)'),
                                  {'sid': svc.id, 'pid': provider.id})
                   created += 1
+                  if created % BATCH == 0:
+                      db.commit()
+                      print(f'  batch committed: {created} providers so far')
               db.commit()
               print(f'Imported {created} providers with {created * len(SERVICES)} services')
           finally:
