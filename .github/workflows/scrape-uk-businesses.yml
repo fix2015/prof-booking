@@ -75,93 +75,56 @@ jobs:
           # Copy into backend container
           sudo docker cp /tmp/scraped_businesses.json nail_backend:/tmp/scraped_businesses.json
 
-          # Clean old seed + previously imported data, then import new
+          # Use raw psycopg2 — no ORM overhead, minimal memory
           sudo docker exec nail_backend python -c "
-          import sys, json
-          sys.path.insert(0, '/app')
-          from datetime import datetime
-          # Import the app to register all SQLAlchemy models
-          from app.main import app as _app
-          from app.database import SessionLocal
-          from app.modules.salons.models import Provider
-          from app.modules.services.models import Service
-          from sqlalchemy import text
+          import json, os, psycopg2, psycopg2.extras
 
-          db = SessionLocal()
-          try:
-              # 1. Clean old seed data (probook-demo) + old imports
-              rows = db.execute(text(
-                  \"SELECT id FROM providers WHERE email LIKE '%probook-demo%' OR settings::text LIKE '%scraped-uk-import%'\"
-              )).fetchall()
-              if rows:
-                  ids = [r[0] for r in rows]
-                  id_list = ','.join(str(i) for i in ids)
-                  db.execute(text(f'DELETE FROM work_slots WHERE provider_id IN ({id_list})'))
-                  db.execute(text(f'DELETE FROM professional_providers WHERE provider_id IN ({id_list})'))
-                  # services uses junction table service_providers
-                  db.execute(text(f'DELETE FROM service_providers WHERE provider_id IN ({id_list})'))
-                  svc_rows = db.execute(text(
-                      f'DELETE FROM services s WHERE NOT EXISTS (SELECT 1 FROM service_providers sp WHERE sp.service_id = s.id) RETURNING s.id'
-                  )).fetchall()
-                  db.execute(text(f'DELETE FROM sessions WHERE provider_id IN ({id_list})'))
-                  db.execute(text(f'DELETE FROM providers WHERE id IN ({id_list})'))
-                  db.commit()
-                  print(f'Cleaned {len(ids)} old providers, {len(svc_rows)} orphan services')
+          conn = psycopg2.connect(os.environ['DATABASE_URL'])
+          conn.autocommit = False
+          cur = conn.cursor()
 
-              # 2. Import new scraped data
-              with open('/tmp/scraped_businesses.json') as f:
-                  businesses = json.load(f).get('businesses', [])
+          # 1. Clean old imports
+          cur.execute(\"SELECT id FROM providers WHERE email LIKE '%%probook-demo%%' OR settings::text LIKE '%%scraped-uk-import%%'\")
+          ids = [r[0] for r in cur.fetchall()]
+          if ids:
+              id_list = ','.join(str(i) for i in ids)
+              cur.execute(f'DELETE FROM work_slots WHERE provider_id IN ({id_list})')
+              cur.execute(f'DELETE FROM professional_providers WHERE provider_id IN ({id_list})')
+              cur.execute(f'DELETE FROM service_providers WHERE provider_id IN ({id_list})')
+              cur.execute(f'DELETE FROM services s WHERE NOT EXISTS (SELECT 1 FROM service_providers sp WHERE sp.service_id = s.id)')
+              cur.execute(f'DELETE FROM sessions WHERE provider_id IN ({id_list})')
+              cur.execute(f'DELETE FROM providers WHERE id IN ({id_list})')
+              conn.commit()
+              print(f'Cleaned {len(ids)} old providers')
 
-              SERVICES = [
-                  ('Gel Manicure', 45, 35.00), ('Acrylic Full Set', 90, 55.00),
-                  ('Gel Pedicure', 50, 40.00), ('Nail Art Design', 60, 45.00),
-                  ('Dip Powder Manicure', 45, 38.00), ('French Manicure', 40, 30.00),
-                  ('Shellac Manicure', 35, 28.00), ('Nail Extensions', 75, 50.00),
-                  ('Classic Manicure', 30, 22.00), ('Classic Pedicure', 40, 28.00),
-                  ('Nail Removal', 20, 15.00), ('Nail Repair', 20, 12.00),
-                  ('Infill Acrylic', 60, 40.00), ('Chrome Powder Nails', 50, 42.00),
-                  ('Ombre Nails', 60, 48.00), ('Builder Gel Overlay', 50, 38.00),
-                  ('Cuticle Care Treatment', 25, 18.00), ('3D Nail Art', 75, 55.00),
-                  ('Luxury Manicure & Spa', 60, 50.00), ('Polygel Application', 70, 52.00),
-                  ('Hard Gel Nails', 65, 45.00), ('Russian Manicure', 50, 35.00),
-                  ('Nail Stamping Art', 45, 32.00), ('Encapsulated Nail Art', 70, 58.00),
-                  ('Paraffin Wax Treatment', 30, 25.00),
-              ]
+          # 2. Import
+          with open('/tmp/scraped_businesses.json') as f:
+              businesses = json.load(f).get('businesses', [])
 
-              created = 0
-              BATCH = 50
-              for i, b in enumerate(businesses):
-                  if not b.get('name'):
-                      continue
-                  slug = b['name'].lower().replace(' ', '').replace('&', '')[:20]
-                  logo = b.get('logo_url') or f'https://picsum.photos/seed/{slug}/200/200'
-                  provider = Provider(
-                      name=b['name'], address=b.get('address'), phone=b.get('phone'),
-                      email=b.get('email'), description=b.get('description', ''),
-                      logo_url=logo, category=b.get('category', 'Beauty & Nails'),
-                      latitude=b.get('latitude'), longitude=b.get('longitude'),
-                      is_active=True, worker_payment_amount=0.0, deposit_percentage=10.0,
-                      settings={'osm_id': b.get('osm_id', ''), 'import_source': 'scraped-uk-import',
-                                'source': 'openstreetmap', 'website': b.get('website', ''),
-                                'opening_hours': b.get('opening_hours', [])},
-                  )
-                  db.add(provider)
-                  db.flush()
-                  for svc_name, dur, price in SERVICES:
-                      svc = Service(name=svc_name, duration_minutes=dur, price=price,
-                                    is_active=True, created_at=datetime.utcnow())
-                      db.add(svc)
-                      db.flush()
-                      db.execute(text('INSERT INTO service_providers (service_id, provider_id) VALUES (:sid, :pid)'),
-                                 {'sid': svc.id, 'pid': provider.id})
-                  created += 1
-                  if created % BATCH == 0:
-                      db.commit()
-                      print(f'  batch committed: {created} providers so far')
-              db.commit()
-              print(f'Imported {created} providers with {created * len(SERVICES)} services')
-          finally:
-              db.close()
+          SVCS = [('Gel Manicure',45,35),('Acrylic Full Set',90,55),('Gel Pedicure',50,40),('Nail Art Design',60,45),('Dip Powder Manicure',45,38),('French Manicure',40,30),('Shellac Manicure',35,28),('Nail Extensions',75,50),('Classic Manicure',30,22),('Classic Pedicure',40,28),('Nail Removal',20,15),('Nail Repair',20,12),('Infill Acrylic',60,40),('Chrome Powder Nails',50,42),('Ombre Nails',60,48),('Builder Gel Overlay',50,38),('Cuticle Care Treatment',25,18),('3D Nail Art',75,55),('Luxury Manicure & Spa',60,50),('Polygel Application',70,52),('Hard Gel Nails',65,45),('Russian Manicure',50,35),('Nail Stamping Art',45,32),('Encapsulated Nail Art',70,58),('Paraffin Wax Treatment',30,25)]
+          created = 0
+          for b in businesses:
+              if not b.get('name'): continue
+              slug = b['name'].lower().replace(' ','').replace('&','')[:20]
+              logo = b.get('logo_url') or f'https://picsum.photos/seed/{slug}/200/200'
+              settings = json.dumps({'osm_id':b.get('osm_id',''),'import_source':'scraped-uk-import','source':'openstreetmap','website':b.get('website',''),'opening_hours':b.get('opening_hours',[])})
+              cur.execute(
+                  'INSERT INTO providers (name,address,phone,email,description,logo_url,category,latitude,longitude,is_active,worker_payment_amount,deposit_percentage,settings,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,true,0,10,%s,NOW(),NOW()) RETURNING id',
+                  (b['name'],b.get('address'),b.get('phone'),b.get('email'),b.get('description',''),logo,b.get('category','Beauty & Nails'),b.get('latitude'),b.get('longitude'),settings)
+              )
+              pid = cur.fetchone()[0]
+              for sn,dur,price in SVCS:
+                  cur.execute('INSERT INTO services (name,duration_minutes,price,is_active,created_at,updated_at) VALUES (%s,%s,%s,true,NOW(),NOW()) RETURNING id',(sn,dur,price))
+                  sid = cur.fetchone()[0]
+                  cur.execute('INSERT INTO service_providers (service_id,provider_id) VALUES (%s,%s)',(sid,pid))
+              created += 1
+              if created % 50 == 0:
+                  conn.commit()
+                  print(f'  {created} providers imported...')
+          conn.commit()
+          print(f'Imported {created} providers with {created*len(SVCS)} services')
+          cur.close()
+          conn.close()
           "
 
           # Cleanup
