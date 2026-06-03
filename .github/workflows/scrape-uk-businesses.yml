@@ -81,9 +81,15 @@ jobs:
           sys.path.insert(0, '/app')
           from datetime import datetime
           from app.database import SessionLocal
+          # Import all models so SQLAlchemy can resolve all relationships
           from app.modules.salons.models import Provider
-          from app.modules.masters.models import ProfessionalProvider
+          from app.modules.masters.models import Professional, ProfessionalProvider
           from app.modules.services.models import Service
+          from app.modules.sessions.models import Session as SessionModel
+          from app.modules.invites.models import Invite
+          from app.modules.reviews.models import Review
+          from app.modules.users.models import User
+          from app.modules.invoices.models import EarningsSplit
           from sqlalchemy import text
 
           db = SessionLocal()
