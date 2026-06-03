@@ -270,7 +270,7 @@ const translations = {
     "register.description": "Create your provider owner account",
     "register.failed": "Registration failed. Please try again.",
     "register.business_address": "Business Address",
-    "register.worker_payment": "Default Worker Payment ($)",
+    "register.worker_payment": "Default Worker Payment (£)",
     "register.already_have_account": "Already have an account?",
 
     // MasterRegisterPage extras
@@ -735,7 +735,7 @@ const translations = {
     "register.description": "Utwórz konto właściciela dostawcy",
     "register.failed": "Rejestracja nie powiodła się. Spróbuj ponownie.",
     "register.business_address": "Adres firmy",
-    "register.worker_payment": "Domyślna wypłata dla pracownika ($)",
+    "register.worker_payment": "Domyślna wypłata dla pracownika (£)",
     "register.already_have_account": "Masz już konto?",
 
     // MasterRegisterPage extras
@@ -1200,7 +1200,7 @@ const translations = {
     "register.description": "Creează contul tău de proprietar de furnizor",
     "register.failed": "Înregistrarea a eșuat. Încearcă din nou.",
     "register.business_address": "Adresa afacerii",
-    "register.worker_payment": "Plată implicită pentru angajat ($)",
+    "register.worker_payment": "Plată implicită pentru angajat (£)",
     "register.already_have_account": "Ai deja un cont?",
 
     // MasterRegisterPage extras
@@ -1665,7 +1665,7 @@ const translations = {
     "register.description": "Створіть акаунт власника провайдера",
     "register.failed": "Реєстрація не вдалася. Спробуйте ще раз.",
     "register.business_address": "Адреса бізнесу",
-    "register.worker_payment": "Виплата за замовчуванням для працівника ($)",
+    "register.worker_payment": "Виплата за замовчуванням для працівника (£)",
     "register.already_have_account": "Вже маєте акаунт?",
 
     // MasterRegisterPage extras
@@ -2130,7 +2130,7 @@ const translations = {
     "register.description": "Crea tu cuenta de propietario de proveedor",
     "register.failed": "El registro falló. Por favor inténtalo de nuevo.",
     "register.business_address": "Dirección del negocio",
-    "register.worker_payment": "Pago predeterminado al trabajador ($)",
+    "register.worker_payment": "Pago predeterminado al trabajador (£)",
     "register.already_have_account": "¿Ya tienes una cuenta?",
 
     // MasterRegisterPage extras
