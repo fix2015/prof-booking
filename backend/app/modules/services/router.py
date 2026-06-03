@@ -104,8 +104,16 @@ def create_service_for_user(
         prof = db.query(Professional).filter(Professional.user_id == current_user.id).first()
         if not prof:
             raise HTTPException(status_code=403, detail="Professional profile not found")
+        # If no provider_ids specified, auto-link to all active providers
+        provider_ids = data.provider_ids
+        if not provider_ids:
+            active_links = db.query(ProfessionalProvider).filter(
+                ProfessionalProvider.professional_id == prof.id,
+                ProfessionalProvider.status == ProfessionalStatus.ACTIVE,
+            ).all()
+            provider_ids = [pp.provider_id for pp in active_links]
         # Validate each provider_id
-        for pid in data.provider_ids:
+        for pid in provider_ids:
             pp = db.query(ProfessionalProvider).filter(
                 ProfessionalProvider.professional_id == prof.id,
                 ProfessionalProvider.provider_id == pid,
@@ -113,7 +121,7 @@ def create_service_for_user(
             ).first()
             if not pp:
                 raise HTTPException(status_code=403, detail=f"Not an active professional at provider {pid}")
-        return create_service(db, data, professional_id=prof.id)
+        return create_service(db, data, provider_ids=provider_ids, professional_id=prof.id)
 
     if current_user.role == UserRole.PROVIDER_OWNER:
         from app.modules.salons.models import Provider
