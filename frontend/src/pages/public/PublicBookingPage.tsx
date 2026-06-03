@@ -107,7 +107,7 @@ export function PublicBookingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  const phoneValid = /^\+?[\d\s\-().]{6,20}$/.test(form.phone.trim());
+  const phoneValid = /^\+?[\d\s\-().]{6,30}$/.test(form.phone.trim());
   const canProceed = form.name.trim().length > 0 && phoneValid;
 
   function handleBack() {
@@ -389,7 +389,7 @@ export function PublicBookingPage() {
                   email: t("booking.field.email"),
                   notes: t("booking.field.notes"),
                 };
-                const fieldPlaceholders = { phone: "+1 (555) 000-0000", name: "Jane Smith", email: "jane@example.com", notes: "Any special requests..." };
+                const fieldPlaceholders = { phone: "+44 7911 123456", name: "Jane Smith", email: "jane@example.com", notes: "Any special requests..." };
                 const fieldTypes = { phone: "tel", name: "text", email: "email", notes: "text" };
                 const isPhoneError = key === "phone" && form.phone.trim().length > 0 && !phoneValid;
                 return (
