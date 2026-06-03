@@ -99,10 +99,11 @@ export function UserProfilePage() {
     if (file) uploadAvatar.mutate(file);
   }
 
+  const lookupPhone = isClient ? user?.phone : guestProfile?.phone;
   const { data: clientBookings = [] } = useQuery<BookingLookupResult[]>({
-    queryKey: ["client-bookings", user?.phone],
-    queryFn: () => bookingApi.lookupByPhone(user!.phone!),
-    enabled: isClient && !!user?.phone,
+    queryKey: ["client-bookings", lookupPhone],
+    queryFn: () => bookingApi.lookupByPhone(lookupPhone!),
+    enabled: !!lookupPhone,
     staleTime: 0,
   });
 
@@ -110,8 +111,8 @@ export function UserProfilePage() {
     ? (user.name || user.email.split("@")[0])
     : (guestProfile?.name || t("profile.guest"));
 
-  // For guests: count from localStorage; for auth clients: from API
-  const guestUpcomingCount = !isAuthenticated ? guestBookings.length : null;
+  // For both guests and auth clients: use API lookup
+  const guestUpcomingCount = !isAuthenticated ? clientBookings.filter((b) => new Date(b.starts_at) >= new Date()).length : null;
   const clientUpcomingCount = isClient ? clientBookings.filter((b) => new Date(b.starts_at) >= new Date()).length : null;
 
   const SettingsButton = (
@@ -275,7 +276,7 @@ export function UserProfilePage() {
 
       {/* Next booking preview */}
       {(() => {
-        const allBookings = isClient ? clientBookings : guestBookings;
+        const allBookings = clientBookings.length > 0 ? clientBookings : guestBookings;
         const now = new Date();
         const next = allBookings
           .filter((b) => new Date(b.starts_at) >= now && ("status" in b ? b.status !== "cancelled" : true))
