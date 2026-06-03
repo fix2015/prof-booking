@@ -9,7 +9,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/useToast";
-import { Session } from "@/types";
+import { Session, WorkSlot } from "@/types";
+import { calendarApi } from "@/api/calendar";
 import { useAuthContext } from "@/context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
@@ -290,6 +291,7 @@ export function CalendarPage() {
   const deleteSlot = useDeleteWorkSlot();
   const copyPeriod = useCopyPeriod();
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [editingSlot, setEditingSlot] = useState<WorkSlot | null>(null);
   const [showCopyPanel, setShowCopyPanel] = useState(false);
 
   if (!isOwner && professionalLoading) return <Spinner className="mx-auto mt-20" />;
@@ -440,6 +442,7 @@ export function CalendarPage() {
         sessions={sessions}
         onAddSlot={isOwner ? undefined : handleAddSlot}
         onRemoveSlot={isOwner ? undefined : handleRemoveSlot}
+        onSlotClick={isOwner ? undefined : setEditingSlot}
         onSessionClick={setSelectedSession}
         onDateChange={setCurrentDate}
       />
@@ -456,6 +459,74 @@ export function CalendarPage() {
           }}
         />
       )}
+
+      {/* Slot edit modal */}
+      {editingSlot && (
+        <SlotEditModal
+          slot={editingSlot}
+          onClose={() => setEditingSlot(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function SlotEditModal({ slot, onClose }: { slot: WorkSlot; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [startTime, setStartTime] = useState(slot.start_time.slice(0, 5));
+  const [endTime, setEndTime] = useState(slot.end_time.slice(0, 5));
+  const [saving, setSaving] = useState(false);
+  const valid = endTime > startTime;
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await calendarApi.updateSlot(slot.id, { start_time: startTime, end_time: endTime });
+      toast({ title: "Slot updated", variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["work-slots"] });
+      onClose();
+    } catch (e: any) {
+      toast({ title: e?.response?.data?.detail ?? "Failed to update", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <Card className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+        <CardHeader>
+          <CardTitle>Edit Work Slot</CardTitle>
+          <p className="text-xs text-muted-foreground">{slot.slot_date}</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium w-12">Start</label>
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium w-12">End</label>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          {!valid && <p className="text-xs text-destructive">End must be after start</p>}
+          <div className="flex gap-2 mt-2">
+            <Button className="flex-1" onClick={handleSave} disabled={!valid || saving}>
+              {saving ? "Saving..." : "Save"}
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

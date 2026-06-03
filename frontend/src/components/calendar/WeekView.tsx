@@ -19,6 +19,7 @@ interface WeekViewProps {
   sessions: Session[];
   onAddSlot?: (date: Date, start: string, end: string) => void;
   onRemoveSlot?: (slotId: number) => void;
+  onSlotClick?: (slot: WorkSlot) => void;
   onSessionClick?: (session: Session) => void;
   onDayClick?: (date: Date) => void;
 }
@@ -36,6 +37,7 @@ export function WeekView({
   sessions,
   onAddSlot,
   onRemoveSlot,
+  onSlotClick,
   onSessionClick,
   onDayClick,
 }: WeekViewProps) {
@@ -193,7 +195,7 @@ export function WeekView({
                 })}
 
                 {daySlots.map((slot) => (
-                  <TimeSlot key={slot.id} slot={slot} onRemove={onRemoveSlot} />
+                  <TimeSlot key={slot.id} slot={slot} onRemove={onRemoveSlot} onClick={onSlotClick} />
                 ))}
 
                 {daySessions.map((session) => (

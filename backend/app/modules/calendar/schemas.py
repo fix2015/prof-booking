@@ -17,6 +17,11 @@ class WorkSlotCreate(BaseModel):
         return v
 
 
+class WorkSlotUpdate(BaseModel):
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+
+
 class WorkSlotResponse(BaseModel):
     id: int
     professional_id: int
