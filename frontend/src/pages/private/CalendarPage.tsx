@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { professionalsApi } from "@/api/masters";
 import { providersApi } from "@/api/salons";
 import apiClient from "@/api/client";
+import { sessionsApi } from "@/api/sessions";
 
 function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -138,6 +139,119 @@ function GoogleCalendarSync() {
   );
 }
 
+
+function SessionDetailModal({
+  session,
+  onClose,
+  onNavigateClient,
+}: {
+  session: Session;
+  onClose: () => void;
+  onNavigateClient: (phone: string) => void;
+}) {
+  const queryClient = useQueryClient();
+  const start = new Date(session.starts_at);
+  const end = new Date(session.ends_at);
+  const [editing, setEditing] = useState(false);
+  const [editDate, setEditDate] = useState(
+    `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`
+  );
+  const [editTime, setEditTime] = useState(
+    `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`
+  );
+  const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const newStartsAt = `${editDate}T${editTime}:00`;
+      await sessionsApi.update(session.id, { starts_at: newStartsAt, duration_minutes: durationMinutes } as any);
+      toast({ title: "Session time updated", variant: "success" });
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      onClose();
+    } catch (e: any) {
+      toast({ title: e?.response?.data?.detail ?? "Failed to update", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const isCancelled = session.status === "cancelled" || session.status === "completed";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <Card className="w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <CardHeader>
+          <CardTitle>Session Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p><span className="font-medium">Client:</span> {session.client_name}</p>
+          <p><span className="font-medium">Phone:</span> {session.client_phone}</p>
+          <p><span className="font-medium">Status:</span> {session.status}</p>
+          <p><span className="font-medium">Price:</span> £{session.price ?? "N/A"}</p>
+          <p><span className="font-medium">Duration:</span> {durationMinutes} min</p>
+          {session.client_notes && (
+            <p><span className="font-medium">Notes:</span> {session.client_notes}</p>
+          )}
+
+          {editing ? (
+            <div className="space-y-3 pt-2 border-t">
+              <p className="font-medium text-sm">Reschedule</p>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium w-12">Date</label>
+                <input
+                  type="date"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium w-12">Time</label>
+                <input
+                  type="time"
+                  value={editTime}
+                  onChange={(e) => setEditTime(e.target.value)}
+                  className="flex-1 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button className="flex-1" onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save"}
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => setEditing(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2 mt-4">
+              {!isCancelled && (
+                <Button variant="default" className="flex-1" onClick={() => setEditing(true)}>
+                  Edit Time
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => onNavigateClient(session.client_phone)}
+              >
+                View Client
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={onClose}>
+                Close
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export function CalendarPage() {
   const { role } = useAuthContext();
@@ -333,40 +447,14 @@ export function CalendarPage() {
 
       {/* Session detail modal */}
       {selectedSession && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setSelectedSession(null)}
-        >
-          <Card className="w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <CardHeader>
-              <CardTitle>Session Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p><span className="font-medium">Client:</span> {selectedSession.client_name}</p>
-              <p><span className="font-medium">Phone:</span> {selectedSession.client_phone}</p>
-              <p><span className="font-medium">Status:</span> {selectedSession.status}</p>
-              <p><span className="font-medium">Price:</span> £{selectedSession.price ?? "N/A"}</p>
-              {selectedSession.client_notes && (
-                <p><span className="font-medium">Notes:</span> {selectedSession.client_notes}</p>
-              )}
-              <div className="flex gap-2 mt-4">
-                <Button
-                  variant="default"
-                  className="flex-1"
-                  onClick={() => {
-                    setSelectedSession(null);
-                    navigate(`/clients?phone=${encodeURIComponent(selectedSession.client_phone)}`);
-                  }}
-                >
-                  View Client Profile
-                </Button>
-                <Button variant="outline" className="flex-1" onClick={() => setSelectedSession(null)}>
-                  Close
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <SessionDetailModal
+          session={selectedSession}
+          onClose={() => setSelectedSession(null)}
+          onNavigateClient={(phone) => {
+            setSelectedSession(null);
+            navigate(`/clients?phone=${encodeURIComponent(phone)}`);
+          }}
+        />
       )}
     </div>
   );
