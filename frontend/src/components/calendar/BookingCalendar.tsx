@@ -13,6 +13,7 @@ interface BookingCalendarProps {
   sessions: Session[];
   onAddSlot?: (date: Date, start: string, end: string) => void;
   onRemoveSlot?: (slotId: number) => void;
+  onSlotClick?: (slot: WorkSlot) => void;
   onSessionClick?: (session: Session) => void;
   onDateChange?: (date: Date) => void;
 }
@@ -22,6 +23,7 @@ export function BookingCalendar({
   sessions,
   onAddSlot,
   onRemoveSlot,
+  onSlotClick,
   onSessionClick,
   onDateChange,
 }: BookingCalendarProps) {
@@ -65,6 +67,7 @@ export function BookingCalendar({
           sessions={sessions}
           onAddSlot={onAddSlot}
           onRemoveSlot={onRemoveSlot}
+          onSlotClick={onSlotClick}
           onSessionClick={onSessionClick}
           onDayClick={(d) => { navigate(d); setView("day"); }}
         />
@@ -75,6 +78,7 @@ export function BookingCalendar({
           sessions={sessions.filter((s) => isSameDay(new Date(s.starts_at), currentDate))}
           onAddSlot={onAddSlot}
           onRemoveSlot={onRemoveSlot}
+          onSlotClick={onSlotClick}
           onSessionClick={onSessionClick}
         />
       )}

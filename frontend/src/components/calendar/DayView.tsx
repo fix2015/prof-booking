@@ -30,10 +30,11 @@ interface DayViewProps {
   sessions: Session[];
   onAddSlot?: (date: Date, start: string, end: string) => void;
   onRemoveSlot?: (slotId: number) => void;
+  onSlotClick?: (slot: WorkSlot) => void;
   onSessionClick?: (session: Session) => void;
 }
 
-export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, onSessionClick }: DayViewProps) {
+export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, onSlotClick, onSessionClick }: DayViewProps) {
   const [form, setForm] = useState<{ start: string; end: string } | null>(null);
   const now = new Date();
 
@@ -106,7 +107,7 @@ export function DayView({ date, workSlots, sessions, onAddSlot, onRemoveSlot, on
 
             {/* Work slot blocks */}
             {workSlots.map((slot) => (
-              <TimeSlot key={slot.id} slot={slot} onRemove={onRemoveSlot} />
+              <TimeSlot key={slot.id} slot={slot} onRemove={onRemoveSlot} onClick={onSlotClick} />
             ))}
 
             {/* Session blocks */}

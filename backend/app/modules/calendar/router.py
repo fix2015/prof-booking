@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -10,7 +10,7 @@ from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_professional_or_owner
 from app.modules.calendar.schemas import (
-    WorkSlotCreate, WorkSlotResponse, WeeklyScheduleCopy, AvailableSlot, PeriodCopy,
+    WorkSlotCreate, WorkSlotUpdate, WorkSlotResponse, WeeklyScheduleCopy, AvailableSlot, PeriodCopy,
 )
 from app.modules.calendar.services import (
     create_work_slot, delete_work_slot, get_professional_slots,
@@ -76,6 +76,34 @@ def add_work_slot(
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Professional profile not found")
     return create_work_slot(db, professional.id, data)
+
+
+@router.patch("/slots/{slot_id}", response_model=WorkSlotResponse)
+def update_work_slot(
+    slot_id: int,
+    data: WorkSlotUpdate,
+    current_user: User = Depends(get_current_professional_or_owner),
+    db: Session = Depends(get_db),
+):
+    from app.modules.calendar.models import WorkSlot
+    professional = get_professional_by_user_id(db, current_user.id)
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    slot = db.query(WorkSlot).filter(
+        WorkSlot.id == slot_id,
+        WorkSlot.professional_id == professional.id,
+    ).first()
+    if not slot:
+        raise HTTPException(status_code=404, detail="Slot not found")
+    if data.start_time is not None:
+        slot.start_time = data.start_time
+    if data.end_time is not None:
+        slot.end_time = data.end_time
+    if slot.end_time <= slot.start_time:
+        raise HTTPException(status_code=400, detail="end_time must be after start_time")
+    db.commit()
+    db.refresh(slot)
+    return slot
 
 
 @router.delete("/slots/{slot_id}", status_code=204)

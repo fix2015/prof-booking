@@ -33,6 +33,9 @@ export const calendarApi = {
 
   deleteSlot: (slotId: number) => apiClient.delete(`/calendar/slots/${slotId}`),
 
+  updateSlot: (slotId: number, data: { start_time?: string; end_time?: string }) =>
+    apiClient.patch<WorkSlot>(`/calendar/slots/${slotId}`, data).then((r) => r.data),
+
   copyWeek: (data: { source_week_start: string; target_week_start: string; provider_id: number }) =>
     apiClient.post<{ created: number }>("/calendar/slots/copy-week", data).then((r) => r.data),
 
