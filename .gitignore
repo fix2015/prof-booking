@@ -51,6 +51,7 @@ logs/
 backend/alembic/versions/*.pyc
 claude_bridge.py
 
-# Scraper output (images + JSON data)
-backend/scripts/scraper/output/*
+# Scraper output (images are large, keep JSON data for deploy)
+backend/scripts/scraper/output/images/
+!backend/scripts/scraper/output/scraped_businesses.json
 !backend/scripts/scraper/output/.gitkeep

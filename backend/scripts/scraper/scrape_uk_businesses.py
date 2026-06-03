@@ -56,7 +56,7 @@ IMAGES_DIR = OUTPUT_DIR / "images"
 
 # Nominatim — completely free, no key needed, 1 req/sec
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-NOMINATIM_DELAY = 1.1  # seconds between requests (policy: max 1 req/sec)
+NOMINATIM_DELAY = 1.5  # seconds between requests (policy: max 1 req/sec, extra margin)
 
 # Delay between website scrapes (be polite)
 WEBSITE_DELAY = 0.5
@@ -131,19 +131,32 @@ def search_nominatim(query: str, city: str) -> list[dict]:
         "namedetails": 1,
         "limit": 50,
     }
-    try:
-        resp = requests.get(
-            NOMINATIM_URL, params=params,
-            headers={"User-Agent": HEADERS["User-Agent"], "Accept": "application/json"},
-            timeout=30,
-        )
-        resp.raise_for_status()
-        time.sleep(NOMINATIM_DELAY)
-        return resp.json()
-    except Exception as e:
-        log(f"Nominatim error: {e}")
-        time.sleep(NOMINATIM_DELAY)
-        return []
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(
+                NOMINATIM_URL, params=params,
+                headers={"User-Agent": HEADERS["User-Agent"], "Accept": "application/json"},
+                timeout=30,
+            )
+            if resp.status_code == 429:
+                wait = NOMINATIM_DELAY * (2 ** (attempt + 1))
+                log(f"Rate limited (429), backing off {wait:.0f}s (attempt {attempt + 1}/{max_retries})")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            time.sleep(NOMINATIM_DELAY)
+            return resp.json()
+        except Exception as e:
+            if "429" not in str(e):
+                log(f"Nominatim error: {e}")
+                time.sleep(NOMINATIM_DELAY)
+                return []
+            wait = NOMINATIM_DELAY * (2 ** (attempt + 1))
+            log(f"Rate limited, backing off {wait:.0f}s (attempt {attempt + 1}/{max_retries})")
+            time.sleep(wait)
+    log(f"Nominatim: giving up after {max_retries} retries for {query}")
+    return []
 
 
 # ── Extract fields from Nominatim result ────────────────────────────────────
