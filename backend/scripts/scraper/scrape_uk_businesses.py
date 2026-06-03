@@ -165,22 +165,24 @@ def search_nominatim(query: str, city: str) -> list[dict]:
 def extract_category(result: dict) -> str:
     """Map Nominatim class/type to our app categories."""
     osm_type = result.get("type", "")
-    name = result.get("display_name", "").lower()
+    # Use the business name (first part of display_name), not full address
+    biz_name = result.get("display_name", "").split(",")[0].lower()
 
-    if "nail" in osm_type or "nail" in name:
+    # Check barber early — barber shops should never be categorized as Hair
+    if "barber" in osm_type or "barber" in biz_name:
+        return "Barber"
+    if "nail" in osm_type or "nail" in biz_name:
         return "Nails"
+    if "massage" in osm_type or "massage" in biz_name:
+        return "Massage & Wellness"
+    if "tanning" in biz_name:
+        return "Tanning"
+    if "lash" in biz_name or "brow" in biz_name:
+        return "Lashes & Brows"
+    if osm_type == "spa" or "spa" in biz_name:
+        return "Spa & Wellness"
     if osm_type in ("hairdresser", "hair_care"):
         return "Hair & Beauty"
-    if osm_type == "spa" or "spa" in name:
-        return "Spa & Wellness"
-    if "barber" in osm_type or "barber" in name:
-        return "Barber"
-    if "massage" in osm_type or "massage" in name:
-        return "Massage & Wellness"
-    if "tanning" in name:
-        return "Tanning"
-    if "lash" in name or "brow" in name:
-        return "Lashes & Brows"
     if osm_type in ("beauty_salon", "beauty"):
         return "Beauty & Nails"
     return "Beauty & Nails"
