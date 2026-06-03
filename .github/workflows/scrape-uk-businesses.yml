@@ -7,11 +7,20 @@ on:
   schedule:
     - cron: '0 3 * * 0'  # Every Sunday 3am UTC
   workflow_dispatch:       # Manual trigger from GitHub UI
+    inputs:
+      skip_scrape:
+        description: 'Skip scraping and use existing JSON from repo'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   scrape-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -23,13 +32,21 @@ jobs:
           python-version: '3.12'
 
       - name: Install scraper deps
+        if: inputs.skip_scrape != 'true'
         run: pip install requests beautifulsoup4
 
       - name: Scrape UK businesses (FREE — Nominatim)
+        if: inputs.skip_scrape != 'true'
         run: |
           cd backend
           python scripts/scraper/scrape_uk_businesses.py --no-images
           echo "TOTAL=$(python3 -c "import json; print(json.load(open('scripts/scraper/output/scraped_businesses.json'))['total_count'])")" >> $GITHUB_ENV
+
+      - name: Use existing scraped data from repo
+        if: inputs.skip_scrape == 'true'
+        run: |
+          echo "TOTAL=$(python3 -c "import json; print(json.load(open('backend/scripts/scraper/output/scraped_businesses.json'))['total_count'])")" >> $GITHUB_ENV
+          echo "Using pre-scraped data: ${{ env.TOTAL }} businesses"
 
       - name: Upload scraped data as artifact
         uses: actions/upload-artifact@v4
