@@ -96,11 +96,15 @@ jobs:
                   id_list = ','.join(str(i) for i in ids)
                   db.execute(text(f'DELETE FROM work_slots WHERE provider_id IN ({id_list})'))
                   db.execute(text(f'DELETE FROM professional_providers WHERE provider_id IN ({id_list})'))
-                  db.execute(text(f'DELETE FROM services WHERE provider_id IN ({id_list})'))
+                  # services uses junction table service_providers
+                  db.execute(text(f'DELETE FROM service_providers WHERE provider_id IN ({id_list})'))
+                  svc_rows = db.execute(text(
+                      f'DELETE FROM services s WHERE NOT EXISTS (SELECT 1 FROM service_providers sp WHERE sp.service_id = s.id) RETURNING s.id'
+                  )).fetchall()
                   db.execute(text(f'DELETE FROM sessions WHERE provider_id IN ({id_list})'))
                   db.execute(text(f'DELETE FROM providers WHERE id IN ({id_list})'))
                   db.commit()
-                  print(f'Cleaned {len(ids)} old providers')
+                  print(f'Cleaned {len(ids)} old providers, {len(svc_rows)} orphan services')
 
               # 2. Import new scraped data
               with open('/tmp/scraped_businesses.json') as f:
@@ -141,9 +145,12 @@ jobs:
                   db.add(provider)
                   db.flush()
                   for svc_name, dur, price in SERVICES:
-                      db.add(Service(provider_id=provider.id, name=svc_name,
-                                     duration_minutes=dur, price=price, is_active=True,
-                                     created_at=datetime.utcnow()))
+                      svc = Service(name=svc_name, duration_minutes=dur, price=price,
+                                    is_active=True, created_at=datetime.utcnow())
+                      db.add(svc)
+                      db.flush()
+                      db.execute(text('INSERT INTO service_providers (service_id, provider_id) VALUES (:sid, :pid)'),
+                                 {'sid': svc.id, 'pid': provider.id})
                   created += 1
               db.commit()
               print(f'Imported {created} providers with {created * len(SERVICES)} services')
