@@ -17,17 +17,18 @@ function getStatus(b: AnyBooking): string {
 export function ClientBookingsPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, role } = useAuthContext();
-  const { guestBookings } = useGuestSession();
+  const { guestProfile, guestBookings } = useGuestSession();
   const isClient = isAuthenticated && role === "client";
 
-  const { data: clientBookings = [], isLoading } = useQuery<BookingLookupResult[]>({
-    queryKey: ["client-bookings", user?.phone],
-    queryFn: () => bookingApi.lookupByPhone(user!.phone!),
-    enabled: isClient && !!user?.phone,
+  const lookupPhone = isClient ? user?.phone : guestProfile?.phone;
+  const { data: apiBookings = [], isLoading } = useQuery<BookingLookupResult[]>({
+    queryKey: ["client-bookings", lookupPhone],
+    queryFn: () => bookingApi.lookupByPhone(lookupPhone!),
+    enabled: !!lookupPhone,
     staleTime: 0,
   });
 
-  const allBookings: AnyBooking[] = isClient ? clientBookings : guestBookings;
+  const allBookings: AnyBooking[] = apiBookings.length > 0 ? apiBookings : guestBookings;
   const now = new Date();
   const upcoming = allBookings
     .filter((b) => new Date(b.starts_at) >= now && getStatus(b) !== "cancelled")
