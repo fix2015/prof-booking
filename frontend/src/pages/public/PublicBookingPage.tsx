@@ -107,7 +107,7 @@ export function PublicBookingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  const phoneValid = /^\+?[\d\s\-().]{6,30}$/.test(form.phone.trim());
+  const phoneValid = form.phone.trim().length > 0;
   const canProceed = form.name.trim().length > 0 && phoneValid;
 
   function handleBack() {
