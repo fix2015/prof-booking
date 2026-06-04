@@ -11,26 +11,34 @@ import { t } from "@/i18n";
 
 type Tab = "signin" | "client" | "business" | "pro";
 
-const TABS: { value: Tab; label: string }[] = [
-  { value: "signin", label: "Sign in" },
-  { value: "client", label: "Client" },
-  { value: "business", label: "Business" },
-  { value: "pro", label: "Pro" },
-];
+function getTabs(): { value: Tab; label: string }[] {
+  return [
+    { value: "signin", label: t("login.tab_signin") },
+    { value: "client", label: t("login.tab_client") },
+    { value: "business", label: t("login.tab_business") },
+    { value: "pro", label: t("login.tab_pro") },
+  ];
+}
 
-const SUBTITLE: Record<Tab, string> = {
-  signin: "Sign in to your account",
-  client: "Create your account",
-  business: "Create your business account",
-  pro: "Join as a professional",
-};
+function getSubtitle(tab: Tab): string {
+  const map: Record<Tab, string> = {
+    signin: t("login.subtitle_signin"),
+    client: t("login.subtitle_client"),
+    business: t("login.subtitle_business"),
+    pro: t("login.subtitle_pro"),
+  };
+  return map[tab];
+}
 
-const HEADER_TITLE: Record<Tab, string> = {
-  signin: "Sign in",
-  client: "Create account",
-  business: "Register business",
-  pro: "Join as professional",
-};
+function getHeaderTitle(tab: Tab): string {
+  const map: Record<Tab, string> = {
+    signin: t("login.tab_signin"),
+    client: t("login.tab_create"),
+    business: t("login.register_business"),
+    pro: t("login.join_professional"),
+  };
+  return map[tab];
+}
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -46,7 +54,8 @@ export function LoginPage() {
   const initialTab = (searchParams.get("tab") as Tab | null) ?? "signin";
   const inviteToken = searchParams.get("invite") ?? undefined;
 
-  const [tab, setTab] = useState<Tab>(TABS.some((t) => t.value === initialTab) ? initialTab : "signin");
+  const tabs = getTabs();
+  const [tab, setTab] = useState<Tab>(tabs.some((t) => t.value === initialTab) ? initialTab : "signin");
 
   const [signInForm, setSignInForm] = useState({ identifier: "", password: "" });
   const [clientForm, setClientForm] = useState({ name: "", email: "", phone: "", password: "" });
@@ -176,17 +185,17 @@ export function LoginPage() {
 
   return (
     <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
-      <AppHeader variant="back-title" title={HEADER_TITLE[tab]} onBack={() => window.history.length > 1 ? navigate(-1) : navigate("/")} />
+      <AppHeader variant="back-title" title={getHeaderTitle(tab)} onBack={() => window.history.length > 1 ? navigate(-1) : navigate("/")} />
 
       {/* Brand area */}
       <div className="bg-ds-bg-primary border-b border-ds-border flex flex-col items-center gap-[8px] pt-7 pb-6">
         <p className="text-[20px] font-semibold text-ds-text-primary leading-tight">ProBook</p>
-        <p className="ds-body text-ds-text-secondary">{SUBTITLE[tab]}</p>
+        <p className="ds-body text-ds-text-secondary">{getSubtitle(tab)}</p>
       </div>
 
       {/* 4-tab bar */}
       <div className="bg-ds-bg-primary border-b border-ds-border flex">
-        {TABS.map(({ value, label }) => {
+        {tabs.map(({ value, label }) => {
           const isActive = tab === value;
           return (
             <button
@@ -259,7 +268,7 @@ export function LoginPage() {
               {([
                 { key: "phone" as const, label: `${t("login.phone")} *`, type: "tel", ph: "+1 (555) 000-0000" },
                 { key: "email" as const, label: `${t("login.email")} *`, type: "email", ph: "owner@business.com" },
-                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: "At least 8 characters" },
+                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: t("login.password_hint") },
                 { key: "provider_name" as const, label: `${t("register.business_name")} *`, type: "text", ph: "My Salon" },
                 { key: "provider_address" as const, label: `${t("register.business_address")} *`, type: "text", ph: "123 Main Street, City" },
                 { key: "worker_payment_amount" as const, label: t("register.worker_payment"), type: "number", ph: "0" },
@@ -290,7 +299,7 @@ export function LoginPage() {
                 { key: "name" as const, label: `${t("login.full_name")} *`, type: "text", ph: "Jane Smith" },
                 { key: "email" as const, label: `${t("login.email")} *`, type: "email", ph: "jane@example.com" },
                 { key: "instagram" as const, label: t("register.pro.instagram"), type: "text", ph: "@yourusername" },
-                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: "At least 8 characters" },
+                { key: "password" as const, label: `${t("login.password")} *`, type: "password", ph: t("login.password_hint") },
               ]).map(({ key, label, type, ph }) => (
                 <div key={key}>
                   <label className={labelCls}>{label}</label>
@@ -366,10 +375,10 @@ export function LoginPage() {
           ) : (
             <>
               <p className="text-[11px] leading-[16px] text-center text-gray-400 px-4">
-                By creating an account, you agree to our{" "}
-                <Link to="/terms" className="text-gray-500 underline">Terms of Service</Link>
-                {" "}and{" "}
-                <Link to="/privacy" className="text-gray-500 underline">Privacy Policy</Link>.
+                {t("login.terms_agree")}{" "}
+                <Link to="/terms" className="text-gray-500 underline">{t("login.terms_of_service")}</Link>
+                {" "}{t("common.and")}{" "}
+                <Link to="/privacy" className="text-gray-500 underline">{t("login.privacy_policy")}</Link>.
               </p>
               <button onClick={() => setTab("signin")} className="ds-body-small text-ds-interactive">
                 {t("login.already_account")}
