@@ -54,7 +54,7 @@ export function SessionsPage() {
   const isOwner = role === "provider_owner";
   const isProfessional = role === "professional";
   const [statusFilter, setStatusFilter] = useState<SessionStatus | "all">("all");
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("today");
   const [earningsModal, setEarningsModal] = useState<Session | null>(null);
   const [earningsAmount, setEarningsAmount] = useState("");
   const [editPriceModal, setEditPriceModal] = useState<Session | null>(null);
