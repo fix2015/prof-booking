@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useInfiniteProviders, useProviderCategories } from "@/hooks/useSalon";
 import { useAuthContext } from "@/context/AuthContext";
 import { useLogout } from "@/hooks/useAuth";
+import { professionalsApi } from "@/api/masters";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
@@ -67,6 +69,13 @@ export function SalonSelectorPage() {
   });
 
   const filtered = data?.pages.flat() ?? [];
+
+  // Search professionals by name when query is 2+ chars
+  const { data: matchingProfessionals = [] } = useQuery({
+    queryKey: ["professionals", "discover", search],
+    queryFn: () => professionalsApi.discover({ search, limit: 5 }),
+    enabled: search.length >= 2,
+  });
 
   // Infinite scroll observer
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -199,6 +208,36 @@ export function SalonSelectorPage() {
           </svg>
         </Button>
       </div>
+
+      {/* Matching professionals */}
+      {matchingProfessionals.length > 0 && (
+        <div className="px-ds-4 pb-ds-2">
+          <p className="ds-label text-ds-text-secondary mb-ds-2">{t("professionals.title")}</p>
+          <div className="flex gap-ds-2 overflow-x-auto pb-ds-1">
+            {matchingProfessionals.map((prof: any) => (
+              <button
+                key={prof.id}
+                onClick={() => navigate(`/professionals/${prof.id}`)}
+                className="flex items-center gap-ds-2 px-ds-3 py-ds-2 bg-ds-bg-primary border border-ds-border rounded-ds-xl shrink-0 hover:border-ds-interactive transition-colors"
+              >
+                {prof.avatar_url ? (
+                  <img src={prof.avatar_url} alt="" className="w-[36px] h-[36px] rounded-full object-cover" />
+                ) : (
+                  <div className="w-[36px] h-[36px] rounded-full bg-ds-bg-secondary flex items-center justify-center text-ds-text-secondary ds-body-strong">
+                    {prof.name?.[0]?.toUpperCase() ?? "?"}
+                  </div>
+                )}
+                <div className="text-left">
+                  <p className="ds-body-strong text-ds-text-primary text-sm">{prof.name}</p>
+                  {prof.experience_years && (
+                    <p className="ds-caption text-ds-text-secondary">{prof.experience_years}y exp</p>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Provider list */}
       <div className="flex flex-col gap-ds-3 px-ds-4 pb-ds-4">
