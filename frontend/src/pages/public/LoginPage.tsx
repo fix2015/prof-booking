@@ -176,7 +176,7 @@ export function LoginPage() {
 
   return (
     <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
-      <AppHeader variant="back-title" title={HEADER_TITLE[tab]} onBack={() => navigate(-1)} />
+      <AppHeader variant="back-title" title={HEADER_TITLE[tab]} onBack={() => window.history.length > 1 ? navigate(-1) : navigate("/")} />
 
       {/* Brand area */}
       <div className="bg-ds-bg-primary border-b border-ds-border flex flex-col items-center gap-[8px] pt-7 pb-6">
