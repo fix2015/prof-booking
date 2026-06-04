@@ -96,7 +96,7 @@ export function MasterAnalyticsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
-                      <th className="px-4 py-3">Location ID</th>
+                      <th className="px-4 py-3">Location</th>
                       <th className="px-4 py-3 text-right">Sessions</th>
                       <th className="px-4 py-3 text-right">Hours</th>
                       <th className="px-4 py-3 text-right">Revenue</th>
@@ -107,7 +107,7 @@ export function MasterAnalyticsPage() {
                       const sbId = sb.provider_id ?? sb.salon_id;
                       return (
                         <tr key={sbId} className="border-b hover:bg-muted/40">
-                          <td className="px-4 py-3">Provider #{sbId}</td>
+                          <td className="px-4 py-3">{sb.name || `Provider #${sbId}`}</td>
                           <td className="px-4 py-3 text-right">{sb.sessions}</td>
                           <td className="px-4 py-3 text-right">{sb.hours.toFixed(1)}h</td>
                           <td className="px-4 py-3 text-right">{formatCurrency(sb.revenue)}</td>

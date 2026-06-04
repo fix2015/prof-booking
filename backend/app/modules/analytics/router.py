@@ -112,11 +112,13 @@ def professional_own_analytics(
     total_revenue = sum(s.earnings_amount or s.price or 0 for s in active)
 
     # Per-provider breakdown
+    from app.modules.salons.models import Provider
     provider_breakdown: dict = {}
     for s in active:
         pid = s.provider_id
         if pid not in provider_breakdown:
-            provider_breakdown[pid] = {"sessions": 0, "revenue": 0.0, "hours": 0.0}
+            prov = db.query(Provider).filter(Provider.id == pid).first()
+            provider_breakdown[pid] = {"sessions": 0, "revenue": 0.0, "hours": 0.0, "name": prov.name if prov else f"Provider #{pid}"}
         provider_breakdown[pid]["sessions"] += 1
         provider_breakdown[pid]["revenue"] += s.earnings_amount or s.price or 0
         provider_breakdown[pid]["hours"] += s.duration_minutes / 60
