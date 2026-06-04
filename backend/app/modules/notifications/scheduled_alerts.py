@@ -166,21 +166,26 @@ def run_eod_recap(db: Session):
 
 
 def run_appointment_reminders(db: Session):
-    """Send reminder 1 hour before each session. Runs every 15 minutes."""
+    """Send reminders at ~1 hour and ~15 min before each session. Runs every 15 minutes."""
     user_ids = _get_users_with_pref(db, "appointment_reminder")
     if not user_ids:
         return
 
-    now = datetime.utcnow()
-    window_start = now + timedelta(minutes=45)
-    window_end = now + timedelta(minutes=75)
-
-    # Find sessions starting in ~1 hour for opted-in professionals
     profs = db.query(Professional).filter(Professional.user_id.in_(user_ids)).all()
     prof_map = {p.id: p.user_id for p in profs}
     if not prof_map:
         return
 
+    now = datetime.utcnow()
+
+    # Reminder 1: ~1 hour before (45-75 min window)
+    _send_reminders_for_window(db, prof_map, now + timedelta(minutes=45), now + timedelta(minutes=75), "⏰ Upcoming in 1 hour")
+
+    # Reminder 2: ~15 min before (5-20 min window)
+    _send_reminders_for_window(db, prof_map, now + timedelta(minutes=5), now + timedelta(minutes=20), "⏰ Starting in 15 min")
+
+
+def _send_reminders_for_window(db: Session, prof_map: dict, window_start, window_end, title: str):
     sessions = (
         db.query(BookingSession)
         .filter(
@@ -191,7 +196,6 @@ def run_appointment_reminders(db: Session):
         )
         .all()
     )
-
     for s in sessions:
         user_id = prof_map.get(s.professional_id)
         if not user_id:
@@ -200,7 +204,7 @@ def run_appointment_reminders(db: Session):
             f"{s.client_name} at {s.starts_at.strftime('%I:%M %p')}\n"
             f"Service: {s.service.name if s.service else 'N/A'}"
         )
-        _send_to_user(db, user_id, "Upcoming Appointment", body, url="/calendar")
+        _send_to_user(db, user_id, title, body, url="/calendar")
 
 
 def send_cancellation_alert(db: Session, session: BookingSession):
