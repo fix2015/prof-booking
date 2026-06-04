@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSearchProviders, useProviderCategories } from "@/hooks/useSalon";
+import { useInfiniteProviders, useProviderCategories } from "@/hooks/useSalon";
 import { useAuthContext } from "@/context/AuthContext";
 import { useLogout } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/mobile/AppHeader";
@@ -49,7 +49,13 @@ export function SalonSelectorPage() {
 
   const { data: categories = [] } = useProviderCategories();
 
-  const { data: providers = [], isLoading } = useSearchProviders({
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteProviders({
     q: search || undefined,
     category: activeCategory,
     sort: filters.sort || undefined,
@@ -60,8 +66,25 @@ export function SalonSelectorPage() {
     minExperience: filters.minExperience || undefined,
   });
 
-  // BE already filters by category; `providers` is the final result
-  const filtered = providers;
+  const filtered = data?.pages.flat() ?? [];
+
+  // Infinite scroll observer
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   function handleToggleSave(id: number) {
     setSaved(toggleSaved(id));
@@ -188,16 +211,24 @@ export function SalonSelectorPage() {
             <p className="ds-body text-ds-text-secondary">{t("providers.no_providers")}</p>
           </div>
         ) : (
-          filtered.map((provider) => (
-            <ProviderCard
-              key={provider.id}
-              provider={provider}
-              variant="list"
-              saved={saved.includes(provider.id)}
-              onToggleSave={handleToggleSave}
-              onClick={(id) => navigate(`/providers/${id}`)}
-            />
-          ))
+          <>
+            {filtered.map((provider) => (
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                variant="list"
+                saved={saved.includes(provider.id)}
+                onToggleSave={handleToggleSave}
+                onClick={(id) => navigate(`/providers/${id}`)}
+              />
+            ))}
+            <div ref={sentinelRef} className="h-1" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-ds-3">
+                <div className="h-6 w-6 border-2 border-ds-interactive border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { providersApi } from "@/api/salons";
 
 export interface ProviderSearchParams {
@@ -39,6 +39,36 @@ export function useSearchProviders(params: ProviderSearchParams) {
         lng_min: params.bounds?.lngMin,
         lng_max: params.bounds?.lngMax,
       }),
+  });
+}
+
+const PAGE_SIZE = 24;
+
+export function useInfiniteProviders(params: ProviderSearchParams) {
+  return useInfiniteQuery({
+    queryKey: ["providers", "search", "infinite", params],
+    queryFn: ({ pageParam = 0 }) =>
+      providersApi.search({
+        q: params.q || undefined,
+        category: params.category && params.category !== "All" ? params.category : undefined,
+        sort: params.sort || undefined,
+        available_date: params.date || undefined,
+        min_price: params.minPrice || undefined,
+        max_price: params.maxPrice || undefined,
+        nationality: params.nationality || undefined,
+        min_experience: params.minExperience || undefined,
+        lat_min: params.bounds?.latMin,
+        lat_max: params.bounds?.latMax,
+        lng_min: params.bounds?.lngMin,
+        lng_max: params.bounds?.lngMax,
+        skip: pageParam,
+        limit: PAGE_SIZE,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < PAGE_SIZE) return undefined;
+      return allPages.reduce((sum, page) => sum + page.length, 0);
+    },
   });
 }
 
