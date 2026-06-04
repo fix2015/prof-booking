@@ -166,7 +166,7 @@ def run_eod_recap(db: Session):
 
 
 def run_appointment_reminders(db: Session):
-    """Send reminders at ~1 hour and ~15 min before each session. Runs every 15 minutes."""
+    """Send reminder ~1 hour before each session. Runs every 15 minutes."""
     user_ids = _get_users_with_pref(db, "appointment_reminder")
     if not user_ids:
         return
@@ -177,12 +177,7 @@ def run_appointment_reminders(db: Session):
         return
 
     now = datetime.utcnow()
-
-    # Reminder 1: ~1 hour before (45-75 min window)
     _send_reminders_for_window(db, prof_map, now + timedelta(minutes=45), now + timedelta(minutes=75), "⏰ Upcoming in 1 hour")
-
-    # Reminder 2: ~15 min before (5-20 min window)
-    _send_reminders_for_window(db, prof_map, now + timedelta(minutes=5), now + timedelta(minutes=20), "⏰ Starting in 15 min")
 
 
 def _send_reminders_for_window(db: Session, prof_map: dict, window_start, window_end, title: str):
