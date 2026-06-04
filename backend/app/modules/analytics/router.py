@@ -101,13 +101,15 @@ def professional_own_analytics(
         q = q.filter(SessionModel.provider_id == provider_id)
 
     sessions = q.all()
+    # Include all non-cancelled sessions in analytics
+    active = [s for s in sessions if s.status != SessionStatus.CANCELLED]
     completed = [s for s in sessions if s.status == SessionStatus.COMPLETED]
-    total_minutes = sum(s.duration_minutes for s in completed)
-    total_revenue = sum(s.earnings_amount or s.price or 0 for s in completed)
+    total_minutes = sum(s.duration_minutes for s in active)
+    total_revenue = sum(s.earnings_amount or s.price or 0 for s in active)
 
     # Per-provider breakdown
     provider_breakdown: dict = {}
-    for s in completed:
+    for s in active:
         pid = s.provider_id
         if pid not in provider_breakdown:
             provider_breakdown[pid] = {"sessions": 0, "revenue": 0.0, "hours": 0.0}
@@ -117,7 +119,7 @@ def professional_own_analytics(
 
     # Monthly breakdown
     monthly: dict = {}
-    for s in completed:
+    for s in active:
         key = s.starts_at.strftime("%Y-%m")
         if key not in monthly:
             monthly[key] = {"sessions": 0, "revenue": 0.0}
@@ -133,7 +135,7 @@ def professional_own_analytics(
         "completed_sessions": len(completed),
         "total_hours": round(total_minutes / 60, 1),
         "total_revenue": total_revenue,
-        "unique_clients": len(set(s.client_phone for s in completed)),
+        "unique_clients": len(set(s.client_phone for s in active if s.client_phone)),
         "provider_breakdown": [
             {"provider_id": k, **v} for k, v in provider_breakdown.items()
         ],
