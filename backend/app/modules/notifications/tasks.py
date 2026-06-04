@@ -148,7 +148,42 @@ celery_app.conf.beat_schedule = {
         "task": "notifications.appointment_reminders",
         "schedule": crontab(minute="*/15"),  # every 15 minutes
     },
+    "auto-complete-sessions": {
+        "task": "notifications.auto_complete_sessions",
+        "schedule": crontab(minute="*/15"),  # every 15 minutes
+    },
 }
+
+
+@celery_app.task(name="notifications.auto_complete_sessions")
+def task_auto_complete_sessions():
+    """Every 15 min: mark past sessions as completed (if not cancelled)."""
+    from datetime import datetime
+    from app.database import SessionLocal
+    from app.modules.sessions.models import Session as BookingSession, SessionStatus
+
+    db = SessionLocal()
+    try:
+        now = datetime.utcnow()
+        updated = (
+            db.query(BookingSession)
+            .filter(
+                BookingSession.ends_at <= now,
+                BookingSession.status.in_([
+                    SessionStatus.PENDING,
+                    SessionStatus.CONFIRMED,
+                    SessionStatus.IN_PROGRESS,
+                ]),
+            )
+            .update(
+                {BookingSession.status: SessionStatus.COMPLETED},
+                synchronize_session="fetch",
+            )
+        )
+        if updated:
+            db.commit()
+    finally:
+        db.close()
 
 
 def queue_booking_confirmation(session_id: int) -> None:
