@@ -218,7 +218,7 @@ def cancel_booking(db: Session, session_id: int, confirmation_code: str, phone: 
     if session.client_phone.strip() != phone.strip() or confirmation_code.upper() != expected_code:
         raise HTTPException(status_code=403, detail="Invalid phone or confirmation code")
 
-    if session.status in (SessionStatus.CANCELLED, SessionStatus.COMPLETED, SessionStatus.NO_SHOW):
+    if session.status in (SessionStatus.CANCELLED, SessionStatus.NO_SHOW):
         raise HTTPException(status_code=409, detail=f"Booking cannot be cancelled (status: {session.status.value})")
 
     session.status = SessionStatus.CANCELLED
