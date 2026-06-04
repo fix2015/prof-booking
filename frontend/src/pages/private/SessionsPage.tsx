@@ -219,7 +219,7 @@ export function SessionsPage() {
             </CardHeader>
             <CardContent className="space-y-ds-4">
               <p className="ds-body text-ds-text-secondary">
-                {editPriceModal.client_name} — {editPriceModal.service?.name ?? "Session"}
+                {editPriceModal.client_name}
               </p>
               <div className="space-y-[4px]">
                 <label className="ds-body-strong text-ds-text-primary">Price (£)</label>

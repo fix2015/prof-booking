@@ -212,7 +212,7 @@ export function SalonSelectorPage() {
       {/* Matching professionals */}
       {matchingProfessionals.length > 0 && (
         <div className="px-ds-4 pb-ds-2">
-          <p className="ds-label text-ds-text-secondary mb-ds-2">{t("professionals.title")}</p>
+          <p className="ds-label text-ds-text-secondary mb-ds-2">{t("nav.professionals")}</p>
           <div className="flex gap-ds-2 overflow-x-auto pb-ds-1">
             {matchingProfessionals.map((prof: any) => (
               <button
