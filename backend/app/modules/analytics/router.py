@@ -92,16 +92,20 @@ def professional_own_analytics(
     else:
         date_to = date_to.replace(hour=23, minute=59, second=59, microsecond=999999)
 
+    now = datetime.utcnow()
+    # Cap date_to to now — don't count future sessions
+    effective_to = min(date_to, now)
+
     q = db.query(SessionModel).filter(
         SessionModel.professional_id == professional.id,
         SessionModel.starts_at >= date_from,
-        SessionModel.starts_at <= date_to,
+        SessionModel.starts_at <= effective_to,
     )
     if provider_id:
         q = q.filter(SessionModel.provider_id == provider_id)
 
     sessions = q.all()
-    # Include all non-cancelled sessions in analytics
+    # Only count non-cancelled, past sessions
     active = [s for s in sessions if s.status != SessionStatus.CANCELLED]
     completed = [s for s in sessions if s.status == SessionStatus.COMPLETED]
     total_minutes = sum(s.duration_minutes for s in active)
