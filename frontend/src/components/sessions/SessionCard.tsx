@@ -12,6 +12,7 @@ interface SessionCardProps {
   onCancel?: (session: Session) => void;
   onConfirm?: (session: Session) => void;
   onComplete?: (session: Session) => void;
+  onEditPrice?: (session: Session) => void;
 }
 
 export function SessionCard({
@@ -22,11 +23,13 @@ export function SessionCard({
   onCancel,
   onConfirm,
   onComplete,
+  onEditPrice,
 }: SessionCardProps) {
-  const canCancel = showCancel && (session.status === "pending" || session.status === "confirmed");
+  const canCancel = showCancel && session.status !== "cancelled" && session.status !== "no_show";
   const canConfirm = showConfirm && session.status === "pending";
-  const canComplete = showComplete && session.status === "confirmed";
-  const hasActions = canCancel || canConfirm || canComplete;
+  const canComplete = showComplete && (session.status === "confirmed" || session.status === "pending");
+  const canEditPrice = onEditPrice && session.status === "completed";
+  const hasActions = canCancel || canConfirm || canComplete || canEditPrice;
 
   return (
     <div className="rounded-[10px] border border-ds-border bg-ds-bg-primary p-ds-3 md:p-ds-4 shadow-sm space-y-ds-2">
@@ -84,6 +87,15 @@ export function SessionCard({
                   onClick={() => onComplete?.(session)}
                 >
                   Complete
+                </Button>
+              )}
+              {canEditPrice && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEditPrice?.(session)}
+                >
+                  Edit Price
                 </Button>
               )}
               {canCancel && (

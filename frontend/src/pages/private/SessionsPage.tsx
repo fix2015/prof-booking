@@ -57,6 +57,8 @@ export function SessionsPage() {
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [earningsModal, setEarningsModal] = useState<Session | null>(null);
   const [earningsAmount, setEarningsAmount] = useState("");
+  const [editPriceModal, setEditPriceModal] = useState<Session | null>(null);
+  const [editPriceValue, setEditPriceValue] = useState("");
 
   const { data: allSessions = [], isLoading } = useSessions(
     statusFilter !== "all" ? { status: statusFilter } : {}
@@ -159,6 +161,7 @@ export function SessionsPage() {
               onCancel={handleCancel}
               onConfirm={handleConfirm}
               onComplete={handleComplete}
+              onEditPrice={(s) => { setEditPriceModal(s); setEditPriceValue(String(s.price || "")); }}
             />
           ))}
         </div>
@@ -176,7 +179,7 @@ export function SessionsPage() {
                 Session with {earningsModal.client_name}
               </p>
               <div className="space-y-[4px]">
-                <label className="ds-body-strong text-ds-text-primary">Earnings Amount ($)</label>
+                <label className="ds-body-strong text-ds-text-primary">Earnings Amount (£)</label>
                 <Input
                   type="number"
                   step="0.01"
@@ -199,6 +202,53 @@ export function SessionsPage() {
                   disabled={recordEarnings.isPending}
                 >
                   {recordEarnings.isPending ? <Spinner size="sm" className="mr-ds-2" /> : null}
+                  Save
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Edit price modal */}
+      {editPriceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setEditPriceModal(null)}>
+          <Card className="w-full max-w-sm mx-ds-4" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle>Edit Price</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-ds-4">
+              <p className="ds-body text-ds-text-secondary">
+                {editPriceModal.client_name} — {editPriceModal.service?.name ?? "Session"}
+              </p>
+              <div className="space-y-[4px]">
+                <label className="ds-body-strong text-ds-text-primary">Price (£)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editPriceValue}
+                  onChange={(e) => setEditPriceValue(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="flex gap-ds-2">
+                <Button variant="outline" className="flex-1" onClick={() => setEditPriceModal(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={updateSession.isPending}
+                  onClick={async () => {
+                    try {
+                      await updateSession.mutateAsync({ id: editPriceModal.id, data: { price: Number(editPriceValue) } });
+                      toast({ title: "Price updated", variant: "success" });
+                      setEditPriceModal(null);
+                    } catch {
+                      toast({ title: "Failed to update price", variant: "destructive" });
+                    }
+                  }}
+                >
+                  {updateSession.isPending ? <Spinner size="sm" className="mr-ds-2" /> : null}
                   Save
                 </Button>
               </div>
