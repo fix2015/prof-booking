@@ -35,17 +35,30 @@ def search_providers(
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
 ):
-    """Public: search providers by name, address, and/or service offered."""
+    """Public: search providers by name, address, professional name, and/or service offered."""
     from app.modules.salons.models import Provider
     from app.modules.services.models import Service
+    from app.modules.masters.models import Professional, ProfessionalProvider
 
     query = db.query(Provider).filter(Provider.is_active == True)  # noqa: E712
     search_term = q or address
     if search_term:
-        query = query.filter(
-            (Provider.name.ilike(f"%{search_term}%")) |
-            (Provider.address.ilike(f"%{search_term}%"))
-        )
+        # Split into words and require ALL words to match (across name, address, or professional name)
+        words = search_term.strip().split()
+        for word in words:
+            w = f"%{word}%"
+            # Provider has a matching professional?
+            prof_provider_ids = (
+                db.query(ProfessionalProvider.provider_id)
+                .join(Professional, Professional.id == ProfessionalProvider.professional_id)
+                .filter(Professional.name.ilike(w))
+                .subquery()
+            )
+            query = query.filter(
+                (Provider.name.ilike(w)) |
+                (Provider.address.ilike(w)) |
+                (Provider.id.in_(prof_provider_ids))
+            )
     if service_name:
         from app.modules.services.models import service_providers
         provider_ids_sub = (
