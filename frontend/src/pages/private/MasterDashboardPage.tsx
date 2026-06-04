@@ -19,10 +19,10 @@ export function MasterDashboardPage() {
   const { data: professional } = useMyProfessionalProfile();
   const updateProfessional = useUpdateProfessionalProfile();
   const { data: todaySessions, isLoading } = useTodaySessions();
-  const { data: monthlySessions } = useSessions({
+  const { data: allMonthlySessions } = useSessions({
     date_from: format(subDays(new Date(), 30), "yyyy-MM-dd"),
-    status: "completed",
   });
+  const monthlySessions = allMonthlySessions?.filter((s) => s.status !== "cancelled");
 
   const { data: photos = [] } = useQuery({
     queryKey: ["professional-photos", "me"],
@@ -42,7 +42,7 @@ export function MasterDashboardPage() {
   });
 
   const totalMonthlyEarnings = monthlySessions?.reduce(
-    (sum, s) => sum + (s.earnings_amount || 0),
+    (sum, s) => sum + (s.earnings_amount || s.price || 0),
     0
   ) ?? 0;
 
@@ -94,7 +94,7 @@ export function MasterDashboardPage() {
         <StatsCard
           title="This Month"
           value={monthlySessions?.length ?? 0}
-          subtitle="completed sessions"
+          subtitle="sessions"
           icon={Calendar}
           color="purple"
           href="/calendar"
