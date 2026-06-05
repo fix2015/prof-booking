@@ -160,27 +160,18 @@ def task_auto_complete_sessions():
     """Every 15 min: mark past sessions as completed (if not cancelled)."""
     from datetime import datetime
     from app.database import SessionLocal
-    from app.modules.sessions.models import Session as BookingSession, SessionStatus
+    from sqlalchemy import text
 
     db = SessionLocal()
     try:
         now = datetime.utcnow()
-        updated = (
-            db.query(BookingSession)
-            .filter(
-                BookingSession.ends_at <= now,
-                BookingSession.status.in_([
-                    SessionStatus.PENDING,
-                    SessionStatus.CONFIRMED,
-                    SessionStatus.IN_PROGRESS,
-                ]),
-            )
-            .update(
-                {BookingSession.status: SessionStatus.COMPLETED},
-                synchronize_session="fetch",
-            )
+        result = db.execute(
+            text("""UPDATE sessions SET status = 'COMPLETED'
+                    WHERE ends_at <= :now
+                    AND UPPER(status) IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')"""),
+            {"now": now},
         )
-        if updated:
+        if result.rowcount > 0:
             db.commit()
     finally:
         db.close()
