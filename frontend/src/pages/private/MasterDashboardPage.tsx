@@ -92,7 +92,7 @@ export function MasterDashboardPage() {
           title="Upcoming"
           value={upcomingSessions.length}
           icon={Clock}
-          color="blue"
+          color="slate"
           href="/sessions"
         />
         <StatsCard
@@ -100,21 +100,21 @@ export function MasterDashboardPage() {
           value={monthlySessions?.length ?? 0}
           subtitle="sessions"
           icon={Calendar}
-          color="purple"
+          color="slate"
           href="/calendar"
         />
         <StatsCard
           title="Today's Earnings"
           value={formatCurrency(todayEarnings)}
           icon={DollarSign}
-          color="green"
+          color="slate"
           href="/analytics/professional"
         />
         <StatsCard
           title="Monthly Earnings"
           value={formatCurrency(totalMonthlyEarnings)}
           icon={DollarSign}
-          color="purple"
+          color="slate"
           href="/analytics/professional"
         />
       </div>
