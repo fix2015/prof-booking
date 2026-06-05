@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Session } from "@/types";
 import { formatDateTime } from "@/utils/dates";
 import { formatCurrency, statusColorMap, statusLabel } from "@/utils/formatters";
@@ -33,13 +34,18 @@ export function SessionCard({
 
   return (
     <div className="rounded-[10px] border border-ds-border bg-ds-bg-primary p-ds-3 md:p-ds-4 shadow-sm space-y-ds-2">
-      {/* Client name */}
-      <p className="ds-body-strong text-ds-text-primary">{session.client_name}</p>
+      {/* Client name — links to client page */}
+      <Link
+        to={`/clients?phone=${encodeURIComponent(session.client_phone)}`}
+        className="ds-body-strong text-ds-interactive hover:underline"
+      >
+        {session.client_name}
+      </Link>
 
-      {/* Phone — clickable */}
+      {/* Phone — clickable to call */}
       <a
         href={`tel:${session.client_phone}`}
-        className="ds-body-small text-ds-interactive underline hover:opacity-80 block"
+        className="ds-body-small text-ds-text-secondary hover:text-ds-interactive block"
       >
         {session.client_phone}
       </a>

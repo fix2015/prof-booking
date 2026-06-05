@@ -49,7 +49,7 @@ def owner_workers_analytics(
             SessionModel.starts_at <= date_to,
         ).all()
 
-        completed = [s for s in sessions if s.status == SessionStatus.COMPLETED]
+        completed = [s for s in sessions if str(s.status).upper() == "COMPLETED"]
         total_minutes = sum(s.duration_minutes for s in completed)
         total_revenue = sum(s.price or 0 for s in completed)
         professional_pct = pp.payment_amount or 70.0  # treat as percentage if <= 100
@@ -105,9 +105,9 @@ def professional_own_analytics(
         q = q.filter(SessionModel.provider_id == provider_id)
 
     sessions = q.all()
-    # Only count non-cancelled, past sessions
-    active = [s for s in sessions if s.status != SessionStatus.CANCELLED]
-    completed = [s for s in sessions if s.status == SessionStatus.COMPLETED]
+    # Only count non-cancelled, past sessions (handle case mismatch in DB)
+    active = [s for s in sessions if str(s.status).upper() != "CANCELLED"]
+    completed = [s for s in sessions if str(s.status).upper() == "COMPLETED"]
     total_minutes = sum(s.duration_minutes for s in active)
     total_revenue = sum(s.price or 0 for s in active)
 
