@@ -6,7 +6,7 @@ from datetime import datetime
 
 from app.database import get_db
 from app.dependencies import get_current_owner, get_current_user
-from app.modules.sessions.models import Session as SessionModel, SessionStatus
+from app.modules.sessions.models import Session as SessionModel
 from app.modules.masters.models import ProfessionalProvider, ProfessionalStatus
 from app.modules.salons.services import assert_owner_of_provider
 from app.modules.masters.services import get_professional_by_user_id
