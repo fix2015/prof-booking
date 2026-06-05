@@ -303,21 +303,36 @@ export function ClientDetailPage() {
           {editingProfile ? (
             <div className="space-y-ds-4">
               <div className="flex items-center gap-ds-4">
-                <div className="w-16 h-16 rounded-ds-full bg-ds-bg-tertiary flex items-center justify-center overflow-hidden shrink-0">
+                <div className="relative w-16 h-16 rounded-ds-full bg-ds-bg-tertiary flex items-center justify-center overflow-hidden shrink-0">
                   {profileForm.avatar_url ? (
                     <img src={profileForm.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-8 h-8 text-ds-text-muted" />
                   )}
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-ds-full cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
+                    <Upload className="w-4 h-4 text-ds-text-inverse" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const form = new FormData();
+                        form.append("file", file);
+                        form.append("max_size", "400");
+                        try {
+                          const res = await fetch("/api/v1/upload/image", { method: "POST", body: form });
+                          const { url } = await res.json();
+                          setProfileForm((f) => ({ ...f, avatar_url: url }));
+                        } catch {
+                          toast({ title: "Upload failed", variant: "destructive" });
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
-                <div className="space-y-[4px] flex-1">
-                  <p className="ds-caption text-ds-text-muted">Avatar URL</p>
-                  <Input
-                    value={profileForm.avatar_url}
-                    onChange={(e) => setProfileForm((f) => ({ ...f, avatar_url: e.target.value }))}
-                    placeholder="https://..."
-                  />
-                </div>
+                <p className="ds-caption text-ds-text-muted">Tap avatar to upload photo</p>
               </div>
               <div className="grid grid-cols-2 gap-ds-3">
                 <div>
