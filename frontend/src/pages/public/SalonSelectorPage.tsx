@@ -34,7 +34,8 @@ function toggleSaved(id: number): number[] {
 
 export function SalonSelectorPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, role } = useAuthContext();
+  const showDashboard = isAuthenticated && (role === "provider_owner" || role === "professional" || role === "platform_admin");
   const logout = useLogout();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
@@ -111,14 +112,26 @@ export function SalonSelectorPage() {
     <div className="flex items-center gap-ds-2">
       <LanguageSwitcher />
       {isAuthenticated ? (
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
-          onClick={() => logout.mutate(undefined)}
-        >
-          {t("profile.sign_out")}
-        </Button>
+        <div className="flex items-center gap-ds-1">
+          {showDashboard && (
+            <Button
+              variant="default"
+              size="sm"
+              className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
+              onClick={() => navigate("/dashboard")}
+            >
+              {t("nav.dashboard")}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-[32px] rounded-ds-full px-ds-3 ds-label-small"
+            onClick={() => logout.mutate(undefined)}
+          >
+            {t("profile.sign_out")}
+          </Button>
+        </div>
       ) : (
         <Button
           variant="outline"
