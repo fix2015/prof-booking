@@ -22,7 +22,7 @@ export function MasterDashboardPage() {
   const { data: allMonthlySessions } = useSessions({
     date_from: format(subDays(new Date(), 30), "yyyy-MM-dd"),
   });
-  const monthlySessions = allMonthlySessions?.filter((s) => s.status !== "cancelled");
+  const monthlySessions = allMonthlySessions?.filter((s) => s.status.toLowerCase() !== "cancelled");
 
   const { data: photos = [] } = useQuery({
     queryKey: ["professional-photos", "me"],
@@ -47,11 +47,11 @@ export function MasterDashboardPage() {
   ) ?? 0;
 
   const todayEarnings = (todaySessions ?? [])
-    .filter((s) => s.status !== "cancelled")
+    .filter((s) => s.status.toLowerCase() !== "cancelled")
     .reduce((sum, s) => sum + (s.price || 0), 0);
 
   const upcomingSessions = todaySessions?.filter(
-    (s) => ["pending", "confirmed"].includes(s.status)
+    (s) => ["pending", "confirmed"].includes(s.status.toLowerCase())
   ) ?? [];
 
   if (isLoading) return <Spinner className="mx-auto mt-20" />;
