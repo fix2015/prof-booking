@@ -67,25 +67,8 @@ export function MasterAnalyticsPage() {
             <StatCard icon={<DollarSign className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-ds-text-primary" bg="bg-ds-bg-secondary" />
           </div>
 
-          {/* Monthly chart */}
-          {analytics.monthly_breakdown.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Monthly Revenue</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={analytics.monthly_breakdown} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                    <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `£${v}`} />
-                    <Tooltip formatter={(v: number) => [`£${v}`, "Revenue"]} />
-                    <Bar dataKey="revenue" fill="var(--ds-interactive)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          )}
+          {/* Revenue chart with period selector */}
+          <RevenueChart analytics={analytics} />
 
           {/* Per-provider breakdown */}
           {providerBreakdown.length > 0 && (
@@ -123,6 +106,50 @@ export function MasterAnalyticsPage() {
         </>
       )}
     </div>
+  );
+}
+
+type ChartPeriod = "daily" | "weekly" | "monthly";
+
+function RevenueChart({ analytics }: { analytics: any }) {
+  const [period, setPeriod] = useState<ChartPeriod>("daily");
+
+  const chartConfig: Record<ChartPeriod, { data: any[]; dataKey: string; label: string }> = {
+    daily: { data: analytics.daily_breakdown ?? [], dataKey: "date", label: "Daily Revenue" },
+    weekly: { data: analytics.weekly_breakdown ?? [], dataKey: "week", label: "Weekly Revenue" },
+    monthly: { data: analytics.monthly_breakdown ?? [], dataKey: "month", label: "Monthly Revenue" },
+  };
+
+  const { data, dataKey, label } = chartConfig[period];
+
+  if (data.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle>{label}</CardTitle>
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value as ChartPeriod)}
+          className="border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey={dataKey} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+            <YAxis tickLine={false} axisLine={false} tickFormatter={(v) => `£${v}`} />
+            <Tooltip formatter={(v: number) => [`£${v}`, "Revenue"]} />
+            <Bar dataKey="revenue" fill="var(--ds-interactive)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 }
 

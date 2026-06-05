@@ -123,14 +123,30 @@ def professional_own_analytics(
         provider_breakdown[pid]["revenue"] += s.price or 0
         provider_breakdown[pid]["hours"] += s.duration_minutes / 60
 
-    # Monthly breakdown
+    # Time breakdowns
+    daily: dict = {}
+    weekly: dict = {}
     monthly: dict = {}
     for s in active:
-        key = s.starts_at.strftime("%Y-%m")
-        if key not in monthly:
-            monthly[key] = {"sessions": 0, "revenue": 0.0}
-        monthly[key]["sessions"] += 1
-        monthly[key]["revenue"] += s.price or 0
+        price = s.price or 0
+        # Daily
+        d_key = s.starts_at.strftime("%Y-%m-%d")
+        if d_key not in daily:
+            daily[d_key] = {"sessions": 0, "revenue": 0.0}
+        daily[d_key]["sessions"] += 1
+        daily[d_key]["revenue"] += price
+        # Weekly (ISO week)
+        w_key = s.starts_at.strftime("%Y-W%W")
+        if w_key not in weekly:
+            weekly[w_key] = {"sessions": 0, "revenue": 0.0}
+        weekly[w_key]["sessions"] += 1
+        weekly[w_key]["revenue"] += price
+        # Monthly
+        m_key = s.starts_at.strftime("%Y-%m")
+        if m_key not in monthly:
+            monthly[m_key] = {"sessions": 0, "revenue": 0.0}
+        monthly[m_key]["sessions"] += 1
+        monthly[m_key]["revenue"] += price
 
     return {
         "professional_id": professional.id,
@@ -144,6 +160,12 @@ def professional_own_analytics(
         "unique_clients": len(set(s.client_phone for s in active if s.client_phone)),
         "provider_breakdown": [
             {"provider_id": k, **v} for k, v in provider_breakdown.items()
+        ],
+        "daily_breakdown": [
+            {"date": k, **v} for k, v in sorted(daily.items())
+        ],
+        "weekly_breakdown": [
+            {"week": k, **v} for k, v in sorted(weekly.items())
         ],
         "monthly_breakdown": [
             {"month": k, **v} for k, v in sorted(monthly.items())
