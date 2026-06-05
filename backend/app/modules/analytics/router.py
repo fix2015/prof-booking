@@ -109,7 +109,6 @@ def professional_own_analytics(
     def _status(s) -> str:
         v = s.status.value if hasattr(s.status, 'value') else str(s.status)
         return v.upper()
-    active = [s for s in sessions if _status(s) != "CANCELLED"]
     completed = [s for s in sessions if _status(s) == "COMPLETED"]
     total_minutes = sum(s.duration_minutes for s in completed)
     total_revenue = sum(s.price or 0 for s in completed)
