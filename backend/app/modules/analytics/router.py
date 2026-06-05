@@ -49,7 +49,7 @@ def owner_workers_analytics(
             SessionModel.starts_at <= date_to,
         ).all()
 
-        completed = [s for s in sessions if str(s.status).upper() == "COMPLETED"]
+        completed = [s for s in sessions if (s.status.value if hasattr(s.status, 'value') else str(s.status)).upper() == "COMPLETED"]
         total_minutes = sum(s.duration_minutes for s in completed)
         total_revenue = sum(s.price or 0 for s in completed)
         professional_pct = pp.payment_amount or 70.0  # treat as percentage if <= 100
@@ -106,15 +106,18 @@ def professional_own_analytics(
 
     sessions = q.all()
     # Only count non-cancelled, past sessions (handle case mismatch in DB)
-    active = [s for s in sessions if str(s.status).upper() != "CANCELLED"]
-    completed = [s for s in sessions if str(s.status).upper() == "COMPLETED"]
-    total_minutes = sum(s.duration_minutes for s in active)
-    total_revenue = sum(s.price or 0 for s in active)
+    def _status(s) -> str:
+        v = s.status.value if hasattr(s.status, 'value') else str(s.status)
+        return v.upper()
+    active = [s for s in sessions if _status(s) != "CANCELLED"]
+    completed = [s for s in sessions if _status(s) == "COMPLETED"]
+    total_minutes = sum(s.duration_minutes for s in completed)
+    total_revenue = sum(s.price or 0 for s in completed)
 
     # Per-provider breakdown
     from app.modules.salons.models import Provider
     provider_breakdown: dict = {}
-    for s in active:
+    for s in completed:
         pid = s.provider_id
         if pid not in provider_breakdown:
             prov = db.query(Provider).filter(Provider.id == pid).first()
@@ -127,7 +130,7 @@ def professional_own_analytics(
     daily: dict = {}
     weekly: dict = {}
     monthly: dict = {}
-    for s in active:
+    for s in completed:
         price = s.price or 0
         # Daily
         d_key = s.starts_at.strftime("%Y-%m-%d")
@@ -157,7 +160,7 @@ def professional_own_analytics(
         "completed_sessions": len(completed),
         "total_hours": round(total_minutes / 60, 1),
         "total_revenue": total_revenue,
-        "unique_clients": len(set(s.client_phone for s in active if s.client_phone)),
+        "unique_clients": len(set(s.client_phone for s in completed if s.client_phone)),
         "provider_breakdown": [
             {"provider_id": k, **v} for k, v in provider_breakdown.items()
         ],
