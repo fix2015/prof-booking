@@ -134,7 +134,7 @@ export function ServicesPage() {
         }));
 
   return (
-    <div className="space-y-ds-4 md:space-y-ds-6">
+    <div className="space-y-ds-4 md:space-y-ds-6 pt-ds-4">
       <div className="flex items-center justify-between gap-ds-2">
         <h1 className="ds-h2">{t("services.title")}</h1>
         <Button onClick={openAdd}>
