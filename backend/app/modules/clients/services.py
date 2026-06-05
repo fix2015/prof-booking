@@ -60,7 +60,7 @@ def _build_stats(db: DBSession, phone: str, filters: list) -> dict:
     row = db.query(
         func.count(BookingSession.id).label("total"),
         func.max(BookingSession.starts_at).label("last_visit"),
-        func.coalesce(func.sum(BookingSession.total_paid), 0.0).label("spent"),
+        func.coalesce(func.sum(BookingSession.price), 0.0).label("spent"),
     ).filter(
         BookingSession.client_phone == phone,
         *filters,
@@ -185,7 +185,7 @@ def get_client_detail(
     row = db.query(
         func.count(BookingSession.id),
         func.max(BookingSession.starts_at),
-        func.coalesce(func.sum(BookingSession.total_paid), 0.0),
+        func.coalesce(func.sum(BookingSession.price), 0.0),
     ).filter(*stats_filters).first()
 
     # Notes — professional sees their own; provider sees all from their provider; admin sees all

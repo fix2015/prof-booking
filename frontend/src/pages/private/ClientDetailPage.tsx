@@ -431,7 +431,7 @@ export function ClientDetailPage() {
                     <div className="flex items-center gap-[4px] ds-caption text-ds-text-muted">
                       <DollarSign className="w-3 h-3" /> Spent
                     </div>
-                    <div className="ds-body-strong text-ds-text-primary">${client.total_spent.toFixed(2)}</div>
+                    <div className="ds-body-strong text-ds-text-primary">£{client.total_spent.toFixed(2)}</div>
                   </div>
                   {client.last_visit_at && (
                     <div className="text-center">
