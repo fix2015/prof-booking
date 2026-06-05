@@ -190,7 +190,7 @@ function SessionDetailModal({
           <CardTitle>Session Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p><span className="font-medium">Client:</span> {session.client_name}</p>
+          <p><span className="font-medium">Client:</span> <a href={`/clients?phone=${encodeURIComponent(session.client_phone)}`} className="text-blue-600 hover:underline">{session.client_name}</a></p>
           <p><span className="font-medium">Phone:</span> {session.client_phone}</p>
           <p><span className="font-medium">Status:</span> {session.status}</p>
           <p><span className="font-medium">Price:</span> £{session.price ?? "N/A"}</p>

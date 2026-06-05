@@ -27,7 +27,7 @@ export function SessionsList({ sessions, title = "Sessions", showDate = false }:
                 className="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50 transition-colors"
               >
                 <div>
-                  <p className="font-medium text-sm">{session.client_name}</p>
+                  <a href={`/clients?phone=${encodeURIComponent(session.client_phone)}`} className="font-medium text-sm text-blue-600 hover:underline">{session.client_name}</a>
                   <p className="text-xs text-muted-foreground">
                     {showDate
                       ? formatDate(session.starts_at, "MMM d 'at' h:mm a")
