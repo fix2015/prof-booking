@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Clock, Users, DollarSign } from "lucide-react";
+import { TrendingUp, Clock, Users } from "lucide-react";
+
+function PoundIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M18 20H6a2 2 0 0 0 2-2V9a4 4 0 0 1 8 0" />
+      <line x1="5" y1="14" x2="15" y2="14" />
+    </svg>
+  );
+}
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { analyticsApi } from "@/api/analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,7 +73,7 @@ export function MasterAnalyticsPage() {
             <StatCard icon={<Users className="h-5 w-5" />} label="Clients" value={analytics.unique_clients} color="text-[var(--ds-feedback-info)]" bg="bg-[var(--ds-feedback-info-bg)]" />
             <StatCard icon={<Clock className="h-5 w-5" />} label="Hours Worked" value={`${analytics.total_hours}h`} color="text-ds-interactive" bg="bg-ds-bg-tertiary" />
             <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Sessions" value={analytics.completed_sessions} color="text-[var(--ds-feedback-success)]" bg="bg-[var(--ds-feedback-success-bg)]" />
-            <StatCard icon={<DollarSign className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-ds-text-primary" bg="bg-ds-bg-secondary" />
+            <StatCard icon={<PoundIcon className="h-5 w-5" />} label="Revenue" value={formatCurrency(analytics.total_revenue)} color="text-ds-text-primary" bg="bg-ds-bg-secondary" />
           </div>
 
           {/* Revenue chart with period selector */}
@@ -91,7 +100,7 @@ export function MasterAnalyticsPage() {
                       const sbId = sb.provider_id ?? sb.salon_id;
                       return (
                         <tr key={sbId} className="border-b hover:bg-muted/40">
-                          <td className="px-4 py-3">{sb.name || `Provider #${sbId}`}</td>
+                          <td className="px-4 py-3"><a href={`/providers/${sbId}`} className="text-blue-600 hover:underline">{sb.name || `Provider #${sbId}`}</a></td>
                           <td className="px-4 py-3 text-right">{sb.sessions}</td>
                           <td className="px-4 py-3 text-right">{sb.hours.toFixed(1)}h</td>
                           <td className="px-4 py-3 text-right">{formatCurrency(sb.revenue)}</td>
