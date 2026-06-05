@@ -46,6 +46,10 @@ export function MasterDashboardPage() {
     0
   ) ?? 0;
 
+  const todayEarnings = (todaySessions ?? [])
+    .filter((s) => s.status !== "cancelled")
+    .reduce((sum, s) => sum + (s.price || 0), 0);
+
   const upcomingSessions = todaySessions?.filter(
     (s) => ["pending", "confirmed"].includes(s.status)
   ) ?? [];
@@ -100,10 +104,17 @@ export function MasterDashboardPage() {
           href="/calendar"
         />
         <StatsCard
+          title="Today's Earnings"
+          value={formatCurrency(todayEarnings)}
+          icon={DollarSign}
+          color="green"
+          href="/analytics/professional"
+        />
+        <StatsCard
           title="Monthly Earnings"
           value={formatCurrency(totalMonthlyEarnings)}
           icon={DollarSign}
-          color="green"
+          color="purple"
           href="/analytics/professional"
         />
       </div>
