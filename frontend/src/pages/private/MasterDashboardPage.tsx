@@ -1,4 +1,13 @@
-import { DollarSign, Scissors, Calendar, Clock, Image, Search } from "lucide-react";
+import { Scissors, Calendar, Clock, Image, Search } from "lucide-react";
+
+function PoundIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M18 20H6a2 2 0 0 0 2-2V9a4 4 0 0 1 8 0" />
+      <line x1="5" y1="14" x2="15" y2="14" />
+    </svg>
+  );
+}
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { SessionsList } from "@/components/dashboard/SessionsList";
@@ -22,7 +31,7 @@ export function MasterDashboardPage() {
   const { data: allMonthlySessions } = useSessions({
     date_from: format(subDays(new Date(), 30), "yyyy-MM-dd"),
   });
-  const monthlySessions = allMonthlySessions?.filter((s) => s.status.toLowerCase() !== "cancelled");
+  const monthlySessions = allMonthlySessions?.filter((s) => s.status.toLowerCase() === "completed");
 
   const { data: photos = [] } = useQuery({
     queryKey: ["professional-photos", "me"],
@@ -42,12 +51,12 @@ export function MasterDashboardPage() {
   });
 
   const totalMonthlyEarnings = monthlySessions?.reduce(
-    (sum, s) => sum + (s.earnings_amount || s.price || 0),
+    (sum, s) => sum + (s.price || 0),
     0
   ) ?? 0;
 
   const todayEarnings = (todaySessions ?? [])
-    .filter((s) => s.status.toLowerCase() !== "cancelled")
+    .filter((s) => s.status.toLowerCase() === "completed")
     .reduce((sum, s) => sum + (s.price || 0), 0);
 
   const upcomingSessions = todaySessions?.filter(
@@ -106,14 +115,14 @@ export function MasterDashboardPage() {
         <StatsCard
           title="Today's Earnings"
           value={formatCurrency(todayEarnings)}
-          icon={DollarSign}
+          icon={PoundIcon}
           color="slate"
           href="/analytics/professional"
         />
         <StatsCard
           title="Monthly Earnings"
           value={formatCurrency(totalMonthlyEarnings)}
-          icon={DollarSign}
+          icon={PoundIcon}
           color="slate"
           href="/analytics/professional"
         />
