@@ -20,14 +20,28 @@ PREF_FIELDS = [
 ]
 
 
+# Preferences that are ON by default (users without a preference row get these)
+DEFAULT_ON_PREFS = {"daily_morning", "eod_recap", "cancellation", "appointment_reminder"}
+
+
 def _get_users_with_pref(db: Session, pref_key: str) -> list[int]:
-    """Return user_ids where the given preference is enabled."""
+    """Return user_ids where the given preference is enabled.
+    For default-on preferences, also includes professionals with no preference row."""
     rows = (
         db.query(NotificationPreference.user_id)
         .filter(getattr(NotificationPreference, pref_key) == 1)
         .all()
     )
-    return [r[0] for r in rows]
+    user_ids = {r[0] for r in rows}
+
+    # For default-on prefs, include professionals who never set preferences
+    if pref_key in DEFAULT_ON_PREFS:
+        all_pref_user_ids = {r[0] for r in db.query(NotificationPreference.user_id).all()}
+        prof_user_ids = {r[0] for r in db.query(Professional.user_id).filter(Professional.user_id.isnot(None)).all()}
+        # Professionals without a preference row → default ON
+        user_ids |= (prof_user_ids - all_pref_user_ids)
+
+    return list(user_ids)
 
 
 def _get_professional_for_user(db: Session, user_id: int):
