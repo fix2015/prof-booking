@@ -169,8 +169,8 @@ celery -A app.modules.notifications.tasks beat --loglevel=info
 
 ## Production Deployment
 
-- **Server**: `3.90.215.126` (AWS EC2, Ubuntu)
-- **SSH**: `ssh -i ~/.ssh/service.pem ubuntu@3.90.215.126`
+- **Server**: `34.227.48.162` (AWS EC2, Ubuntu)
+- **SSH**: `ssh -i ~/.ssh/service.pem ubuntu@34.227.48.162`
 - **App dir**: `/opt/prof-booking`
 - **Live URL**: https://probooking.app
 - **Repo**: https://github.com/fix2015/prof-booking
@@ -179,7 +179,7 @@ celery -A app.modules.notifications.tasks beat --loglevel=info
 
 ```bash
 # SSH and check containers
-ssh -i ~/.ssh/service.pem ubuntu@3.90.215.126
+ssh -i ~/.ssh/service.pem ubuntu@34.227.48.162
 sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml ps
 sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --tail=50 backend
 ```
