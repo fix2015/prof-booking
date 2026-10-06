@@ -263,33 +263,40 @@ def run(n_salons: int, pexels: Pexels, dry: bool) -> None:
                 is_active=True, is_demo=True, worker_payment_amount=0.0, deposit_percentage=10.0,
                 settings={"sample": True, "opening_hours": "Mon–Sat 9:00–18:00"},
             )
-            db.add(prov); db.flush()
+            db.add(prov)
+            db.flush()
 
             owner = User(email=f"owner@{slug}.{DEMO_DOMAIN}", hashed_password=pwd, role=UserRole.PROVIDER_OWNER, name=f"{name} (sample owner)", is_active=False, is_verified=True)
-            db.add(owner); db.flush()
+            db.add(owner)
+            db.flush()
             db.add(ProviderOwner(user_id=owner.id, provider_id=prov.id))
 
             services = []
             for svc_name, mins, lo, hi in random.sample(cat["services"], k=min(len(cat["services"]), random.randint(6, 8))):
                 svc = Service(name=svc_name, description=f"{svc_name} at {name}. [sample]", duration_minutes=mins, price=round(random.uniform(lo, hi) / 0.5) * 0.5, is_active=True)
                 svc.providers.append(prov)
-                db.add(svc); services.append(svc)
+                db.add(svc)
+                services.append(svc)
 
             n_pros = random.randint(3, 5)
             for _ in range(n_pros):
                 female = random.random() < (0.15 if cat_name == "Barber" else 0.8)
-                first = random.choice(FIRST_F if female else FIRST_M); last = random.choice(LAST)
-                yrs = random.randint(2, 18); title = random.choice(cat["titles"])
+                first = random.choice(FIRST_F if female else FIRST_M)
+                last = random.choice(LAST)
+                yrs = random.randint(2, 18)
+                title = random.choice(cat["titles"])
                 avatar, _ = pexels.photo([q + (" woman" if female and "woman" not in q else "") for q in cat["portrait_q"]], "medium", 600)
                 u = User(email=f"{first.lower()}.{last.lower()}{random.randint(10, 99)}@{slug}.{DEMO_DOMAIN}", hashed_password=pwd, role=UserRole.PROFESSIONAL,
                          name=f"{first} {last}", is_active=False, is_verified=True)
-                db.add(u); db.flush()
+                db.add(u)
+                db.flush()
                 pro = Professional(
                     user_id=u.id, name=f"{first} {last}", avatar_url=avatar, nationality=NATIONALITY.get(first, "British"), experience_years=yrs,
                     bio=random.choice(BIOS).format(title=title, yrs=yrs, city={"Polish": "Warsaw", "Romanian": "Bucharest", "Ukrainian": "Kyiv", "Italian": "Milan", "Spanish": "Madrid", "Vietnamese": "Hanoi", "Indian": "Mumbai", "Japanese": "Tokyo", "Portuguese": "Lisbon", "Turkish": "Istanbul", "Ghanaian": "Accra"}.get(NATIONALITY.get(first, "British"), random.choice(["London", "Manchester", "Birmingham", "Brighton"])), spec=random.choice(SPECS[cat_name]))[:1000],
                     description=f"{title} at {name}. Sample profile for demonstration.", social_links={"title": title, "sample": True}, is_demo=True,
                 )
-                db.add(pro); db.flush()
+                db.add(pro)
+                db.flush()
                 db.add(ProfessionalProvider(professional_id=pro.id, provider_id=prov.id, status=ProfessionalStatus.ACTIVE, joined_at=datetime.utcnow() - timedelta(days=random.randint(60, 900))))
                 for k in range(random.randint(3, 5)):
                     url, credit = pexels.photo(cat["portfolio_q"][:], "large", 1200)
@@ -315,7 +322,8 @@ if __name__ == "__main__":
     ap.add_argument("--no-upload", action="store_true", help="link Pexels URLs directly instead of copying photos to S3")
     args = ap.parse_args()
     if args.wipe:
-        wipe(SessionLocal()); sys.exit(0)
+        wipe(SessionLocal())
+        sys.exit(0)
     key = os.environ.get("PEXELS_API_KEY")
     if not key and not args.dry_run:
         print("PEXELS_API_KEY not set — photos will be neutral placeholders. Get a free key at https://www.pexels.com/api/")
