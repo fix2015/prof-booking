@@ -24,6 +24,7 @@ class Provider(Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_demo = Column(Boolean, default=False, nullable=False, server_default="false")  # sample listing, not bookable
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     settings = Column(JSON, default=dict)

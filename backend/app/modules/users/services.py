@@ -1,9 +1,10 @@
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from typing import Optional
 
-from app.modules.users.models import User, UserRole
+from app.modules.users.models import User, UserRole, RefreshToken
 from app.modules.users.schemas import UserCreate, UserUpdate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -60,3 +61,15 @@ def list_users(db: Session, role: Optional[UserRole] = None, skip: int = 0, limi
     if role:
         query = query.filter(User.role == role)
     return query.offset(skip).limit(limit).all()
+
+
+def delete_user(db: Session, user: User) -> None:
+    """Permanently delete the account (App Store / Play Store account-deletion requirement).
+
+    Child rows (professional profile, provider owner, refresh tokens, notifications,
+    calendar connection) are removed by the database's ON DELETE CASCADE; invites keep
+    their rows with the user reference set to NULL.
+    """
+    db.execute(delete(RefreshToken).where(RefreshToken.user_id == user.id))
+    db.execute(delete(User).where(User.id == user.id))
+    db.commit()

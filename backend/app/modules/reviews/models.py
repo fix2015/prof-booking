@@ -21,6 +21,7 @@ class Review(Base):
     comment = Column(Text, nullable=True)
     images = Column(JSON, default=list, nullable=True)  # up to 3 image URLs
     is_published = Column(Boolean, default=True, nullable=False)
+    is_demo = Column(Boolean, default=False, nullable=False, server_default="false")  # sample review
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relations

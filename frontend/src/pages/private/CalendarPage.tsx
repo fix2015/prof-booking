@@ -17,6 +17,7 @@ import { professionalsApi } from "@/api/masters";
 import { providersApi } from "@/api/salons";
 import apiClient from "@/api/client";
 import { sessionsApi } from "@/api/sessions";
+import { Capacitor } from "@/lib/capacitor";
 
 function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -61,9 +62,28 @@ function GoogleCalendarSync() {
     }
   }, [searchParams, setSearchParams, qc]);
 
+  // Native: when the user returns from the system browser after Google consent, re-check status.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        qc.invalidateQueries({ queryKey: ["google-calendar-status"] });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [qc]);
+
   const connectMutation = useMutation({
     mutationFn: () => apiClient.get("/calendar/google/auth-url").then((r) => r.data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Google blocks OAuth inside embedded web views, so the native app must open
+      // the consent screen in the system browser; the web app can navigate directly.
+      if (Capacitor.isNativePlatform()) {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: data.auth_url, presentationStyle: "popover" });
+        return;
+      }
       window.location.href = data.auth_url;
     },
     onError: () => toast({ title: "Google Calendar not configured", variant: "destructive" }),

@@ -24,6 +24,7 @@ class ReviewResponse(BaseModel):
     comment: Optional[str]
     images: Optional[List[str]] = None
     is_published: bool
+    is_demo: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}

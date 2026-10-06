@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuthContext } from "@/context/AuthContext";
@@ -81,6 +81,15 @@ export function UserProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, role, refreshUser } = useAuthContext();
   const logout = useLogout();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteAccount = useMutation({
+    mutationFn: usersApi.deleteMe,
+    onSuccess: () => {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      window.location.href = "/";
+    },
+  });
   const { guestProfile, guestBookings } = useGuestSession();
   const isClient = isAuthenticated && role === "client";
   const fileRef = useRef<HTMLInputElement>(null);
@@ -271,6 +280,46 @@ export function UserProfilePage() {
             label={t("profile.sign_out")}
             onClick={() => logout.mutate(undefined, { onSuccess: () => navigate("/") })}
           />
+        </div>
+      )}
+
+      {/* Delete account — required by App Store / Google Play for apps with sign-up */}
+      {isAuthenticated && (
+        <div className="bg-ds-bg-primary border border-ds-border mt-ds-3">
+          {!confirmDelete ? (
+            <MenuRow
+              icon={
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M3 5H15M7 5V3.5C7 3.224 7.224 3 7.5 3H10.5C10.776 3 11 3.224 11 3.5V5M5 5V14.5C5 14.776 5.224 15 5.5 15H12.5C12.776 15 13 14.776 13 14.5V5M7.5 8V12M10.5 8V12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              }
+              label={t("profile.delete_account")}
+              onClick={() => setConfirmDelete(true)}
+            />
+          ) : (
+            <div className="p-ds-4 flex flex-col gap-ds-3">
+              <p className="ds-body-strong text-ds-text-primary">{t("profile.delete_account")}</p>
+              <p className="ds-caption text-ds-text-secondary">{t("profile.delete_account_desc")}</p>
+              <div className="flex gap-ds-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleteAccount.isPending}
+                  className="flex-1 h-[44px] rounded-ds-lg border border-ds-border ds-body-strong text-ds-text-primary"
+                >
+                  {t("profile.delete_account_cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteAccount.mutate()}
+                  disabled={deleteAccount.isPending}
+                  className="flex-1 h-[44px] rounded-ds-lg bg-ds-feedback-error text-ds-text-inverse ds-body-strong disabled:opacity-60"
+                >
+                  {deleteAccount.isPending ? t("profile.delete_account_busy") : t("profile.delete_account_confirm")}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

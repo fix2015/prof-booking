@@ -11,4 +11,6 @@ export interface UserUpdatePayload {
 export const usersApi = {
   updateMe: (data: UserUpdatePayload) =>
     apiClient.patch<User>("/users/me", data).then((r) => r.data),
+  /** Permanently deletes the signed-in account and all personal data. */
+  deleteMe: () => apiClient.delete<void>("/users/me").then(() => undefined),
 };

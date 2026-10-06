@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { SampleBadge } from "@/components/mobile/SampleBadge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { professionalsApi } from "@/api/masters";
@@ -78,6 +79,7 @@ export function MasterProfilePage() {
         <MobileAvatar name={professional.name} size="xl" imageUrl={professional.avatar_url ?? undefined} />
         <div className="text-center">
           <h1 className="ds-h1 text-ds-text-primary">{professional.name}</h1>
+          {professional.is_demo && <SampleBadge className="mt-ds-1" />}
           <div className="flex items-center justify-center gap-ds-2 mt-ds-1">
             {professional.nationality && (
               <span className="ds-body-small text-ds-text-secondary">{professional.nationality}</span>
@@ -176,7 +178,7 @@ export function MasterProfilePage() {
                 className={`px-ds-4 py-ds-3 ${idx < reviews.length - 1 ? "border-b border-ds-border" : ""}`}
               >
                 <div className="flex items-center justify-between mb-ds-1">
-                  <p className="ds-body-strong text-ds-text-primary">{review.client_name}</p>
+                  <p className="ds-body-strong text-ds-text-primary">{review.client_name}{review.is_demo ? ` · ${t("sample.review")}` : ""}</p>
                   <span className="ds-caption text-ds-text-secondary">
                     {new Date(review.created_at).toLocaleDateString()}
                   </span>

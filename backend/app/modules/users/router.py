@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.database import get_db
 from app.dependencies import get_current_admin, get_current_user
 from app.modules.users.schemas import UserResponse, UserUpdate
-from app.modules.users.services import list_users, update_user, get_user_by_id
+from app.modules.users.services import list_users, update_user, get_user_by_id, delete_user
 from app.modules.users.models import User, UserRole
 
 router = APIRouter()
@@ -23,6 +23,16 @@ def update_me(
     db: Session = Depends(get_db),
 ):
     return update_user(db, current_user, data)
+
+
+@router.delete("/me", status_code=204)
+def delete_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Permanently delete the signed-in user's account and all personal data."""
+    delete_user(db, current_user)
+    return Response(status_code=204)
 
 
 @router.get("/", response_model=List[UserResponse])

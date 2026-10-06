@@ -1,0 +1,7 @@
+{
+  "appId": "app.probooking.mobile",
+  "appName": "ProBook",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" },
+  "ios": { "contentInset": "automatic" }
+}

@@ -33,6 +33,7 @@ export interface Provider {
   deposit_percentage: number;
   latitude?: number;
   longitude?: number;
+  is_demo?: boolean;
   is_active: boolean;
   created_at: string;
   settings?: Record<string, unknown>;
@@ -60,6 +61,7 @@ export interface Professional {
   phone?: string;
   bio?: string;
   avatar_url?: string;
+  is_demo?: boolean;
   social_links?: Record<string, string>;
   nationality?: string;
   experience_years?: number;
@@ -198,6 +200,7 @@ export interface Review {
   rating: number;
   comment?: string;
   is_published: boolean;
+  is_demo?: boolean;
   created_at: string;
 }
 

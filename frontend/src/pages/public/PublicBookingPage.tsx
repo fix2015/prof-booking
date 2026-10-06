@@ -426,12 +426,12 @@ export function PublicBookingPage() {
         <div className="px-ds-4 py-ds-4 bg-ds-bg-primary border-t border-ds-border">
           <button
             onClick={handleConfirm}
-            disabled={!canProceed || createBooking.isPending}
+            disabled={!canProceed || createBooking.isPending || !!provider?.is_demo}
             className={`w-full h-[48px] rounded-ds-2xl ds-body-large transition-colors ${
-              canProceed && !createBooking.isPending ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
+              canProceed && !createBooking.isPending && !provider?.is_demo ? "bg-ds-interactive text-ds-text-inverse" : "bg-ds-bg-secondary text-ds-text-disabled"
             }`}
           >
-            {createBooking.isPending ? t("booking.in_progress") : t("booking.confirm_cta")}
+            {provider?.is_demo ? t("sample.booking_disabled") : createBooking.isPending ? t("booking.in_progress") : t("booking.confirm_cta")}
           </button>
           <p className="text-[11px] leading-[16px] text-center text-gray-400 mt-ds-2">
             By booking, you agree to our{" "}

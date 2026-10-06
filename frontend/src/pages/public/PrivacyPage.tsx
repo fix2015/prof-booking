@@ -8,7 +8,7 @@ export function PrivacyPage() {
     <div className="max-w-[768px] mx-auto min-h-screen bg-white">
       <AppHeader variant="back-title" title="Privacy Policy" onBack={() => navigate(-1)} />
       <div className="px-5 py-6 prose prose-sm prose-gray max-w-none [&_h2]:text-[17px] [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-[15px] [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:text-[13px] [&_p]:leading-[20px] [&_p]:text-gray-600 [&_p]:mb-3 [&_li]:text-[13px] [&_li]:leading-[20px] [&_li]:text-gray-600 [&_ul]:mb-3 [&_ol]:mb-3">
-        <p className="!text-[11px] !text-gray-400 !mb-6">Last updated: April 5, 2026</p>
+        <p className="!text-[11px] !text-gray-400 !mb-6">Last updated: October 6, 2026</p>
 
         <h2>1. Introduction</h2>
         <p>ProBook Technologies ("we", "us", "our") operates the ProBook platform at probooking.app. This Privacy Policy explains how we collect, use, store, and protect your personal information when you use our services.</p>
@@ -63,6 +63,7 @@ export function PrivacyPage() {
           <li><strong>Authentication tokens</strong> — JWT access tokens and refresh tokens stored in your browser's localStorage</li>
           <li><strong>Language preference</strong> — stored in localStorage</li>
           <li><strong>Theme preference</strong> — light/dark mode stored in localStorage</li>
+          <li><strong>Mobile app permissions</strong> — the iOS/Android app may ask for your approximate location to centre the map on nearby salons, and for camera/photo library access to upload profile or portfolio photos. Location is used on-device only and is not stored on our servers.</li>
         </ul>
 
         <h2>3. How We Use Your Information</h2>
@@ -143,7 +144,7 @@ export function PrivacyPage() {
         <ul className="list-disc pl-5">
           <li><strong>Access tokens</strong> — expire after 60 minutes</li>
           <li><strong>Refresh tokens</strong> — expire after 30 days and are revoked on rotation</li>
-          <li><strong>Account data</strong> — retained while your account is active; deleted upon account deletion request</li>
+          <li><strong>Account data</strong> — retained while your account is active; you can permanently delete your account yourself at any time from Profile → Delete account (web and mobile app), or email us to request deletion</li>
           <li><strong>Booking data</strong> — retained for record-keeping and dispute resolution</li>
           <li><strong>Push subscriptions</strong> — automatically removed when they become invalid</li>
           <li><strong>Notification logs</strong> — retained for audit and troubleshooting purposes</li>

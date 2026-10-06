@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SampleBadge } from "@/components/mobile/SampleBadge";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePublicProvider } from "@/hooks/useSalon";
@@ -68,7 +69,7 @@ function ReviewCard({ review }: { review: Review }) {
           {new Date(review.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </span>
       </div>
-      <p className="ds-caption text-ds-text-secondary font-medium">{review.client_name}</p>
+      <p className="ds-caption text-ds-text-secondary font-medium">{review.client_name}{review.is_demo ? ` · ${t("sample.review")}` : ""}</p>
       {review.comment && <p className="ds-body text-ds-text-secondary mt-[2px]">{review.comment}</p>}
     </div>
   );
@@ -192,6 +193,12 @@ export function ProviderProfilePage() {
       {/* Provider info */}
       <div className="bg-ds-bg-primary px-ds-4 pt-ds-4 pb-ds-4 flex flex-col items-center gap-ds-2 border-b border-ds-border">
         <h1 className="ds-h1 text-ds-text-primary text-center">{provider.name}</h1>
+        {provider.is_demo && (
+          <div className="flex flex-col items-center gap-ds-1">
+            <SampleBadge />
+            <p className="ds-caption text-ds-text-secondary text-center">{t("sample.provider_note")}</p>
+          </div>
+        )}
         {provider.category && (
           <span className="bg-ds-bg-secondary rounded-ds-full px-ds-3 py-[2px] ds-caption text-ds-text-secondary">
             {provider.category}

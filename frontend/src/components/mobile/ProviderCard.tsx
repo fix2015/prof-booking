@@ -1,4 +1,5 @@
 import { Provider } from "@/types";
+import { SampleBadge } from "@/components/mobile/SampleBadge";
 import { MobileAvatar } from "./MobileAvatar";
 import { StarRating } from "./StarRating";
 
@@ -32,6 +33,7 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
           <p className="ds-body-strong text-ds-text-primary truncate">{provider.name}</p>
+          {provider.is_demo && <SampleBadge className="self-start" />}
           {provider.category && (
             <span className="self-start bg-ds-bg-tertiary rounded-ds-xs px-ds-2 py-[3px] ds-badge text-ds-text-secondary">
               {provider.category}

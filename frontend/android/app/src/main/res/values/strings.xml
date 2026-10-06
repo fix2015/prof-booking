@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ProBook</string>
+    <string name="title_activity_main">ProBook</string>
+    <string name="package_name">app.probooking.mobile</string>
+    <string name="custom_url_scheme">app.probooking.mobile</string>
+</resources>

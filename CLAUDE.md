@@ -74,6 +74,8 @@ yarn test:e2e        # Playwright headless (auto-starts dev server)
 yarn test:e2e:headed # With browser visible
 ```
 
+> **Note:** CI (`ci.yml`) uses `npm ci` / `npm run` with `package-lock.json`. Both lock files exist. Use `yarn` locally, but be aware CI resolves from `package-lock.json`.
+
 ### Full stack via Docker
 
 ```bash
@@ -113,6 +115,8 @@ Key files:
 Vite dev server proxies `/api/*` to `http://localhost:8000`.
 
 **i18n:** Custom zero-dependency utility in `src/i18n.ts`. Supported locales: `en`, `pl`, `ro`, `uk`, `es`. Add new keys to all locale objects in that file. Language is persisted in `localStorage` and switched via `<LanguageSwitcher>`.
+
+**PWA:** The frontend registers a service worker (`public/sw.js`) for push notifications. ESLint is configured to ignore `sw.js` (uses `self` global). Web push subscription logic lives in `hooks/useWebNotifications.ts`.
 
 **Notable frontend deps:**
 - `yet-another-react-lightbox` — portfolio/photo gallery lightbox
@@ -188,7 +192,7 @@ sudo docker compose -f /opt/prof-booking/infra/docker-compose.prod.yml logs --ta
 
 ## Database Migrations (Alembic)
 
-Versions live in `backend/alembic/versions/`. Files are numbered `0001_`, `0002_`, etc. (one exception: `ec54709d7c95` sits between `0001` and `0002`). Current head: `0017`. Run `alembic history` to see the full chain.
+Versions live in `backend/alembic/versions/`. Files are numbered `0001_`, `0002_`, etc. (one exception: `ec54709d7c95` sits between `0001` and `0002`). Current head: `0018`. Run `alembic history` to see the full chain.
 
 When creating a new migration: `cd backend && alembic revision --autogenerate -m "description"` — then rename the file to follow the `NNNN_description.py` convention and set `down_revision` to the previous head.
 

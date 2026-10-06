@@ -46,6 +46,7 @@ class ProviderResponse(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float]
     is_active: bool
+    is_demo: bool = False
     created_at: datetime
     settings: Optional[dict] = {}
 
@@ -64,6 +65,7 @@ class ProviderPublic(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float]
     worker_payment_amount: float = 0.0
+    is_demo: bool = False
 
     model_config = {"from_attributes": True}
 

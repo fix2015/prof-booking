@@ -53,6 +53,7 @@ class ProfessionalCreate(BaseModel):
     experience_years: Optional[int] = None
     description: Optional[str] = None
     is_independent: bool = False
+    is_demo: bool = False
 
 
 class ProfessionalUpdate(BaseModel):
@@ -79,6 +80,7 @@ class ProfessionalResponse(BaseModel):
     experience_years: Optional[int]
     description: Optional[str]
     is_independent: bool = False
+    is_demo: bool = False
     created_at: datetime
     professional_providers: List[ProfessionalProviderResponse] = []
     photos: List[ProfessionalPhotoResponse] = []
@@ -120,6 +122,7 @@ class ProfessionalPublic(BaseModel):
     experience_years: Optional[int]
     description: Optional[str]
     is_independent: bool = False
+    is_demo: bool = False
     social_links: Optional[Dict] = {}
     photos: List[ProfessionalPhotoResponse] = []
     professional_providers: List[ProfessionalProviderResponse] = []

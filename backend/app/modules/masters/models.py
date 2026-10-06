@@ -31,6 +31,7 @@ class Professional(Base):
     experience_years = Column(Integer, nullable=True)
     description = Column(String(2000), nullable=True)
     is_independent = Column(Boolean, default=False, nullable=False, server_default="false")
+    is_demo = Column(Boolean, default=False, nullable=False, server_default="false")  # sample profile
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -36,6 +36,8 @@ def _generate_confirmation_code(session_id: int) -> str:
 def create_public_booking(db: Session, data: PublicBookingRequest) -> BookingConfirmation:
     # Validate references
     provider = get_provider_or_404(db, data.provider_id)
+    if getattr(provider, "is_demo", False):
+        raise HTTPException(status_code=403, detail="This is a sample listing for demonstration only and cannot take bookings.")
     service = get_service_or_404(db, data.service_id)
     professional = None
     if data.professional_id:
