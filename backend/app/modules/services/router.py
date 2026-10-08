@@ -19,13 +19,8 @@ def _assert_can_manage_provider(db: Session, current_user: User, provider_id: in
     if current_user.role == UserRole.PLATFORM_ADMIN:
         return
     if current_user.role == UserRole.PROVIDER_OWNER:
-        from app.modules.salons.models import Provider
-        provider = db.query(Provider).filter(
-            Provider.id == provider_id,
-            Provider.owner_id == current_user.id,
-        ).first()
-        if not provider:
-            raise HTTPException(status_code=403, detail="Not your provider")
+        from app.modules.salons.services import assert_owner_of_provider
+        assert_owner_of_provider(db, current_user, provider_id)  # ownership lives in provider_owners
         return
     if current_user.role == UserRole.PROFESSIONAL:
         from app.modules.masters.models import Professional, ProfessionalProvider, ProfessionalStatus
