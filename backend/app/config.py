@@ -12,9 +12,12 @@ class Settings(BaseSettings):
     APP_DEBUG: bool = False
     APP_ALLOWED_ORIGINS: str = "http://localhost:5173"
 
+    # Capacitor web views of the iOS / Android apps
+    NATIVE_APP_ORIGINS: List[str] = ["capacitor://localhost", "https://localhost"]
+
     @property
     def ALLOWED_ORIGINS(self) -> List[str]:
-        return [o.strip() for o in self.APP_ALLOWED_ORIGINS.split(",")]
+        return [o.strip() for o in self.APP_ALLOWED_ORIGINS.split(",")] + self.NATIVE_APP_ORIGINS
 
     # Database
     DATABASE_URL: str
