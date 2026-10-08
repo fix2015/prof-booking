@@ -13,6 +13,8 @@ import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/ui/spinner";
 import { t } from "@/i18n";
 import type { Review } from "@/types";
+import { ReviewModeration } from "@/components/shared/ReviewModeration";
+import { useReviewModeration } from "@/hooks/useReviewModeration";
 
 export function MasterProfilePage() {
   const { professionalId, masterId } = useParams<{ professionalId?: string; masterId?: string }>();
@@ -34,6 +36,7 @@ export function MasterProfilePage() {
     enabled: !!id,
   });
 
+  const moderation = useReviewModeration();
   const { data: reviews = [] } = useQuery({
     queryKey: ["reviews", "professional", id],
     queryFn: () => reviewsApi.list({ professional_id: id }).then((r) => r.data),
@@ -173,8 +176,8 @@ export function MasterProfilePage() {
         ) : (
           <div className="flex flex-col">
             {reviews.map((review: Review, idx: number) => (
+              <ReviewModeration key={review.id} review={review} moderation={moderation}>
               <div
-                key={review.id}
                 className={`px-ds-4 py-ds-3 ${idx < reviews.length - 1 ? "border-b border-ds-border" : ""}`}
               >
                 <div className="flex items-center justify-between mb-ds-1">
@@ -188,6 +191,7 @@ export function MasterProfilePage() {
                   <p className="ds-body text-ds-text-secondary mt-ds-1">{review.comment}</p>
                 )}
               </div>
+              </ReviewModeration>
             ))}
           </div>
         )}

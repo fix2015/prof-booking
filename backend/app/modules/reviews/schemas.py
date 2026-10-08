@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 
 
@@ -25,9 +25,15 @@ class ReviewResponse(BaseModel):
     images: Optional[List[str]] = None
     is_published: bool
     is_demo: bool = False
+    author_key: str = ""
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ReviewReportCreate(BaseModel):
+    reason: Literal["spam", "offensive", "fake", "other"]
+    details: Optional[str] = Field(None, max_length=500)
 
 
 class ReviewStats(BaseModel):

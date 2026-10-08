@@ -201,6 +201,8 @@ export interface Review {
   comment?: string;
   is_published: boolean;
   is_demo?: boolean;
+  /** Stable hashed id of the review's author — used to block a reviewer. */
+  author_key?: string;
   created_at: string;
 }
 

@@ -7,7 +7,7 @@ from app.database import get_db
 from app.dependencies import get_current_admin
 from app.modules.users.models import User, UserRole
 from app.modules.salons.models import Provider
-from app.modules.reviews.models import Review
+from app.modules.reviews.models import Review, ReviewReport
 from app.modules.services.models import Service
 
 router = APIRouter()
@@ -142,6 +142,46 @@ def admin_toggle_review(
     if not r:
         raise HTTPException(status_code=404, detail="Review not found")
     r.is_published = is_published
+    db.commit()
+    return {"ok": True, "is_published": is_published}
+
+
+@router.get("/review-reports")
+def admin_list_review_reports(
+    include_resolved: bool = Query(False),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Reported reviews (App Store guideline 1.2), newest first, with the review they refer to."""
+    q = db.query(ReviewReport, Review).join(Review, Review.id == ReviewReport.review_id)
+    if not include_resolved:
+        q = q.filter(ReviewReport.is_resolved == False)  # noqa: E712
+    return [
+        {
+            "id": rep.id, "reason": rep.reason, "details": rep.details, "is_resolved": rep.is_resolved,
+            "created_at": rep.created_at,
+            "review": {
+                "id": rev.id, "client_name": rev.client_name, "rating": rev.rating, "comment": rev.comment,
+                "is_published": rev.is_published, "provider_id": rev.provider_id,
+            },
+        }
+        for rep, rev in q.order_by(ReviewReport.created_at.desc()).limit(500).all()
+    ]
+
+
+@router.patch("/review-reports/{review_id}/resolve")
+def admin_resolve_review_reports(
+    review_id: int,
+    is_published: bool = Query(..., description="keep the review visible (true) or hide it (false)"),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin),
+):
+    """Decide on all open reports of a review: publish or hide it, and mark the reports resolved."""
+    r = db.query(Review).filter(Review.id == review_id).first()
+    if not r:
+        raise HTTPException(status_code=404, detail="Review not found")
+    r.is_published = is_published
+    db.query(ReviewReport).filter(ReviewReport.review_id == review_id).update({"is_resolved": True})
     db.commit()
     return {"ok": True, "is_published": is_published}
 

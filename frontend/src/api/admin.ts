@@ -12,6 +12,15 @@ export interface AdminReview {
   created_at: string;
 }
 
+export interface AdminReviewReport {
+  id: number;
+  reason: string;
+  details?: string;
+  is_resolved: boolean;
+  created_at: string;
+  review: { id: number; client_name: string; rating: number; comment?: string; is_published: boolean; provider_id: number };
+}
+
 export interface AdminService {
   id: number;
   name: string;
@@ -40,6 +49,9 @@ export const adminApi = {
   toggleReview: (id: number, is_published: boolean) =>
     apiClient.patch(`/admin/reviews/${id}`, null, { params: { is_published } }),
   deleteReview: (id: number) => apiClient.delete(`/admin/reviews/${id}`),
+  listReviewReports: () => apiClient.get<AdminReviewReport[]>("/admin/review-reports").then((r) => r.data),
+  resolveReviewReports: (reviewId: number, is_published: boolean) =>
+    apiClient.patch(`/admin/review-reports/${reviewId}/resolve`, null, { params: { is_published } }),
 
   // Services
   listServices: () => apiClient.get<AdminService[]>("/admin/services").then((r) => r.data),

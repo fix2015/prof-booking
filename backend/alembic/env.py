@@ -20,7 +20,7 @@ from app.modules.calendar.models import WorkSlot  # noqa: F401
 from app.modules.payments.models import Payment  # noqa: F401
 from app.modules.notifications.models import Notification  # noqa: F401
 from app.modules.invites.models import Invite  # noqa: F401
-from app.modules.reviews.models import Review  # noqa: F401
+from app.modules.reviews.models import Review, ReviewReport  # noqa: F401
 from app.modules.loyalty.models import LoyaltyProgram, DiscountRule  # noqa: F401
 from app.modules.invoices.models import Invoice, EarningsSplit  # noqa: F401
 

@@ -12,6 +12,8 @@ import { AppHeader } from "@/components/mobile/AppHeader";
 import { MobileAvatar } from "@/components/mobile/MobileAvatar";
 import { t } from "@/i18n";
 import type { Review } from "@/types";
+import { ReviewModeration } from "@/components/shared/ReviewModeration";
+import { useReviewModeration } from "@/hooks/useReviewModeration";
 
 const SAVED_KEY = "pb_saved";
 
@@ -90,6 +92,7 @@ export function ProviderProfilePage() {
     queryFn: () => servicesApi.listByProvider(id),
     enabled: !!id,
   });
+  const moderation = useReviewModeration();
   const { data: reviews = [] } = useQuery({
     queryKey: ["reviews", "provider", id],
     queryFn: () => reviewsApi.list({ provider_id: id }).then((r) => r.data),
@@ -312,7 +315,11 @@ export function ProviderProfilePage() {
         {reviews.length === 0 ? (
           <p className="ds-body text-ds-text-secondary px-ds-4 pb-ds-4">{t("reviews.be_first")}</p>
         ) : (
-          reviews.slice(0, 5).map((r) => <ReviewCard key={r.id} review={r} />)
+          reviews.filter((r) => !moderation.isHidden(r)).slice(0, 5).map((r) => (
+            <ReviewModeration key={r.id} review={r} moderation={moderation}>
+              <ReviewCard review={r} />
+            </ReviewModeration>
+          ))
         )}
       </div>
 

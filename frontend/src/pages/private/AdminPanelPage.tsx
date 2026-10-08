@@ -102,6 +102,21 @@ export function AdminPanelPage() {
     },
   });
 
+  const { data: reports = [] } = useQuery({
+    queryKey: ["admin", "review-reports"],
+    queryFn: () => adminApi.listReviewReports(),
+    enabled: tab === "reviews",
+  });
+
+  const resolveReports = useMutation({
+    mutationFn: ({ reviewId, is_published }: { reviewId: number; is_published: boolean }) =>
+      adminApi.resolveReviewReports(reviewId, is_published),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "review-reports"] });
+      qc.invalidateQueries({ queryKey: ["admin", "reviews"] });
+    },
+  });
+
   const deleteReview = useMutation({
     mutationFn: (id: number) => adminApi.deleteReview(id),
     onSuccess: () => {
@@ -296,6 +311,35 @@ export function AdminPanelPage() {
       )}
 
       {/* ── Reviews tab ───────────────────────────────────────────────────────── */}
+      {tab === "reviews" && reports.length > 0 && (
+        <Card className="mb-ds-4">
+          <CardHeader>
+            <CardTitle>Open reports ({reports.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col divide-y divide-ds-border">
+            {reports.map((rep) => (
+              <div key={rep.id} className="py-ds-2 flex items-start justify-between gap-ds-3">
+                <div className="min-w-0">
+                  <p className="ds-body-strong">
+                    <Badge variant="secondary" className="mr-ds-2">{rep.reason}</Badge>
+                    Review #{rep.review.id} by {rep.review.client_name} {"★".repeat(rep.review.rating)}
+                    {!rep.review.is_published && <span className="ds-caption text-ds-text-muted"> · hidden</span>}
+                  </p>
+                  <p className="ds-caption text-ds-text-secondary">{rep.review.comment || "—"}</p>
+                  {rep.details && <p className="ds-caption text-ds-text-muted">Reporter: {rep.details}</p>}
+                </div>
+                <div className="flex gap-ds-1 shrink-0">
+                  <Button size="sm" variant="outline" className="h-7 ds-caption" disabled={resolveReports.isPending}
+                    onClick={() => resolveReports.mutate({ reviewId: rep.review.id, is_published: true })}>Keep</Button>
+                  <Button size="sm" variant="destructive" className="h-7 ds-caption" disabled={resolveReports.isPending}
+                    onClick={() => resolveReports.mutate({ reviewId: rep.review.id, is_published: false })}>Hide</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {tab === "reviews" && (
         <Card>
           <CardHeader>

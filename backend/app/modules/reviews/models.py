@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime,
@@ -28,8 +29,28 @@ class Review(Base):
     professional = relationship("Professional", back_populates="reviews")
     provider = relationship("Provider", back_populates="reviews")
 
+    @property
+    def author_key(self) -> str:
+        """Stable, non-reversible id of the review's author — lets clients block a reviewer without exposing
+        their phone number."""
+        ident = (self.client_phone or "").strip() or (self.client_name or "").strip().lower()
+        return hashlib.sha256(ident.encode()).hexdigest()[:16]
+
     __table_args__ = (
         Index("ix_reviews_professional", "professional_id"),
         Index("ix_reviews_provider", "provider_id"),
         Index("ix_reviews_session", "session_id"),
     )
+
+
+class ReviewReport(Base):
+    """A user's report of an objectionable review (App Store guideline 1.2), handled by platform admins."""
+    __tablename__ = "review_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    review_id = Column(Integer, ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False, index=True)
+    reason = Column(String(30), nullable=False)
+    details = Column(Text, nullable=True)
+    reporter_key = Column(String(64), nullable=True)  # hashed IP / user id — one report per reporter counts
+    is_resolved = Column(Boolean, default=False, nullable=False, server_default="false")
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
