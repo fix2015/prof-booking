@@ -244,9 +244,9 @@ def cmd_reviews(db: Session, prof: Professional | None) -> str:
     if not prof:
         return "You don't have a professional profile."
     from app.modules.reviews.models import Review
+    from app.modules.reviews.services import visible
     reviews = (
-        db.query(Review)
-        .filter(Review.professional_id == prof.id, Review.is_published == True)  # noqa: E712
+        visible(db, db.query(Review).filter(Review.professional_id == prof.id))
         .order_by(Review.created_at.desc())
         .limit(5)
         .all()
@@ -255,11 +255,7 @@ def cmd_reviews(db: Session, prof: Professional | None) -> str:
         return "<b>⭐ Reviews</b>\n\nNo reviews yet."
 
     # Compute average
-    all_reviews = (
-        db.query(Review)
-        .filter(Review.professional_id == prof.id, Review.is_published == True)  # noqa: E712
-        .all()
-    )
+    all_reviews = visible(db, db.query(Review).filter(Review.professional_id == prof.id)).all()
     avg = sum(r.rating for r in all_reviews) / len(all_reviews) if all_reviews else 0
 
     lines = [f"<b>⭐ Reviews</b> — {avg:.1f}/5 ({len(all_reviews)} total)\n"]

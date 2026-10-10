@@ -8,7 +8,7 @@ export function TermsPage() {
     <div className="max-w-[768px] mx-auto min-h-screen bg-white">
       <AppHeader variant="back-title" title="Terms of Service" onBack={() => navigate(-1)} />
       <div className="px-5 py-6 prose prose-sm prose-gray max-w-none [&_h2]:text-[17px] [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-[15px] [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:text-[13px] [&_p]:leading-[20px] [&_p]:text-gray-600 [&_p]:mb-3 [&_li]:text-[13px] [&_li]:leading-[20px] [&_li]:text-gray-600 [&_ul]:mb-3 [&_ol]:mb-3">
-        <p className="!text-[11px] !text-gray-400 !mb-6">Last updated: April 5, 2026</p>
+        <p className="!text-[11px] !text-gray-400 !mb-6">Last updated: October 10, 2026</p>
 
         <h2>1. Acceptance of Terms</h2>
         <p>By accessing or using ProBook ("the Platform"), operated by ProBook Technologies ("we", "us", "our"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Platform.</p>
@@ -49,13 +49,23 @@ export function TermsPage() {
 
         <h2>6. User Content</h2>
         <h3>6.1 Reviews</h3>
-        <p>Clients may submit reviews including ratings, text comments, and up to 3 images. Reviews are public by default. Provider owners may moderate review visibility. You grant us a non-exclusive license to display your reviews on the Platform.</p>
+        <p>Clients may submit reviews including ratings, text comments, and up to 3 images. Reviews are public by default. Provider owners may moderate review visibility, and any signed-in user can report a review (see 6.4). You grant us a non-exclusive license to display your reviews on the Platform.</p>
 
         <h3>6.2 Uploaded Content</h3>
         <p>Professionals and providers may upload portfolio photos, avatars, and logos. You retain ownership of your content but grant us a license to store, display, and distribute it within the Platform. Content must not violate any laws or third-party rights.</p>
 
         <h3>6.3 Professional Notes</h3>
         <p>Professionals may create private notes and photos about clients for service continuity. These are visible only to the creating professional and their provider owner.</p>
+
+        <h3>6.4 Objectionable Content &amp; Reporting</h3>
+        <p>We have zero tolerance for objectionable content or abusive users. Reviews, comments, photos and other user-generated content must not contain spam, harassment, hate speech, threats, sexually explicit or violent material, personal data of others, or content that is defamatory or otherwise unlawful.</p>
+        <ul className="list-disc pl-5">
+          <li>Every review has a <strong>Report</strong> action. Choose a reason (spam, inappropriate content, harassment, or other) and optionally add a note.</li>
+          <li>Our moderation team reviews every report and acts on it <strong>within 24 hours</strong>: objectionable content is removed, and users who post it may be suspended or banned.</li>
+          <li>A review that several users report is hidden from public view automatically until a moderator has reviewed it.</li>
+          <li>You can also block a reviewer to hide all of their reviews from your view.</li>
+        </ul>
+        <p>To report content outside the app, email <a href="mailto:legal@probooking.app" className="text-ds-text-primary underline">legal@probooking.app</a>.</p>
 
         <h2>7. Prohibited Conduct</h2>
         <p>You agree not to:</p>
@@ -66,6 +76,7 @@ export function TermsPage() {
           <li>Upload malicious content or attempt to disrupt the service</li>
           <li>Scrape, harvest, or collect user data without authorization</li>
           <li>Impersonate another person or entity</li>
+          <li>Post objectionable content, harass other users, or abuse the reporting feature</li>
         </ul>
 
         <h2>8. Intellectual Property</h2>

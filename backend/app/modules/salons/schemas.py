@@ -66,6 +66,9 @@ class ProviderPublic(BaseModel):
     longitude: Optional[float]
     worker_payment_amount: float = 0.0
     is_demo: bool = False
+    # Aggregates over publicly visible reviews (published, not hidden by open reports)
+    avg_rating: Optional[float] = None
+    review_count: int = 0
 
     model_config = {"from_attributes": True}
 

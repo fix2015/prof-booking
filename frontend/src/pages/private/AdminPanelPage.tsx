@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, Users, Star, Settings, Trash2, Eye, EyeOff, Activity } from "lucide-react";
+import { Building2, Users, Star, Settings, Trash2, Eye, EyeOff, Activity, Flag } from "lucide-react";
 import { adminApi } from "@/api/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,15 @@ import { Spinner } from "@/components/ui/spinner";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { toast } from "@/hooks/useToast";
 import { cn } from "@/utils/cn";
+import { t, type TranslationKey } from "@/i18n";
+import type { ReviewReportReason } from "@/api/reviews";
+
+const REPORT_REASON_KEYS: Record<ReviewReportReason, TranslationKey> = {
+  spam: "review.report.reason.spam",
+  inappropriate: "review.report.reason.inappropriate",
+  harassment: "review.report.reason.harassment",
+  other: "review.report.reason.other",
+};
 
 type Tab = "providers" | "professionals" | "reviews" | "services";
 
@@ -109,11 +118,12 @@ export function AdminPanelPage() {
   });
 
   const resolveReports = useMutation({
-    mutationFn: ({ reviewId, is_published }: { reviewId: number; is_published: boolean }) =>
-      adminApi.resolveReviewReports(reviewId, is_published),
+    mutationFn: ({ reportId, review_published }: { reportId: number; review_published: boolean }) =>
+      adminApi.updateReviewReport(reportId, { status: "resolved", review_published }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "review-reports"] });
       qc.invalidateQueries({ queryKey: ["admin", "reviews"] });
+      toast({ title: t("review.report.admin.resolved"), variant: "success" });
     },
   });
 
@@ -311,28 +321,42 @@ export function AdminPanelPage() {
       )}
 
       {/* ── Reviews tab ───────────────────────────────────────────────────────── */}
-      {tab === "reviews" && reports.length > 0 && (
+      {tab === "reviews" && (
         <Card className="mb-ds-4">
           <CardHeader>
-            <CardTitle>Open reports ({reports.length})</CardTitle>
+            <CardTitle className="flex items-center gap-ds-2">
+              <Flag className="h-4 w-4" aria-hidden /> {t("review.report.admin.title", { count: reports.length })}
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col divide-y divide-ds-border">
+            {reports.length === 0 && <p className="ds-body text-ds-text-secondary">{t("review.report.admin.empty")}</p>}
             {reports.map((rep) => (
-              <div key={rep.id} className="py-ds-2 flex items-start justify-between gap-ds-3">
+              <div key={rep.id} className="py-ds-2 flex flex-col sm:flex-row sm:items-start justify-between gap-ds-3">
                 <div className="min-w-0">
-                  <p className="ds-body-strong">
-                    <Badge variant="secondary" className="mr-ds-2">{rep.reason}</Badge>
-                    Review #{rep.review.id} by {rep.review.client_name} {"★".repeat(rep.review.rating)}
-                    {!rep.review.is_published && <span className="ds-caption text-ds-text-muted"> · hidden</span>}
+                  <p className="ds-body-strong flex flex-wrap items-center gap-ds-2">
+                    <Badge variant="secondary">{t(REPORT_REASON_KEYS[rep.reason])}</Badge>
+                    <span>#{rep.review.id} · {rep.review.client_name} {"★".repeat(rep.review.rating)}</span>
+                    {(rep.review.hidden_by_reports || !rep.review.is_published) && (
+                      <span className="ds-caption text-ds-text-muted">
+                        {t("review.report.admin.hidden", { count: rep.review.open_reports })}
+                      </span>
+                    )}
                   </p>
                   <p className="ds-caption text-ds-text-secondary">{rep.review.comment || "—"}</p>
-                  {rep.details && <p className="ds-caption text-ds-text-muted">Reporter: {rep.details}</p>}
+                  {rep.note && <p className="ds-caption text-ds-text-primary">“{rep.note}”</p>}
+                  <p className="ds-caption text-ds-text-muted">
+                    {t("review.report.admin.reporter", { email: rep.reporter_email ?? "—" })} · {new Date(rep.created_at).toLocaleString()}
+                  </p>
                 </div>
                 <div className="flex gap-ds-1 shrink-0">
-                  <Button size="sm" variant="outline" className="h-7 ds-caption" disabled={resolveReports.isPending}
-                    onClick={() => resolveReports.mutate({ reviewId: rep.review.id, is_published: true })}>Keep</Button>
-                  <Button size="sm" variant="destructive" className="h-7 ds-caption" disabled={resolveReports.isPending}
-                    onClick={() => resolveReports.mutate({ reviewId: rep.review.id, is_published: false })}>Hide</Button>
+                  <Button size="sm" variant="outline" className="ds-caption" disabled={resolveReports.isPending}
+                    onClick={() => resolveReports.mutate({ reportId: rep.id, review_published: true })}>
+                    {t("review.report.admin.keep")}
+                  </Button>
+                  <Button size="sm" variant="destructive" className="ds-caption" disabled={resolveReports.isPending}
+                    onClick={() => resolveReports.mutate({ reportId: rep.id, review_published: false })}>
+                    {t("review.report.admin.hide")}
+                  </Button>
                 </div>
               </div>
             ))}

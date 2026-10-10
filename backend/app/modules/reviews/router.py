@@ -1,20 +1,19 @@
-import hashlib
-
-from fastapi import APIRouter, Depends, Query, HTTPException, Request
+from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.database import get_db
-from app.dependencies import get_current_owner
-from app.modules.reviews.models import Review, ReviewReport
-from app.modules.reviews.schemas import ReviewCreate, ReviewResponse, ReviewStats, ReviewReportCreate
+from app.dependencies import get_current_owner, get_current_user
+from app.modules.reviews.models import Review, ReviewReport, ReviewReportReason
+from app.modules.reviews.schemas import (
+    ReviewCreate, ReviewResponse, ReviewStats, ReviewReportCreate, ReviewReportResponse,
+)
+from app.modules.reviews.services import visible
 from app.modules.users.models import User
 from app.modules.masters.models import ProfessionalProvider, ProfessionalStatus
 
 router = APIRouter()
-
-# A review is hidden from everyone once this many different people have reported it; admins can re-publish it.
-AUTO_HIDE_REPORTS = 3
 
 
 @router.post("/", response_model=ReviewResponse, status_code=201)
@@ -92,8 +91,8 @@ def list_reviews(
     limit: int = Query(50, le=200),
     db: Session = Depends(get_db),
 ):
-    """Public endpoint — list published reviews."""
-    q = db.query(Review).filter(Review.is_published == True)  # noqa: E712
+    """Public endpoint — list published reviews (reviews hidden by open reports are left out)."""
+    q = visible(db, db.query(Review))
     if professional_id:
         q = q.filter(Review.professional_id == professional_id)
     if provider_id:
@@ -106,10 +105,7 @@ def professional_review_stats(
     professional_id: int,
     db: Session = Depends(get_db),
 ):
-    reviews = db.query(Review).filter(
-        Review.professional_id == professional_id,
-        Review.is_published == True,  # noqa: E712
-    ).all()
+    reviews = visible(db, db.query(Review).filter(Review.professional_id == professional_id)).all()
 
     if not reviews:
         return ReviewStats(
@@ -148,32 +144,36 @@ def toggle_review_publish(
     return {"ok": True}
 
 
-@router.post("/{review_id}/report", status_code=201)
+@router.post("/{review_id}/report", response_model=ReviewReportResponse, status_code=201)
 def report_review(
     review_id: int,
     data: ReviewReportCreate,
-    request: Request,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Public endpoint — report an objectionable review (App Store guideline 1.2). Admins review the reports;
-    after AUTO_HIDE_REPORTS reports from different people the review is unpublished until an admin decides."""
+    """Any signed-in user reports an objectionable review (App Store guideline 1.2). One report per user and
+    review (409 on a repeat). Platform admins handle reports within 24 hours; a review with 3+ open reports is
+    hidden from public endpoints and rating aggregates until its reports are resolved."""
     review = db.query(Review).filter(Review.id == review_id).first()
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
+    duplicate = HTTPException(status_code=409, detail="You have already reported this review")
+    if db.query(ReviewReport.id).filter(
+        ReviewReport.review_id == review_id, ReviewReport.reporter_user_id == current_user.id
+    ).first():
+        raise duplicate
 
-    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or (request.client.host if request.client else "")
-    reporter_key = hashlib.sha256(ip.encode()).hexdigest() if ip else None
-    already = reporter_key and db.query(ReviewReport).filter(
-        ReviewReport.review_id == review_id, ReviewReport.reporter_key == reporter_key
-    ).first()
-    if not already:
-        db.add(ReviewReport(review_id=review_id, reason=data.reason, details=data.details, reporter_key=reporter_key))
-        db.flush()
-        reporters = db.query(ReviewReport.reporter_key).filter(
-            ReviewReport.review_id == review_id, ReviewReport.is_resolved == False  # noqa: E712
-        ).distinct().count()
-        if reporters >= AUTO_HIDE_REPORTS:
-            review.is_published = False
+    report = ReviewReport(
+        review_id=review_id,
+        reporter_user_id=current_user.id,
+        reason=ReviewReportReason(data.reason),
+        note=(data.note or "").strip() or None,
+    )
+    db.add(report)
+    try:
         db.commit()
-
-    return {"ok": True}
+    except IntegrityError:
+        db.rollback()
+        raise duplicate
+    db.refresh(report)
+    return report

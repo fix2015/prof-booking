@@ -1,5 +1,6 @@
 import apiClient from "./client";
 import type { Provider, User } from "@/types";
+import type { ReviewReportReason } from "./reviews";
 
 export interface AdminReview {
   id: number;
@@ -14,11 +15,23 @@ export interface AdminReview {
 
 export interface AdminReviewReport {
   id: number;
-  reason: string;
-  details?: string;
-  is_resolved: boolean;
+  review_id: number;
+  reason: ReviewReportReason;
+  note?: string | null;
+  status: "open" | "resolved";
   created_at: string;
-  review: { id: number; client_name: string; rating: number; comment?: string; is_published: boolean; provider_id: number };
+  reporter_user_id?: number | null;
+  reporter_email?: string | null;
+  review: {
+    id: number;
+    client_name: string;
+    rating: number;
+    comment?: string;
+    is_published: boolean;
+    provider_id: number;
+    open_reports: number;
+    hidden_by_reports: boolean;
+  };
 }
 
 export interface AdminService {
@@ -49,9 +62,11 @@ export const adminApi = {
   toggleReview: (id: number, is_published: boolean) =>
     apiClient.patch(`/admin/reviews/${id}`, null, { params: { is_published } }),
   deleteReview: (id: number) => apiClient.delete(`/admin/reviews/${id}`),
-  listReviewReports: () => apiClient.get<AdminReviewReport[]>("/admin/review-reports").then((r) => r.data),
-  resolveReviewReports: (reviewId: number, is_published: boolean) =>
-    apiClient.patch(`/admin/review-reports/${reviewId}/resolve`, null, { params: { is_published } }),
+  listReviewReports: (status: "open" | "resolved" | "all" = "open") =>
+    apiClient.get<AdminReviewReport[]>("/admin/review-reports", { params: { status } }).then((r) => r.data),
+  /** Resolving a report resolves all open reports of its review; review_published keeps/hides the review. */
+  updateReviewReport: (reportId: number, data: { status: "open" | "resolved"; review_published?: boolean }) =>
+    apiClient.patch(`/admin/review-reports/${reportId}`, data),
 
   // Services
   listServices: () => apiClient.get<AdminService[]>("/admin/services").then((r) => r.data),

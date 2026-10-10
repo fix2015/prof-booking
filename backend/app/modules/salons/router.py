@@ -11,6 +11,7 @@ from app.modules.salons.services import (
     create_provider_for_owner, get_owner_provider,
 )
 from app.modules.users.models import User
+from app.modules.reviews.services import attach_ratings
 
 router = APIRouter()
 
@@ -130,7 +131,7 @@ def search_providers(
         query = query.order_by(Provider.worker_payment_amount.asc())
     elif sort == "price_desc":
         query = query.order_by(Provider.worker_payment_amount.desc())
-    return query.offset(skip).limit(limit).all()
+    return attach_ratings(db, query.offset(skip).limit(limit).all())
 
 
 @router.get("/categories", response_model=List[str])
@@ -162,12 +163,12 @@ def get_public_providers(
     db: Session = Depends(get_db),
 ):
     """Public endpoint — lists all active service providers for client booking."""
-    return list_providers(db, skip=skip, limit=limit, search=search)
+    return attach_ratings(db, list_providers(db, skip=skip, limit=limit, search=search))
 
 
 @router.get("/public/{provider_id}", response_model=ProviderPublic)
 def get_public_provider(provider_id: int, db: Session = Depends(get_db)):
-    return get_provider_or_404(db, provider_id)
+    return attach_ratings(db, get_provider_or_404(db, provider_id))
 
 
 @router.get("/my", response_model=ProviderResponse)

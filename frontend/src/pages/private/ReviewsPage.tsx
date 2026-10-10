@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/hooks/useToast";
 import type { Review } from "@/types";
+import { ReportReviewButton } from "@/components/shared/ReviewModeration";
 
 export function ReviewsPage() {
   const { role } = useAuthContext();
@@ -226,6 +227,11 @@ function ReviewRow({
 
             {review.comment && (
               <p className="ds-body text-ds-text-secondary">{review.comment}</p>
+            )}
+            {onToggle && (
+              <div className="mt-ds-2">
+                <ReportReviewButton review={review} />
+              </div>
             )}
           </div>
 

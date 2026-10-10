@@ -53,6 +53,9 @@ export function LoginPage() {
 
   const initialTab = (searchParams.get("tab") as Tab | null) ?? "signin";
   const inviteToken = searchParams.get("invite") ?? undefined;
+  // Return to where the user came from (e.g. "Sign in to report a review"); only same-app relative paths.
+  const nextParam = searchParams.get("next");
+  const next = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
 
   const tabs = getTabs();
   const [tab, setTab] = useState<Tab>(tabs.some((t) => t.value === initialTab) ? initialTab : "signin");
@@ -97,7 +100,7 @@ export function LoginPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (isAuthenticated) return <Navigate to={currentRole === "client" ? "/me" : "/dashboard"} replace />;
+  if (isAuthenticated) return <Navigate to={next ?? (currentRole === "client" ? "/me" : "/dashboard")} replace />;
 
   const inputCls =
     "w-full h-[48px] px-ds-3 bg-ds-bg-primary border border-ds-border rounded-ds-lg ds-body text-ds-text-primary placeholder:text-ds-text-disabled outline-none focus:border-ds-interactive";
@@ -121,7 +124,7 @@ export function LoginPage() {
       },
       {
         onSuccess: (tokens) => {
-          navigate(tokens.role === "client" ? "/me" : "/dashboard", { replace: true });
+          navigate(next ?? (tokens.role === "client" ? "/me" : "/dashboard"), { replace: true });
         },
       }
     );
@@ -132,7 +135,7 @@ export function LoginPage() {
     if (!canClient) return;
     registerClient.mutate(
       { email: clientForm.email, phone: clientForm.phone, password: clientForm.password, name: clientForm.name },
-      { onSuccess: () => { clearGuestSession(); navigate("/me"); } }
+      { onSuccess: () => { clearGuestSession(); navigate(next ?? "/me"); } }
     );
   }
 

@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from typing import Optional
+from sqlalchemy import func, text
+from typing import Literal, Optional
 
 from app.database import get_db
 from app.dependencies import get_current_admin
 from app.modules.users.models import User, UserRole
 from app.modules.salons.models import Provider
-from app.modules.reviews.models import Review, ReviewReport
+from app.modules.reviews.models import Review, ReviewReport, ReviewReportStatus
+from app.modules.reviews.schemas import ReviewReportUpdate
+from app.modules.reviews.services import HIDE_THRESHOLD
 from app.modules.services.models import Service
 
 router = APIRouter()
@@ -148,42 +150,68 @@ def admin_toggle_review(
 
 @router.get("/review-reports")
 def admin_list_review_reports(
-    include_resolved: bool = Query(False),
+    status: Literal["open", "resolved", "all"] = Query("open"),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ):
-    """Reported reviews (App Store guideline 1.2), newest first, with the review they refer to."""
-    q = db.query(ReviewReport, Review).join(Review, Review.id == ReviewReport.review_id)
-    if not include_resolved:
-        q = q.filter(ReviewReport.is_resolved == False)  # noqa: E712
+    """Reported reviews (App Store guideline 1.2), newest first, with the review they refer to and how many open
+    reports it has (a review with HIDE_THRESHOLD+ open reports is hidden from the public)."""
+    open_counts = dict(
+        db.query(ReviewReport.review_id, func.count(ReviewReport.id))
+        .filter(ReviewReport.status == ReviewReportStatus.OPEN)
+        .group_by(ReviewReport.review_id)
+        .all()
+    )
+    q = (
+        db.query(ReviewReport, Review, User.email)
+        .join(Review, Review.id == ReviewReport.review_id)
+        .outerjoin(User, User.id == ReviewReport.reporter_user_id)
+    )
+    if status != "all":
+        q = q.filter(ReviewReport.status == ReviewReportStatus(status))
     return [
         {
-            "id": rep.id, "reason": rep.reason, "details": rep.details, "is_resolved": rep.is_resolved,
-            "created_at": rep.created_at,
+            "id": rep.id, "review_id": rev.id, "reason": rep.reason.value, "note": rep.note,
+            "status": rep.status.value, "created_at": rep.created_at,
+            "reporter_user_id": rep.reporter_user_id, "reporter_email": email,
             "review": {
                 "id": rev.id, "client_name": rev.client_name, "rating": rev.rating, "comment": rev.comment,
                 "is_published": rev.is_published, "provider_id": rev.provider_id,
+                "open_reports": open_counts.get(rev.id, 0),
+                "hidden_by_reports": open_counts.get(rev.id, 0) >= HIDE_THRESHOLD,
             },
         }
-        for rep, rev in q.order_by(ReviewReport.created_at.desc()).limit(500).all()
+        for rep, rev, email in q.order_by(ReviewReport.created_at.desc()).limit(500).all()
     ]
 
 
-@router.patch("/review-reports/{review_id}/resolve")
-def admin_resolve_review_reports(
-    review_id: int,
-    is_published: bool = Query(..., description="keep the review visible (true) or hide it (false)"),
+@router.patch("/review-reports/{report_id}")
+def admin_update_review_report(
+    report_id: int,
+    data: ReviewReportUpdate,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ):
-    """Decide on all open reports of a review: publish or hide it, and mark the reports resolved."""
-    r = db.query(Review).filter(Review.id == review_id).first()
-    if not r:
-        raise HTTPException(status_code=404, detail="Review not found")
-    r.is_published = is_published
-    db.query(ReviewReport).filter(ReviewReport.review_id == review_id).update({"is_resolved": True})
+    """Resolve (or re-open) a report. Resolving also resolves the other open reports of the same review, so the
+    review is visible again unless review_published=false hides it."""
+    rep = db.query(ReviewReport).filter(ReviewReport.id == report_id).first()
+    if not rep:
+        raise HTTPException(status_code=404, detail="Report not found")
+    new_status = ReviewReportStatus(data.status)
+    if new_status == ReviewReportStatus.RESOLVED:
+        db.query(ReviewReport).filter(
+            ReviewReport.review_id == rep.review_id, ReviewReport.status == ReviewReportStatus.OPEN
+        ).update({ReviewReport.status: ReviewReportStatus.RESOLVED}, synchronize_session=False)
+    rep.status = new_status
+    review = db.query(Review).filter(Review.id == rep.review_id).first()
+    if review is not None and data.review_published is not None:
+        review.is_published = data.review_published
     db.commit()
-    return {"ok": True, "is_published": is_published}
+    db.refresh(rep)
+    return {
+        "id": rep.id, "review_id": rep.review_id, "status": rep.status.value,
+        "review_published": review.is_published if review is not None else None,
+    }
 
 
 @router.delete("/reviews/{review_id}", status_code=204)

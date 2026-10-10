@@ -1,8 +1,9 @@
+import enum
 import hashlib
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime,
-    ForeignKey, Index, Text, JSON,
+    ForeignKey, Index, Text, JSON, UniqueConstraint, Enum as SAEnum,
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -43,14 +44,41 @@ class Review(Base):
     )
 
 
+class ReviewReportReason(str, enum.Enum):
+    SPAM = "spam"
+    INAPPROPRIATE = "inappropriate"
+    HARASSMENT = "harassment"
+    OTHER = "other"
+
+
+class ReviewReportStatus(str, enum.Enum):
+    OPEN = "open"
+    RESOLVED = "resolved"
+
+
+def _values(e):
+    return [m.value for m in e]
+
+
 class ReviewReport(Base):
-    """A user's report of an objectionable review (App Store guideline 1.2), handled by platform admins."""
+    """A signed-in user's report of an objectionable review (App Store guideline 1.2), handled by platform admins.
+    A review with HIDE_THRESHOLD or more open reports is hidden from public endpoints until the reports are resolved."""
     __tablename__ = "review_reports"
 
     id = Column(Integer, primary_key=True, index=True)
     review_id = Column(Integer, ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False, index=True)
-    reason = Column(String(30), nullable=False)
-    details = Column(Text, nullable=True)
-    reporter_key = Column(String(64), nullable=True)  # hashed IP / user id — one report per reporter counts
-    is_resolved = Column(Boolean, default=False, nullable=False, server_default="false")
+    # Nullable only for anonymous reports filed before reporting required sign-in (migration 0020).
+    reporter_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
+    reason = Column(
+        SAEnum(ReviewReportReason, name="review_report_reason", values_callable=_values), nullable=False,
+    )
+    note = Column(Text, nullable=True)
+    status = Column(
+        SAEnum(ReviewReportStatus, name="review_report_status", values_callable=_values),
+        nullable=False, default=ReviewReportStatus.OPEN, server_default=ReviewReportStatus.OPEN.value,
+    )
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("review_id", "reporter_user_id", name="uq_review_reports_review_reporter"),
+    )

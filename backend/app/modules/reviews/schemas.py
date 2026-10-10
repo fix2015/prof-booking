@@ -32,8 +32,27 @@ class ReviewResponse(BaseModel):
 
 
 class ReviewReportCreate(BaseModel):
-    reason: Literal["spam", "offensive", "fake", "other"]
-    details: Optional[str] = Field(None, max_length=500)
+    reason: Literal["spam", "inappropriate", "harassment", "other"]
+    note: Optional[str] = Field(None, max_length=1000)
+
+
+class ReviewReportResponse(BaseModel):
+    id: int
+    review_id: int
+    reporter_user_id: Optional[int]
+    reason: str
+    note: Optional[str]
+    status: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ReviewReportUpdate(BaseModel):
+    """Admin decision on a report. Resolving also resolves the other open reports of the same review;
+    review_published optionally keeps (true) or hides (false) the review itself."""
+    status: Literal["open", "resolved"]
+    review_published: Optional[bool] = None
 
 
 class ReviewStats(BaseModel):
