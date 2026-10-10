@@ -60,6 +60,14 @@ def get_session_or_404(db: DBSession, session_id: int) -> Session:
 
 
 def update_session(db: DBSession, session: Session, data: SessionUpdate) -> Session:
+    if data.professional_id is not None and data.professional_id != session.professional_id:
+        # Reassignment must stay inside the session's provider.
+        from app.modules.masters.models import ProfessionalProvider
+        if not db.query(ProfessionalProvider.id).filter(
+            ProfessionalProvider.professional_id == data.professional_id,
+            ProfessionalProvider.provider_id == session.provider_id,
+        ).first():
+            raise HTTPException(status_code=404, detail="Professional not found")
     for field, value in data.model_dump(exclude_none=True).items():
         setattr(session, field, value)
     if data.starts_at and data.duration_minutes:

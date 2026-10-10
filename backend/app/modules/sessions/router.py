@@ -99,7 +99,9 @@ def get_session(
     current_user: User = Depends(get_current_professional_or_owner),
     db: DBSession = Depends(get_db),
 ):
-    return get_session_or_404(db, session_id)
+    session = get_session_or_404(db, session_id)
+    assert_can_manage_session(db, current_user, session)
+    return session
 
 
 @router.patch("/{session_id}", response_model=SessionResponse)
@@ -110,6 +112,7 @@ def update_session_endpoint(
     db: DBSession = Depends(get_db),
 ):
     session = get_session_or_404(db, session_id)
+    assert_can_manage_session(db, current_user, session)
     return update_session(db, session, data)
 
 
@@ -121,6 +124,7 @@ def post_earnings(
     db: DBSession = Depends(get_db),
 ):
     session = get_session_or_404(db, session_id)
+    assert_can_manage_session(db, current_user, session)
     return record_earnings(db, session, data)
 
 
@@ -132,6 +136,7 @@ def get_confirmation_pdf(
 ):
     """Download a PDF booking confirmation for a session."""
     session = get_session_or_404(db, session_id)
+    assert_can_manage_session(db, current_user, session)
     buf = build_confirmation_pdf(session)
     return StreamingResponse(
         buf,
