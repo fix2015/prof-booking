@@ -281,6 +281,10 @@ export interface WorkerAnalytics {
   professional_earnings: number;
   provider_earnings: number;
   professional_percentage: number;
+  no_show_count?: number;
+  late_cancel_count?: number;
+  /** % of finished appointments missed (no-show or late cancel) */
+  missed_rate?: number;
 }
 
 export interface ProfessionalAnalytics {

@@ -98,6 +98,8 @@ def get_provider_report(db: Session, provider_id: int, date_from: date, date_to:
         total_sessions=len(all_sessions),
         completed_sessions=len(completed),
         cancelled_sessions=len(cancelled),
+        no_show_sessions=sum(1 for s in all_sessions if s.status == SessionStatus.NO_SHOW),
+        late_cancel_sessions=sum(1 for s in cancelled if s.late_cancelled),
         total_revenue=total_revenue,
         total_deposits=total_deposits,
     )
@@ -211,6 +213,8 @@ def export_provider_report_xlsx(report: ProviderReportResponse) -> io.BytesIO:
         ("Total Sessions", report.summary.total_sessions),
         ("Completed Sessions", report.summary.completed_sessions),
         ("Cancelled Sessions", report.summary.cancelled_sessions),
+        ("Late Cancellations", report.summary.late_cancel_sessions),
+        ("No-shows", report.summary.no_show_sessions),
         ("Total Revenue", report.summary.total_revenue),
         ("Total Deposits", report.summary.total_deposits),
     ]

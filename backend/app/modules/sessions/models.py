@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, DateTime, Float, ForeignKey,
+    Column, Integer, String, DateTime, Float, ForeignKey, Boolean,
     Index, Text, Enum as SAEnum,
 )
 from sqlalchemy.orm import relationship
@@ -48,6 +48,8 @@ class Session(Base):
 
     # Metadata
     cancellation_reason = Column(Text, nullable=True)
+    # Owner/professional flagged a cancellation as "late" (status stays CANCELLED); counted in analytics
+    late_cancelled = Column(Boolean, default=False, nullable=False, server_default="false")
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

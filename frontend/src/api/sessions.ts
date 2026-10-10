@@ -14,7 +14,28 @@ export interface SessionFilters {
   limit?: number;
 }
 
+export interface AgendaItem {
+  id: number;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  late_cancelled: boolean;
+  client_name: string;
+  client_phone: string;
+  client_notes?: string | null;
+  service_name?: string | null;
+  professional_id?: number | null;
+  professional_name?: string | null;
+  price?: number | null;
+}
+
 export const sessionsApi = {
+  /** Today view: the owner's provider (or the professional's own) appointments on a local date. */
+  agenda: (date: string) => apiClient.get<AgendaItem[]>("/sessions/agenda", { params: { date } }).then((r) => r.data),
+
+  setAttendance: (id: number, outcome: "attended" | "no_show" | "late_cancel") =>
+    apiClient.post<Session>(`/sessions/${id}/attendance`, { outcome }).then((r) => r.data),
+
   list: (filters: SessionFilters = {}) =>
     apiClient.get<Session[]>("/sessions/", { params: filters }).then((r) => r.data),
 

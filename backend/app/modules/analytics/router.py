@@ -49,7 +49,11 @@ def owner_workers_analytics(
             SessionModel.starts_at <= date_to,
         ).all()
 
-        completed = [s for s in sessions if (s.status.value if hasattr(s.status, 'value') else str(s.status)).upper() == "COMPLETED"]
+        def _st(s) -> str:
+            return (s.status.value if hasattr(s.status, 'value') else str(s.status)).upper()
+        completed = [s for s in sessions if _st(s) == "COMPLETED"]
+        no_shows = sum(1 for s in sessions if _st(s) == "NO_SHOW")
+        late_cancels = sum(1 for s in sessions if _st(s) == "CANCELLED" and s.late_cancelled)
         total_minutes = sum(s.duration_minutes for s in completed)
         total_revenue = sum(s.price or 0 for s in completed)
         professional_pct = pp.payment_amount or 70.0  # treat as percentage if <= 100
@@ -67,6 +71,10 @@ def owner_workers_analytics(
             "professional_earnings": round(professional_earnings, 2),
             "provider_earnings": round(total_revenue - professional_earnings, 2),
             "professional_percentage": professional_pct,
+            "no_show_count": no_shows,
+            "late_cancel_count": late_cancels,
+            # share of finished appointments the client missed (no-show or late cancel)
+            "missed_rate": round((no_shows + late_cancels) / max(len(completed) + no_shows + late_cancels, 1) * 100, 1),
         })
 
     return result

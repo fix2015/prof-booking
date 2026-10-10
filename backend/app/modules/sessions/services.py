@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session as DBSession
 from fastapi import HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from typing import Optional, List
 import io
 
@@ -242,3 +242,69 @@ def build_confirmation_pdf(session: Session) -> io.BytesIO:
     doc.build(story)
     buf.seek(0)
     return buf
+
+
+def assert_can_manage_session(db: DBSession, user, session: Session) -> None:
+    """Platform admin, the owner of the session's provider, or the session's professional."""
+    from app.modules.users.models import UserRole
+    from app.modules.salons.models import ProviderOwner
+    from app.modules.masters.models import Professional
+
+    if user.role == UserRole.PLATFORM_ADMIN:
+        return
+    if user.role == UserRole.PROVIDER_OWNER and db.query(ProviderOwner.id).filter(
+        ProviderOwner.user_id == user.id, ProviderOwner.provider_id == session.provider_id
+    ).first():
+        return
+    if session.professional_id and db.query(Professional.id).filter(
+        Professional.id == session.professional_id, Professional.user_id == user.id
+    ).first():
+        return
+    raise HTTPException(status_code=403, detail="Not allowed to manage this session")
+
+
+def set_attendance(db: DBSession, session: Session, outcome: str) -> Session:
+    """Mark a no-show / late cancellation (or clear it). Both are counted by owner analytics and reports."""
+    if outcome == "no_show":
+        session.status = SessionStatus.NO_SHOW
+        session.late_cancelled = False
+    elif outcome == "late_cancel":
+        session.status = SessionStatus.CANCELLED
+        session.late_cancelled = True
+        if not session.cancellation_reason:
+            session.cancellation_reason = "Late cancellation"
+    else:  # attended — undo a no-show / late-cancel flag
+        if session.status in (SessionStatus.NO_SHOW, SessionStatus.CANCELLED):
+            session.status = SessionStatus.CONFIRMED
+        if session.late_cancelled and session.cancellation_reason == "Late cancellation":
+            session.cancellation_reason = None
+        session.late_cancelled = False
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+def get_agenda(db: DBSession, day, provider_id: Optional[int] = None, professional_id: Optional[int] = None) -> list:
+    """All appointments on `day` (every status, so no-shows/late cancels can be marked), earliest first."""
+    from sqlalchemy.orm import joinedload
+
+    start = datetime.combine(day, time.min)
+    q = (
+        db.query(Session)
+        .options(joinedload(Session.service), joinedload(Session.professional))
+        .filter(Session.starts_at >= start, Session.starts_at < start + timedelta(days=1))
+    )
+    if provider_id is not None:
+        q = q.filter(Session.provider_id == provider_id)
+    if professional_id is not None:
+        q = q.filter(Session.professional_id == professional_id)
+    return [
+        {
+            "id": s.id, "starts_at": s.starts_at, "ends_at": s.ends_at, "status": s.status,
+            "late_cancelled": bool(s.late_cancelled), "client_name": s.client_name, "client_phone": s.client_phone,
+            "client_notes": s.client_notes, "service_name": s.service.name if s.service else None,
+            "professional_id": s.professional_id,
+            "professional_name": s.professional.name if s.professional else None, "price": s.price,
+        }
+        for s in q.order_by(Session.starts_at).all()
+    ]

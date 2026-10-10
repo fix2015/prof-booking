@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Users, Settings, Settings2, BarChart2,
   Scissors, LogOut, Shield, Bell, Star, FileText, TrendingUp,
-  Search, Sparkles, X, User, BookUser,
+  Search, Sparkles, X, User, BookUser, CalendarClock,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +19,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { labelKey: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["professional", "provider_owner"] },
+  { labelKey: "nav.today", href: "/today", icon: CalendarClock, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.calendar", href: "/calendar", icon: Calendar, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.sessions", href: "/sessions", icon: Scissors, roles: ["professional", "provider_owner"] },
   { labelKey: "nav.clients", href: "/clients", icon: BookUser, roles: ["professional", "provider_owner", "platform_admin"] },

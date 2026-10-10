@@ -2,15 +2,17 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session as DBSession
 from typing import List, Optional
-from datetime import datetime
+from datetime import date, datetime
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_current_professional_or_owner
-from app.modules.sessions.schemas import SessionUpdate, SessionResponse, SessionSummary, EarningsInput
+from app.modules.sessions.schemas import (
+    SessionUpdate, SessionResponse, SessionSummary, EarningsInput, AttendanceUpdate, AgendaItem,
+)
 from app.modules.sessions.services import (
     get_session_or_404, update_session,
     list_sessions, record_earnings, get_professional_today_sessions,
-    build_confirmation_pdf,
+    build_confirmation_pdf, assert_can_manage_session, set_attendance, get_agenda,
 )
 from app.modules.sessions.models import SessionStatus
 from app.modules.users.models import User, UserRole
@@ -29,6 +31,41 @@ def my_today_sessions(
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Professional profile not found")
     return get_professional_today_sessions(db, professional.id)
+
+
+@router.get("/agenda", response_model=List[AgendaItem])
+def agenda(
+    day: date = Query(..., alias="date", description="Local date of the Today view (YYYY-MM-DD)"),
+    current_user: User = Depends(get_current_professional_or_owner),
+    db: DBSession = Depends(get_db),
+):
+    """Today view: an owner sees their provider's day, a professional their own day (all statuses)."""
+    from fastapi import HTTPException
+    if current_user.role == UserRole.PROFESSIONAL:
+        professional = get_professional_by_user_id(db, current_user.id)
+        if not professional:
+            raise HTTPException(status_code=404, detail="Professional profile not found")
+        return get_agenda(db, day, professional_id=professional.id)
+    if current_user.role == UserRole.PROVIDER_OWNER:
+        from app.modules.salons.models import ProviderOwner
+        ownership = db.query(ProviderOwner).filter(ProviderOwner.user_id == current_user.id).first()
+        if not ownership:
+            return []
+        return get_agenda(db, day, provider_id=ownership.provider_id)
+    return get_agenda(db, day)
+
+
+@router.post("/{session_id}/attendance", response_model=SessionResponse)
+def update_attendance(
+    session_id: int,
+    data: AttendanceUpdate,
+    current_user: User = Depends(get_current_professional_or_owner),
+    db: DBSession = Depends(get_db),
+):
+    """Mark a booking as no-show / late cancellation, or back to attended. Feeds owner analytics."""
+    session = get_session_or_404(db, session_id)
+    assert_can_manage_session(db, current_user, session)
+    return set_attendance(db, session, data.outcome)
 
 
 @router.get("/", response_model=List[SessionSummary])

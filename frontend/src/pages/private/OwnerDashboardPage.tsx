@@ -1,4 +1,5 @@
-import { DollarSign, Scissors, Users, TrendingUp, Search } from "lucide-react";
+import { DollarSign, Scissors, Users, TrendingUp, Search, CalendarClock } from "lucide-react";
+import { t } from "@/i18n";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { SessionsList } from "@/components/dashboard/SessionsList";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
@@ -102,6 +103,11 @@ export function OwnerDashboardPage() {
       {report && <RevenueChart data={report.daily_revenue} />}
 
       {/* Today's sessions */}
+      <div className="flex justify-end">
+        <Link to="/today" className="ds-label text-ds-interactive inline-flex items-center gap-ds-1">
+          <CalendarClock className="h-4 w-4" aria-hidden /> {t("today.open")}
+        </Link>
+      </div>
       <SessionsList
         sessions={todaySessions ?? []}
         title="Today's Sessions"

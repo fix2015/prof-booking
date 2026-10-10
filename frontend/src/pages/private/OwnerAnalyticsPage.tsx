@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { formatCurrency } from "@/utils/formatters";
 import type { WorkerAnalytics } from "@/types";
+import { t } from "@/i18n";
 
 export function OwnerAnalyticsPage() {
   const [dateFrom, setDateFrom] = useState(() => {
@@ -115,6 +116,9 @@ export function OwnerAnalyticsPage() {
                   <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Pro Earns</th>
                   <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Prov Earns</th>
                   <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">Split</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">{t("analytics.no_shows")}</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">{t("analytics.late_cancels")}</th>
+                  <th className="px-ds-3 py-ds-2 text-right whitespace-nowrap">{t("analytics.missed_rate")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -138,6 +142,9 @@ export function OwnerAnalyticsPage() {
                     <td className="px-ds-3 py-ds-2 text-right text-[var(--ds-feedback-success)]">{formatCurrency(w.professional_earnings)}</td>
                     <td className="px-ds-3 py-ds-2 text-right text-[var(--ds-feedback-info)]">{formatCurrency(w.provider_earnings)}</td>
                     <td className="px-ds-3 py-ds-2 text-right text-ds-text-muted">{w.professional_percentage}%</td>
+                    <td className="px-ds-3 py-ds-2 text-right">{w.no_show_count ?? 0}</td>
+                    <td className="px-ds-3 py-ds-2 text-right">{w.late_cancel_count ?? 0}</td>
+                    <td className="px-ds-3 py-ds-2 text-right text-ds-text-muted">{w.missed_rate ?? 0}%</td>
                   </tr>
                 ))}
               </tbody>

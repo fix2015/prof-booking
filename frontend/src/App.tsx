@@ -28,6 +28,7 @@ import { FindProfessionalsPage } from "@/pages/public/FindProfessionalsPage";
 // Private pages (auth required)
 import { MasterDashboardPage } from "@/pages/private/MasterDashboardPage";
 import { OwnerDashboardPage } from "@/pages/private/OwnerDashboardPage";
+import { TodayPage } from "@/pages/private/TodayPage";
 import { AdminPanelPage } from "@/pages/private/AdminPanelPage";
 import { CalendarPage } from "@/pages/private/CalendarPage";
 import { SessionsPage } from "@/pages/private/SessionsPage";
@@ -100,6 +101,7 @@ function AppRoutes() {
       {/* Authenticated app routes */}
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardRouter />} />
+        <Route path="/today" element={<TodayPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/sessions" element={<SessionsPage />} />
         <Route path="/professionals" element={<MastersPage />} />

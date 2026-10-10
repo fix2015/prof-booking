@@ -20,6 +20,8 @@ class ProviderRevenueSummary(BaseModel):
     total_sessions: int
     completed_sessions: int
     cancelled_sessions: int
+    no_show_sessions: int = 0
+    late_cancel_sessions: int = 0
     total_revenue: float
     total_deposits: float
 
