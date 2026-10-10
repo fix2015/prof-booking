@@ -7,6 +7,7 @@ import { bookingApi, BookingLookupResult } from "@/api/booking";
 import type { SessionStatus } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cancelBookingReminders } from "@/lib/reminders";
 import { t } from "@/i18n";
 
 type CancelState = { booking: BookingLookupResult; reason: string } | null;
@@ -32,6 +33,7 @@ export function BookingManagementPage() {
     mutationFn: ({ booking, reason }: { booking: BookingLookupResult; reason: string }) =>
       bookingApi.cancel(booking.session_id, booking.confirmation_code, booking.client_phone, reason || undefined),
     onSuccess: (updated) => {
+      void cancelBookingReminders(updated.session_id);
       setBookings((prev) =>
         prev ? prev.map((b) => (b.session_id === updated.session_id ? updated : b)) : prev
       );

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookingApi } from "@/api/booking";
 import type { BookingLookupResult } from "@/api/booking";
 import type { BookingConfirmation } from "@/types";
+import { cancelBookingReminders } from "@/lib/reminders";
 import { StatusBadge } from "./StatusBadge";
 
 type AnyBooking = BookingLookupResult | BookingConfirmation;
@@ -28,6 +29,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
       bookingApi.cancel(sessionId, b.confirmation_code, clientPhone),
     onSuccess: () => {
       setConfirmingCancel(false);
+      void cancelBookingReminders(sessionId);
       queryClient.invalidateQueries({ queryKey: ["client-bookings"] });
     },
   });

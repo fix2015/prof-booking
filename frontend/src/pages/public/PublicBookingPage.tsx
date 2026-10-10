@@ -11,7 +11,9 @@ import { TimeSlotButton } from "@/components/mobile/TimeSlotButton";
 import { t } from "@/i18n";
 import { useGuestSession } from "@/hooks/useGuestSession";
 import { useAuthContext } from "@/context/AuthContext";
-import type { Service, Professional, AvailableSlot } from "@/types";
+import type { Service, Professional, AvailableSlot, BookingConfirmation } from "@/types";
+import { BookingConfirmed } from "@/components/booking/BookingConfirmed";
+import { scheduleBookingReminders, type ReminderResult } from "@/lib/reminders";
 import { parseSlotPrefill, relativeDay, type SlotPrefill } from "@/utils/slots";
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -124,6 +126,8 @@ export function PublicBookingPage() {
   }, [prefill, step, slots, slotsFetching, slotsFetched]);
 
   const createBooking = useCreateBooking();
+  const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
+  const [reminders, setReminders] = useState<ReminderResult | null>(null);
   const { guestProfile, setGuestProfile, addGuestBooking } = useGuestSession();
   const { user, isAuthenticated } = useAuthContext();
   const queryClient = useQueryClient();
@@ -170,7 +174,9 @@ export function PublicBookingPage() {
           queryClient.invalidateQueries({ queryKey: ["client-bookings"] });
           queryClient.invalidateQueries({ queryKey: ["availability"] });
           queryClient.invalidateQueries({ queryKey: ["available-dates"] });
-          navigate("/me");
+          setConfirmation(confirmation);
+          window.scrollTo(0, 0);
+          void scheduleBookingReminders(confirmation).then(setReminders);
         },
         onError: () => {
           // Slot was already booked — refetch availability to remove stale slots
@@ -191,6 +197,15 @@ export function PublicBookingPage() {
     t("booking.step.time"),
     t("booking.step.confirm"),
   ];
+
+  if (confirmation) {
+    return (
+      <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
+        <AppHeader variant="back-title" title={t("booking.confirmed.header")} onBack={() => navigate("/me")} />
+        <BookingConfirmed confirmation={confirmation} reminders={reminders} onViewBookings={() => navigate("/me")} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[768px] mx-auto min-h-screen flex flex-col bg-ds-bg-secondary">
