@@ -172,7 +172,7 @@ Or use the explicit DS aliases: `p-ds-4`, `gap-ds-6`, etc.
 
 ## Translations (i18n) — MANDATORY for every string
 
-**File:** `frontend/src/i18n.ts` — custom solution, 5 locales: `en`, `pl`, `ro`, `uk`, `es`
+**Files:** `frontend/src/i18n.ts` (the `t()` helper) + `frontend/src/locales/{en,pl,ro,uk,es}.ts` (strings; `en.ts` defines the keys) — custom solution, 5 locales
 
 ```tsx
 import { t, TranslationKey } from "@/i18n";
@@ -195,8 +195,8 @@ const TABS: { value: string; labelKey: TranslationKey }[] = [
 ### When implementing a Figma design — REQUIRED steps
 
 1. **Never write a raw string literal** for any user-visible text. Every label, heading, placeholder, button text, error message, empty state, toast, and aria-label must go through `t()`.
-2. **Check existing keys first** — grep `i18n.ts` for the string before creating a new key.
-3. **Add new keys to ALL 5 locales** (en, pl, ro, uk, es) in `i18n.ts`. Never add to just one locale.
+2. **Check existing keys first** — grep `src/locales/en.ts` for the string before creating a new key.
+3. **Add new keys to ALL 5 locales** (en, pl, ro, uk, es) in `src/locales/*.ts`. Never add to just one locale.
 4. **Follow the key namespace** for the screen being implemented:
    - `login.*`, `register.*`, `register.pro.*` — auth pages
    - `providers.*` — provider discovery / detail

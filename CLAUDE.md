@@ -114,7 +114,7 @@ Key files:
 
 Vite dev server proxies `/api/*` to `http://localhost:8000`.
 
-**i18n:** Custom zero-dependency utility in `src/i18n.ts`. Supported locales: `en`, `pl`, `ro`, `uk`, `es`. Add new keys to all locale objects in that file. Language is persisted in `localStorage` and switched via `<LanguageSwitcher>`.
+**i18n:** Custom zero-dependency utility in `src/i18n.ts`; strings live in `src/locales/{en,pl,ro,uk,es}.ts`. `en.ts` defines the keys (and is bundled as the fallback); other locales are typed against it and loaded on demand before the first render. Add new keys to every locale file. Language is persisted in `localStorage` and switched via `<LanguageSwitcher>`.
 
 **PWA:** The frontend registers a service worker (`public/sw.js`) for push notifications. ESLint is configured to ignore `sw.js` (uses `self` global). Web push subscription logic lives in `hooks/useWebNotifications.ts`.
 

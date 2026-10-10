@@ -37,7 +37,7 @@ export function CookieConsent() {
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-4 pointer-events-none" role="region" aria-label="Cookie consent">
-      <div className="pointer-events-auto mx-auto max-w-[520px] animate-in slide-in-from-bottom-4 duration-500 fill-mode-both">
+      <div className="pointer-events-auto mx-auto max-w-[520px]">
         <div className="relative overflow-hidden rounded-ds-2xl border border-ds-border bg-ds-bg-primary shadow-lg">
           {/* Accent strip */}
           <div className="absolute top-0 inset-x-0 h-[3px] bg-ds-interactive" />
