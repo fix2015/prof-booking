@@ -1,4 +1,7 @@
-import { Provider } from "@/types";
+import { Clock } from "lucide-react";
+import type { AvailableSlot, Provider } from "@/types";
+import { t } from "@/i18n";
+import { relativeDay } from "@/utils/slots";
 import { SampleBadge } from "@/components/mobile/SampleBadge";
 import { MobileAvatar } from "./MobileAvatar";
 import { StarRating } from "./StarRating";
@@ -11,15 +14,46 @@ interface Props {
   onClick?: (id: number) => void;
   /** When a service is selected, pass its price here (overrides worker_payment_amount) */
   servicePrice?: number;
+  /** First free slots (today/tomorrow) shown as one-tap chips on the list variant. */
+  nextSlots?: AvailableSlot[];
+  onSlotSelect?: (slot: AvailableSlot) => void;
 }
 
-export function ProviderCard({ provider, variant = "default", saved = false, onToggleSave, onClick, servicePrice }: Props) {
+function slotLabel(slot: AvailableSlot): { day: string; time: string } {
+  const rel = relativeDay(slot.slot_date);
+  const day = rel === "today" ? t("slots.today") : rel === "tomorrow" ? t("slots.tomorrow") : slot.slot_date;
+  return { day, time: slot.start_time.slice(0, 5) };
+}
+
+function NextSlots({ slots, onSelect }: { slots: AvailableSlot[]; onSelect?: (slot: AvailableSlot) => void }) {
+  return (
+    <div className="flex items-center gap-ds-1 flex-wrap" aria-label={t("slots.next_available")}>
+      <Clock className="h-3.5 w-3.5 text-ds-text-muted shrink-0" aria-hidden />
+      {slots.map((slot) => {
+        const { day, time } = slotLabel(slot);
+        return (
+          <button
+            key={`${slot.slot_date}-${slot.start_time}`}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onSelect?.(slot); }}
+            aria-label={t("slots.book_at", { day, time })}
+            className="h-ds-6 px-ds-2 rounded-ds-full border border-ds-border bg-ds-bg-primary ds-badge text-ds-text-primary active:bg-ds-bg-tertiary"
+          >
+            {day} {time}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function ProviderCard({ provider, variant = "default", saved = false, onToggleSave, onClick, servicePrice, nextSlots, onSlotSelect }: Props) {
   const displayPrice = servicePrice ?? (provider.worker_payment_amount > 0 ? provider.worker_payment_amount : null);
   const priceLabel = servicePrice != null ? `£${servicePrice}` : displayPrice != null ? `from £${displayPrice}` : null;
   if (variant === "list") {
     return (
       <div
-        className="relative bg-ds-bg-primary rounded-ds-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] cursor-pointer active:opacity-90 flex items-center gap-ds-3 px-ds-3 py-[14px] h-[100px]"
+        className="relative bg-ds-bg-primary rounded-ds-xl shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] cursor-pointer active:opacity-90 flex items-center gap-ds-3 px-ds-3 py-[14px] min-h-[100px]"
         onClick={() => onClick?.(provider.id)}
       >
         {/* Avatar 72×72 with rounded-lg corners (10px) */}
@@ -50,6 +84,7 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
               </span>
             )}
           </div>
+          {nextSlots && nextSlots.length > 0 && <NextSlots slots={nextSlots} onSelect={onSlotSelect} />}
         </div>
 
         {/* Heart */}

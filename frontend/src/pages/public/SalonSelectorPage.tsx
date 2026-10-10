@@ -14,6 +14,9 @@ import { FilterSheet, FilterValues } from "@/components/mobile/FilterSheet";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { t } from "@/i18n";
+import { useNextAvailable } from "@/hooks/useBooking";
+import { bookingPrefillUrl } from "@/utils/slots";
+import type { AvailableSlot, Provider } from "@/types";
 
 const SAVED_KEY = "pb_saved";
 
@@ -264,14 +267,20 @@ export function SalonSelectorPage() {
           </div>
         ) : (
           <>
-            {filtered.map((provider) => (
-              <ProviderCard
-                key={provider.id}
-                provider={provider}
-                variant="list"
-                saved={saved.includes(provider.id)}
+            {(data?.pages ?? []).map((page, i) => (
+              <ProviderPage
+                key={i}
+                providers={page}
+                saved={saved}
                 onToggleSave={handleToggleSave}
-                onClick={(id) => navigate(`/providers/${id}`)}
+                onOpen={(id) => navigate(`/providers/${id}`)}
+                onSlot={(providerId, slot) =>
+                  navigate(bookingPrefillUrl(providerId, {
+                    date: slot.slot_date,
+                    time: slot.start_time.slice(0, 5),
+                    professionalId: slot.professional_id,
+                  }))
+                }
               />
             ))}
             <div ref={sentinelRef} className="h-1" />
@@ -292,5 +301,32 @@ export function SalonSelectorPage() {
         resultCount={filtered.length}
       />
     </div>
+  );
+}
+
+/** One loaded page of providers, with their next free slots fetched in a single request. */
+function ProviderPage({ providers, saved, onToggleSave, onOpen, onSlot }: {
+  providers: Provider[];
+  saved: number[];
+  onToggleSave: (id: number) => void;
+  onOpen: (id: number) => void;
+  onSlot: (providerId: number, slot: AvailableSlot) => void;
+}) {
+  const { data: nextSlots } = useNextAvailable(providers.filter((p) => !p.is_demo).map((p) => p.id));
+  return (
+    <>
+      {providers.map((provider) => (
+        <ProviderCard
+          key={provider.id}
+          provider={provider}
+          variant="list"
+          saved={saved.includes(provider.id)}
+          onToggleSave={onToggleSave}
+          onClick={onOpen}
+          nextSlots={nextSlots?.[String(provider.id)]}
+          onSlotSelect={(slot) => onSlot(provider.id, slot)}
+        />
+      ))}
+    </>
   );
 }

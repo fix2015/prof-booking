@@ -3,8 +3,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import date, timedelta
+from typing import Dict, List, Optional
+from datetime import date, time, timedelta
 
 from app.config import settings
 from app.database import get_db
@@ -14,7 +14,7 @@ from app.modules.calendar.schemas import (
 )
 from app.modules.calendar.services import (
     create_work_slot, delete_work_slot, get_professional_slots,
-    copy_weekly_schedule, copy_period_schedule, get_available_slots, get_available_dates,
+    copy_weekly_schedule, copy_period_schedule, get_available_slots, get_available_dates, get_next_available,
 )
 from app.modules.masters.services import get_professional_by_user_id
 from app.modules.users.models import User
@@ -47,6 +47,26 @@ def get_availability(
 ):
     """Public endpoint for the booking page."""
     return get_available_slots(db, provider_id, date, duration_minutes, professional_id)
+
+
+@router.get("/next-available", response_model=Dict[int, List[AvailableSlot]])
+def next_available(
+    provider_ids: str = Query(..., description="Comma-separated provider ids (max 100)"),
+    from_date: date = Query(..., description="Caller's local date (today)"),
+    after: Optional[time] = Query(None, description="Caller's local time; earlier start times today are skipped"),
+    days: int = Query(2, ge=1, le=7),
+    limit: int = Query(3, ge=1, le=10),
+    duration_minutes: int = Query(60, ge=15, le=480),
+    db: Session = Depends(get_db),
+):
+    """Public: the first free slots (today/tomorrow by default) for each provider in a Discover page, in one call."""
+    try:
+        ids = list(dict.fromkeys(int(x) for x in provider_ids.split(",") if x.strip()))
+    except ValueError:
+        raise HTTPException(status_code=422, detail="provider_ids must be comma-separated integers")
+    if not ids or len(ids) > 100:
+        raise HTTPException(status_code=422, detail="Pass between 1 and 100 provider ids")
+    return get_next_available(db, ids, from_date, after, days, limit, duration_minutes)
 
 
 @router.get("/slots/my", response_model=List[WorkSlotResponse])

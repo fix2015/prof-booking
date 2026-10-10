@@ -254,3 +254,47 @@ def get_available_slots(
             current += timedelta(minutes=30)  # 30-min step
 
     return available
+
+
+def get_next_available(
+    db: Session,
+    provider_ids: List[int],
+    from_date: date,
+    after: Optional[time] = None,
+    days: int = 2,
+    limit: int = 3,
+    duration_minutes: int = 60,
+) -> dict:
+    """First `limit` free start times per provider over `days` days starting at from_date (today/tomorrow by default).
+    `after` drops start times at or before the caller's current local time on from_date. Sample (is_demo) and
+    inactive providers get no slots. Returns {provider_id: [AvailableSlot, ...]} with distinct start times."""
+    from app.modules.salons.models import Provider
+
+    bookable = {
+        pid for (pid,) in db.query(Provider.id).filter(
+            Provider.id.in_(provider_ids),
+            Provider.is_active == True,  # noqa: E712
+            Provider.is_demo == False,  # noqa: E712
+        )
+    }
+    result: dict = {pid: [] for pid in provider_ids}
+    for pid in provider_ids:
+        if pid not in bookable:
+            continue
+        picked: List[AvailableSlot] = []
+        for offset in range(days):
+            day = from_date + timedelta(days=offset)
+            seen = set()
+            for slot in sorted(get_available_slots(db, pid, day, duration_minutes), key=lambda s: (s.start_time, s.professional_id)):
+                if offset == 0 and after is not None and slot.start_time <= after:
+                    continue
+                if slot.start_time in seen:
+                    continue
+                seen.add(slot.start_time)
+                picked.append(slot)
+                if len(picked) >= limit:
+                    break
+            if len(picked) >= limit:
+                break
+        result[pid] = picked
+    return result

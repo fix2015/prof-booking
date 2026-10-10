@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { calendarApi } from "@/api/calendar";
 import { bookingApi, PublicBookingPayload } from "@/api/booking";
 import { sessionsApi, SessionFilters } from "@/api/sessions";
+import { localDateString, localTimeString } from "@/utils/slots";
 
 export function useAvailableDates(
   providerId: number,
@@ -27,6 +28,18 @@ export function useAvailability(
     queryKey: ["availability", providerId, date, durationMinutes, professionalId],
     queryFn: () => calendarApi.getAvailability(providerId, date, durationMinutes, professionalId),
     enabled: !!providerId && !!date,
+  });
+}
+
+/** Next free slots for a page of providers (one request per page). */
+export function useNextAvailable(providerIds: number[]) {
+  const now = new Date();
+  const fromDate = localDateString(now);
+  return useQuery({
+    queryKey: ["next-available", providerIds.join(","), fromDate],
+    queryFn: () => calendarApi.getNextAvailable(providerIds, fromDate, localTimeString(new Date())),
+    enabled: providerIds.length > 0,
+    staleTime: 60_000,
   });
 }
 

@@ -23,6 +23,14 @@ export const calendarApi = {
       })
       .then((r) => r.data),
 
+  /** First free slots (today/tomorrow) per provider, keyed by provider id. */
+  getNextAvailable: (providerIds: number[], fromDate: string, after: string) =>
+    apiClient
+      .get<Record<string, AvailableSlot[]>>("/calendar/next-available", {
+        params: { provider_ids: providerIds.join(","), from_date: fromDate, after },
+      })
+      .then((r) => r.data),
+
   getMySlots: (dateFrom: string, dateTo?: string) =>
     apiClient
       .get<WorkSlot[]>("/calendar/slots/my", { params: { date_from: dateFrom, date_to: dateTo } })

@@ -12,6 +12,7 @@ import { t } from "@/i18n";
 import { useGuestSession } from "@/hooks/useGuestSession";
 import { useAuthContext } from "@/context/AuthContext";
 import type { Service, Professional, AvailableSlot } from "@/types";
+import { parseSlotPrefill, relativeDay, type SlotPrefill } from "@/utils/slots";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -43,6 +44,8 @@ export function PublicBookingPage() {
   const id = Number(providerId);
 
   const preselectedServiceId = searchParams.get("service_id");
+  // One-tap "next available" slot from Discover: date/time/professional to apply once a service is chosen.
+  const [prefill, setPrefill] = useState<SlotPrefill | null>(() => parseSlotPrefill(searchParams));
 
   const { data: provider } = usePublicProvider(id);
   const { data: professionals = [] } = useProviderProfessionalsPublic(id);
@@ -55,23 +58,36 @@ export function PublicBookingPage() {
   const [step, setStep] = useState<Step>(1);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  // Auto-select service when services load and a preselected ID is in the URL
-  useEffect(() => {
-    if (!preselectedServiceId || selectedService) return;
-    const found = services.find((s) => s.id === Number(preselectedServiceId));
-    if (found) {
-      setSelectedService(found);
-      setStep(2); // skip to professional selection
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [services]);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
+  const [selectedDate, setSelectedDate] = useState<string>(prefill?.date ?? formatDate(new Date()));
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", notes: "" });
 
   const today = new Date();
-  const [calMonth, setCalMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const [calMonth, setCalMonth] = useState(() => {
+    const d = prefill ? new Date(prefill.date + "T12:00:00") : today;
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+
+  function chooseService(service: Service) {
+    setSelectedService(service);
+    if (prefill) {
+      // Jump straight to the pre-filled day; the slot itself is picked once availability loads (effect below).
+      setSelectedProfessional(professionals.find((p) => p.id === prefill.professionalId) ?? null);
+      setSelectedDate(prefill.date);
+      setStep(4);
+    } else {
+      setStep(2);
+    }
+  }
+
+  // Auto-select service when services load and a preselected ID is in the URL
+  useEffect(() => {
+    if (!preselectedServiceId || selectedService) return;
+    const found = services.find((s) => s.id === Number(preselectedServiceId));
+    if (found) chooseService(found); // skip to professional selection (or the pre-filled slot)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [services]);
   const calDays = getDaysInMonth(calMonth.year, calMonth.month);
 
   // First and last day of visible month for available-dates query
@@ -86,12 +102,26 @@ export function PublicBookingPage() {
   );
   const availableDateSet = new Set(availableDates);
 
-  const { data: slots = [] } = useAvailability(
+  const { data: slots = [], isFetching: slotsFetching, isFetched: slotsFetched } = useAvailability(
     id,
     selectedDate,
     selectedService?.duration_minutes ?? 60,
     selectedProfessional?.id
   );
+
+  // Apply the pre-filled slot when it is still free for the chosen service; otherwise stay on the time step.
+  useEffect(() => {
+    if (!prefill || step !== 4 || slotsFetching || !slotsFetched) return;
+    const match = slots.find(
+      (s) => s.slot_date === prefill.date && s.start_time.slice(0, 5) === prefill.time
+        && (!prefill.professionalId || s.professional_id === prefill.professionalId),
+    );
+    setPrefill(null);
+    if (match) {
+      setSelectedSlot(match);
+      setStep(5);
+    }
+  }, [prefill, step, slots, slotsFetching, slotsFetched]);
 
   const createBooking = useCreateBooking();
   const { guestProfile, setGuestProfile, addGuestBooking } = useGuestSession();
@@ -125,7 +155,8 @@ export function PublicBookingPage() {
       {
         provider_id: id,
         service_id: selectedService.id,
-        professional_id: selectedProfessional?.id,
+        // "Any professional" still books the professional whose free slot was picked
+        professional_id: selectedProfessional?.id ?? selectedSlot.professional_id,
         client_name: form.name,
         client_phone: form.phone,
         client_email: form.email || undefined,
@@ -205,13 +236,22 @@ export function PublicBookingPage() {
         {step === 1 && (
           <div className="flex flex-col gap-ds-2">
             <p className="ds-h4 text-ds-text-primary mb-ds-2">{t("booking.select_service_heading")}</p>
+            {prefill && (
+              <p className="ds-body-small text-ds-text-secondary bg-ds-bg-primary border border-ds-border rounded-ds-xl px-ds-3 py-ds-2">
+                {t("booking.prefill_hint", {
+                  day: relativeDay(prefill.date) === "today" ? t("slots.today")
+                    : relativeDay(prefill.date) === "tomorrow" ? t("slots.tomorrow") : prefill.date,
+                  time: prefill.time,
+                })}
+              </p>
+            )}
             {services.length === 0 ? (
               <p className="ds-body text-ds-text-secondary">{t("booking.no_services")}</p>
             ) : (
               services.map((service) => (
                 <button
                   key={service.id}
-                  onClick={() => { setSelectedService(service); setStep(2); }}
+                  onClick={() => chooseService(service)}
                   className={`w-full flex items-center gap-ds-3 p-ds-3 rounded-ds-xl border transition-colors ${
                     selectedService?.id === service.id
                       ? "border-ds-interactive bg-ds-interactive"
