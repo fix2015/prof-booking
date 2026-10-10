@@ -10,7 +10,10 @@ import { CategoryChip } from "@/components/mobile/CategoryChip";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
 import { SearchBar } from "@/components/mobile/SearchBar";
 import { FilterBar } from "@/components/mobile/FilterBar";
-import { FilterSheet, FilterValues } from "@/components/mobile/FilterSheet";
+import { FilterSheet } from "@/components/mobile/FilterSheet";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { countActiveFilters, loadDiscover, saveDiscover, type FilterValues } from "@/utils/filters";
+import { localDateString } from "@/utils/slots";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { t } from "@/i18n";
@@ -26,17 +29,16 @@ export function SalonSelectorPage() {
   const showDashboard = isAuthenticated && (role === "provider_owner" || role === "professional" || role === "platform_admin");
   const logout = useLogout();
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  // Last used filters + category are restored on the next visit
+  const [initial] = useState(() => loadDiscover(window.localStorage, localDateString(new Date())));
+  const [activeCategory, setActiveCategory] = useState(initial.category);
   const { favourites: saved, toggleFavourite } = useFavourites();
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterValues>({
-    sort: "nearest",
-    date: "",
-    minPrice: "",
-    maxPrice: "",
-    nationality: "",
-    minExperience: 0,
-  });
+  const [filters, setFilters] = useState<FilterValues>(initial.filters);
+  useEffect(() => {
+    saveDiscover(window.localStorage, { filters, category: activeCategory });
+  }, [filters, activeCategory]);
+  const { location, status: locationStatus } = useUserLocation(filters.maxDistanceKm > 0);
 
   const { data: categories = [] } = useProviderCategories();
 
@@ -49,12 +51,9 @@ export function SalonSelectorPage() {
   } = useInfiniteProviders({
     q: search || undefined,
     category: activeCategory,
-    sort: filters.sort || undefined,
-    date: filters.date || undefined,
-    minPrice: filters.minPrice ? Number(filters.minPrice) : undefined,
-    maxPrice: filters.maxPrice ? Number(filters.maxPrice) : undefined,
-    nationality: filters.nationality || undefined,
-    minExperience: filters.minExperience || undefined,
+    filters,
+    // Distance filter waits for the location; without one it is ignored rather than returning nothing
+    location: filters.maxDistanceKm > 0 && locationStatus === "locating" ? null : location,
   });
 
   const filtered = data?.pages.flat() ?? [];
@@ -88,13 +87,7 @@ export function SalonSelectorPage() {
     toggleFavourite(id);
   }
 
-  const hasActiveFilters =
-    filters.sort !== "nearest" ||
-    !!filters.date ||
-    !!filters.minPrice ||
-    !!filters.maxPrice ||
-    !!filters.nationality ||
-    !!filters.minExperience;
+  const hasActiveFilters = countActiveFilters(filters) > 0;
 
   const HeaderRight = (
     <div className="flex items-center gap-ds-2">
@@ -153,6 +146,9 @@ export function SalonSelectorPage() {
           onOpenFilters={() => setFilterOpen(true)}
           hasActiveFilters={hasActiveFilters}
           activeNationality={filters.nationality}
+          activeCount={countActiveFilters(filters)}
+          openNow={filters.openNow}
+          onToggleOpenNow={() => setFilters((prev) => ({ ...prev, openNow: !prev.openNow }))}
           activePriceRange={
             filters.minPrice || filters.maxPrice
               ? {
@@ -163,6 +159,10 @@ export function SalonSelectorPage() {
           }
         />
       </div>
+
+      {filters.maxDistanceKm > 0 && (locationStatus === "denied" || locationStatus === "unavailable") && (
+        <p className="px-ds-4 py-ds-2 bg-ds-bg-primary ds-caption text-ds-text-secondary">{t("filters.location_denied")}</p>
+      )}
 
       {/* Category chips */}
       <div className="flex gap-ds-2 px-ds-4 py-ds-3 overflow-x-auto scrollbar-none bg-ds-bg-primary border-b border-ds-border">

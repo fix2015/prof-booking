@@ -37,6 +37,11 @@ export interface Provider {
   is_active: boolean;
   created_at: string;
   settings?: Record<string, unknown>;
+  /** Average over publicly visible reviews; null when there are none */
+  avg_rating?: number | null;
+  review_count?: number;
+  /** Set by search when the user's location is known */
+  distance_km?: number | null;
 }
 
 // Backward-compat alias

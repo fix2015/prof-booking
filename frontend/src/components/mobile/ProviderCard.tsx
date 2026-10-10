@@ -25,6 +25,26 @@ function slotLabel(slot: AvailableSlot): { day: string; time: string } {
   return { day, time: slot.start_time.slice(0, 5) };
 }
 
+/** Real rating from visible reviews ("New" when there are none) + distance when known. */
+function RatingMeta({ provider }: { provider: Provider }) {
+  const count = provider.review_count ?? 0;
+  return (
+    <>
+      {count > 0 && provider.avg_rating != null ? (
+        <span className="inline-flex items-center gap-[6px]" aria-label={t("providers.rating_aria", { rating: provider.avg_rating.toFixed(1), count })}>
+          <StarRating rating={provider.avg_rating} size="sm" />
+          <span className="ds-caption text-ds-text-muted" aria-hidden>{provider.avg_rating.toFixed(1)} ({count})</span>
+        </span>
+      ) : (
+        <span className="ds-caption text-ds-text-muted">{t("providers.new")}</span>
+      )}
+      {provider.distance_km != null && (
+        <span className="ds-caption text-ds-text-muted">· {t("providers.distance", { km: provider.distance_km < 10 ? provider.distance_km.toFixed(1) : Math.round(provider.distance_km) })}</span>
+      )}
+    </>
+  );
+}
+
 function NextSlots({ slots, onSelect }: { slots: AvailableSlot[]; onSelect?: (slot: AvailableSlot) => void }) {
   return (
     <div className="flex items-center gap-ds-1 flex-wrap" aria-label={t("slots.next_available")}>
@@ -75,8 +95,7 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
           )}
           {/* Meta row: star rating + spacer + price pill */}
           <div className="flex items-center gap-[6px]">
-            <StarRating rating={4} size="sm" />
-            <span className="ds-caption text-ds-text-muted">4.8</span>
+            <RatingMeta provider={provider} />
             <div className="flex-1" />
             {priceLabel && (
               <span className="bg-ds-interactive rounded-ds-full px-[10px] py-[4px] ds-label-small text-ds-text-inverse">
@@ -142,8 +161,7 @@ export function ProviderCard({ provider, variant = "default", saved = false, onT
           </span>
         )}
         <div className="flex items-center gap-ds-2 mt-[2px]">
-          <StarRating rating={4} size="sm" />
-          <span className="ds-caption text-ds-text-secondary">4.0</span>
+          <RatingMeta provider={provider} />
           {priceLabel && (
             <>
               <span className="ds-caption text-ds-text-disabled">·</span>
@@ -164,7 +182,8 @@ function HeartButton({ saved, onToggle }: { saved: boolean; onToggle: () => void
         onToggle();
       }}
       className="w-8 h-8 flex items-center justify-center rounded-ds-full bg-ds-bg-primary shadow-sm"
-      aria-label={saved ? "Unsave" : "Save"}
+      aria-label={saved ? t("providers.unsave") : t("providers.save")}
+      aria-pressed={saved}
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill={saved ? "var(--ds-feedback-saved)" : "none"}>
         <path

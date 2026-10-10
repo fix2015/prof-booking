@@ -8,6 +8,10 @@ interface FilterBarProps {
   activePriceRange?: { min?: number; max?: number };
   onOpenPrice?: () => void;
   onOpenNationality?: () => void;
+  /** Number of active filters, shown on the Filters button */
+  activeCount?: number;
+  openNow?: boolean;
+  onToggleOpenNow?: () => void;
 }
 
 export function FilterBar({
@@ -15,6 +19,9 @@ export function FilterBar({
   hasActiveFilters,
   activeNationality,
   activePriceRange,
+  activeCount = 0,
+  openNow,
+  onToggleOpenNow,
 }: FilterBarProps) {
   return (
     <div className="flex items-center gap-ds-2 mt-ds-3 overflow-x-auto scrollbar-none pb-[2px]">
@@ -34,7 +41,25 @@ export function FilterBar({
           />
         </svg>
         {t("filters.title")}
+        {activeCount > 0 && (
+          <span className="ml-ds-1 min-w-[18px] h-[18px] px-ds-1 rounded-ds-full bg-ds-bg-primary text-ds-text-primary ds-badge inline-flex items-center justify-center">
+            {activeCount}
+          </span>
+        )}
       </Button>
+
+      {/* Open now — one-tap toggle */}
+      {onToggleOpenNow && (
+        <Button
+          variant={openNow ? "default" : "outline"}
+          size="sm"
+          aria-pressed={!!openNow}
+          className="shrink-0 h-[32px] rounded-ds-full px-ds-3"
+          onClick={onToggleOpenNow}
+        >
+          {t("filters.open_now")}
+        </Button>
+      )}
 
       {/* Price button */}
       <Button

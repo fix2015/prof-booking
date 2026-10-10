@@ -43,6 +43,13 @@ export const providersApi = {
     lat_max?: number;
     lng_min?: number;
     lng_max?: number;
+    min_rating?: number;
+    open_now?: boolean;
+    now_date?: string;
+    now_time?: string;
+    lat?: number;
+    lng?: number;
+    radius_km?: number;
     skip?: number;
     limit?: number;
   }) =>

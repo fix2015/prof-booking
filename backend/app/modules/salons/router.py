@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date as date_type
+from datetime import date as date_type, time as time_type
+import math
+
+from sqlalchemy import and_, func
 
 from app.database import get_db
 from app.dependencies import get_current_owner, get_current_admin
@@ -14,6 +17,14 @@ from app.modules.users.models import User
 from app.modules.reviews.services import attach_ratings
 
 router = APIRouter()
+
+
+def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    r = 6371.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp, dl = p2 - p1, math.radians(lng2 - lng1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * r * math.asin(math.sqrt(a))
 
 
 @router.get("/search", response_model=List[ProviderPublic])
@@ -32,6 +43,13 @@ def search_providers(
     lat_max: Optional[float] = Query(None, description="NE latitude of map bounds"),
     lng_min: Optional[float] = Query(None, description="SW longitude of map bounds"),
     lng_max: Optional[float] = Query(None, description="NE longitude of map bounds"),
+    min_rating: Optional[float] = Query(None, ge=0, le=5, description="Minimum average rating (visible reviews)"),
+    open_now: bool = Query(False, description="Only providers with a work slot covering now_date/now_time"),
+    now_date: Optional[date_type] = Query(None, description="Caller's local date for open_now"),
+    now_time: Optional[time_type] = Query(None, description="Caller's local time for open_now"),
+    lat: Optional[float] = Query(None, ge=-90, le=90, description="Caller's latitude (distance filter / nearest sort)"),
+    lng: Optional[float] = Query(None, ge=-180, le=180, description="Caller's longitude"),
+    radius_km: Optional[float] = Query(None, gt=0, le=500, description="Only providers within this distance"),
     skip: int = Query(0, ge=0),
     limit: int = Query(24, le=100),
     db: Session = Depends(get_db),
@@ -94,10 +112,63 @@ def search_providers(
             .subquery()
         )
         query = query.filter(Provider.id.in_(provider_ids_cat))
-    if min_price is not None:
-        query = query.filter(Provider.worker_payment_amount >= min_price)
-    if max_price is not None:
-        query = query.filter(Provider.worker_payment_amount <= max_price)
+    if min_price is not None or max_price is not None:
+        # A provider matches when one of its active services (or its base price) falls inside the range
+        from app.modules.services.models import service_providers
+        price_conds = [Service.is_active == True]  # noqa: E712
+        base_conds = []
+        if min_price is not None:
+            price_conds.append(Service.price >= min_price)
+            base_conds.append(Provider.worker_payment_amount >= min_price)
+        if max_price is not None:
+            price_conds.append(Service.price <= max_price)
+            base_conds.append(Provider.worker_payment_amount <= max_price)
+        priced_ids = (
+            db.query(service_providers.c.provider_id)
+            .join(Service, Service.id == service_providers.c.service_id)
+            .filter(*price_conds)
+            .subquery()
+        )
+        query = query.filter(
+            Provider.id.in_(db.query(priced_ids.c.provider_id))
+            | (and_(Provider.worker_payment_amount > 0, *base_conds))
+        )
+    if min_rating:
+        from app.modules.reviews.models import Review
+        from app.modules.reviews.services import visible
+        rated_ids = (
+            visible(db, db.query(Review.provider_id))
+            .group_by(Review.provider_id)
+            .having(func.avg(Review.rating) >= min_rating)
+            .subquery()
+        )
+        query = query.filter(Provider.id.in_(db.query(rated_ids.c.provider_id)))
+    if open_now and now_date and now_time:
+        from app.modules.calendar.models import WorkSlot
+        open_ids = (
+            db.query(WorkSlot.provider_id)
+            .filter(
+                WorkSlot.slot_date == now_date,
+                WorkSlot.is_available == True,  # noqa: E712
+                WorkSlot.start_time <= now_time,
+                WorkSlot.end_time > now_time,
+            )
+            .distinct()
+            .subquery()
+        )
+        query = query.filter(Provider.id.in_(db.query(open_ids.c.provider_id)))
+    dist_sq = None
+    if lat is not None and lng is not None:
+        # Equirectangular approximation in km² — accurate to <1% at city scale and portable (SQLite/Postgres)
+        kx = 111.32 * math.cos(math.radians(lat))
+        dist_sq = (
+            (Provider.latitude - lat) * 111.32 * (Provider.latitude - lat) * 111.32
+            + (Provider.longitude - lng) * kx * (Provider.longitude - lng) * kx
+        )
+        if radius_km:
+            query = query.filter(
+                Provider.latitude.isnot(None), Provider.longitude.isnot(None), dist_sq <= radius_km * radius_km,
+            )
     if nationality:
         from app.modules.masters.models import Professional, ProfessionalProvider
         provider_ids_nat = (
@@ -128,10 +199,30 @@ def search_providers(
             Provider.longitude <= lng_max,
         )
     if sort == "price_asc":
-        query = query.order_by(Provider.worker_payment_amount.asc())
+        query = query.order_by(Provider.worker_payment_amount.asc(), Provider.id)
     elif sort == "price_desc":
-        query = query.order_by(Provider.worker_payment_amount.desc())
-    return attach_ratings(db, query.offset(skip).limit(limit).all())
+        query = query.order_by(Provider.worker_payment_amount.desc(), Provider.id)
+    elif sort == "top_rated":
+        from app.modules.reviews.models import Review
+        from app.modules.reviews.services import visible
+        avg_sub = (
+            visible(db, db.query(Review.provider_id.label("pid"), func.avg(Review.rating).label("avg")))
+            .group_by(Review.provider_id)
+            .subquery()
+        )
+        query = query.outerjoin(avg_sub, avg_sub.c.pid == Provider.id).order_by(
+            func.coalesce(avg_sub.c.avg, 0).desc(), Provider.id
+        )
+    elif dist_sq is not None:  # "nearest" (default) when the caller's location is known
+        query = query.order_by(Provider.latitude.is_(None), dist_sq, Provider.id)
+    providers = attach_ratings(db, query.offset(skip).limit(limit).all())
+    if lat is not None and lng is not None:
+        for p in providers:
+            p.distance_km = (
+                round(haversine_km(lat, lng, p.latitude, p.longitude), 2)
+                if p.latitude is not None and p.longitude is not None else None
+            )
+    return providers
 
 
 @router.get("/categories", response_model=List[str])

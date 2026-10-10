@@ -69,6 +69,7 @@ class ProviderPublic(BaseModel):
     # Aggregates over publicly visible reviews (published, not hidden by open reports)
     avg_rating: Optional[float] = None
     review_count: int = 0
+    distance_km: Optional[float] = None  # set by /providers/search when the caller's location is given
 
     model_config = {"from_attributes": True}
 

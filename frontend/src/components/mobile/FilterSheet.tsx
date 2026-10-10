@@ -2,15 +2,9 @@ import { useState, useEffect } from "react";
 import { NationalitySelect } from "@/components/ui/NationalitySelect";
 import { DateSelect } from "@/components/mobile/DateSelect";
 import { t } from "@/i18n";
+import { DEFAULT_FILTERS, type FilterValues } from "@/utils/filters";
 
-export interface FilterValues {
-  sort: string;
-  date: string;
-  minPrice: string;
-  maxPrice: string;
-  nationality: string;
-  minExperience: number;
-}
+export type { FilterValues };
 
 interface FilterSheetProps {
   open: boolean;
@@ -26,6 +20,15 @@ const SORT_OPTIONS = [
   { label: "filters.sort.price_asc" as const, value: "price_asc" },
   { label: "filters.sort.price_desc" as const, value: "price_desc" },
 ];
+
+const RATING_OPTIONS = [
+  { labelKey: "filters.rating.any" as const, value: 0 },
+  { labelKey: "filters.rating.3" as const, value: 3 },
+  { labelKey: "filters.rating.4" as const, value: 4 },
+  { labelKey: "filters.rating.45" as const, value: 4.5 },
+];
+
+const DISTANCE_OPTIONS = [0, 1, 3, 5, 10, 25];
 
 const EXPERIENCE_OPTIONS = [
   { labelKey: "filters.exp.any" as const, value: 0 },
@@ -53,14 +56,14 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
   }
 
   function handleClear() {
-    setLocal({ sort: "nearest", date: "", minPrice: "", maxPrice: "", nationality: "", minExperience: 0 });
+    setLocal({ ...DEFAULT_FILTERS });
   }
 
   const pillActive = "bg-ds-interactive rounded-ds-full px-[14px] py-[8px] ds-label text-ds-text-inverse";
   const pillInactive = "bg-ds-bg-primary border border-ds-border rounded-ds-full px-[14px] py-[8px] ds-label text-ds-text-secondary";
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={t("filters.title")}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40"
@@ -98,6 +101,7 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
               <button
                 key={opt.value}
                 type="button"
+                aria-pressed={local.sort === opt.value}
                 className={local.sort === opt.value ? pillActive : pillInactive}
                 onClick={() => setLocal((prev) => ({ ...prev, sort: opt.value }))}
               >
@@ -105,6 +109,70 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-ds-border w-full" />
+
+        {/* Open now */}
+        <div className="flex items-center justify-between gap-ds-3">
+          <div>
+            <p className="ds-label text-ds-text-primary">{t("filters.open_now")}</p>
+            <p className="ds-caption text-ds-text-secondary">{t("filters.open_now_hint")}</p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={local.openNow}
+            aria-label={t("filters.open_now")}
+            onClick={() => setLocal((prev) => ({ ...prev, openNow: !prev.openNow }))}
+            className={`relative h-ds-6 w-ds-10 shrink-0 rounded-ds-full transition-colors ${local.openNow ? "bg-ds-interactive" : "bg-ds-border-strong"}`}
+          >
+            <span className={`absolute top-[2px] h-5 w-5 rounded-ds-full bg-ds-bg-primary transition-all ${local.openNow ? "left-[18px]" : "left-[2px]"}`} />
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-ds-border w-full" />
+
+        {/* Rating */}
+        <div>
+          <p className="ds-label text-ds-text-primary mb-[10px]">{t("filters.rating")}</p>
+          <div className="flex flex-wrap gap-[8px]">
+            {RATING_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={local.minRating === opt.value}
+                className={local.minRating === opt.value ? pillActive : pillInactive}
+                onClick={() => setLocal((prev) => ({ ...prev, minRating: opt.value }))}
+              >
+                {t(opt.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-ds-border w-full" />
+
+        {/* Distance */}
+        <div>
+          <p className="ds-label text-ds-text-primary mb-[10px]">{t("filters.distance")}</p>
+          <div className="flex flex-wrap gap-[8px]">
+            {DISTANCE_OPTIONS.map((km) => (
+              <button
+                key={km}
+                type="button"
+                aria-pressed={local.maxDistanceKm === km}
+                className={local.maxDistanceKm === km ? pillActive : pillInactive}
+                onClick={() => setLocal((prev) => ({ ...prev, maxDistanceKm: km }))}
+              >
+                {km === 0 ? t("filters.distance.any") : t("filters.distance.km", { km })}
+              </button>
+            ))}
+          </div>
+          {local.maxDistanceKm > 0 && <p className="ds-caption text-ds-text-secondary mt-ds-2">{t("filters.distance_hint")}</p>}
         </div>
 
         {/* Divider */}
@@ -128,18 +196,22 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
           <div className="flex items-center gap-[8px]">
             <input
               type="number"
+              inputMode="decimal"
+              aria-label={t("filters.price_min")}
               placeholder={t("filters.price_min")}
               value={local.minPrice}
               onChange={(e) => setLocal((prev) => ({ ...prev, minPrice: e.target.value }))}
-              className="h-[44px] border border-ds-border rounded-ds-xl px-ds-4 ds-body text-ds-text-secondary flex-1 bg-ds-bg-primary outline-none focus:border-ds-interactive"
+              className="h-[44px] border border-ds-border rounded-ds-xl px-ds-4 ds-body text-ds-text-secondary flex-1 min-w-0 bg-ds-bg-primary outline-none focus:border-ds-interactive"
             />
             <span className="ds-body text-ds-text-muted">—</span>
             <input
               type="number"
+              inputMode="decimal"
+              aria-label={t("filters.price_max")}
               placeholder={t("filters.price_max")}
               value={local.maxPrice}
               onChange={(e) => setLocal((prev) => ({ ...prev, maxPrice: e.target.value }))}
-              className="h-[44px] border border-ds-border rounded-ds-xl px-ds-4 ds-body text-ds-text-secondary flex-1 bg-ds-bg-primary outline-none focus:border-ds-interactive"
+              className="h-[44px] border border-ds-border rounded-ds-xl px-ds-4 ds-body text-ds-text-secondary flex-1 min-w-0 bg-ds-bg-primary outline-none focus:border-ds-interactive"
             />
           </div>
         </div>
@@ -168,6 +240,7 @@ export function FilterSheet({ open, onClose, values, onApply, resultCount }: Fil
               <button
                 key={opt.value}
                 type="button"
+                aria-pressed={local.minExperience === opt.value}
                 className={local.minExperience === opt.value ? pillActive : pillInactive}
                 onClick={() => setLocal((prev) => ({ ...prev, minExperience: opt.value }))}
               >

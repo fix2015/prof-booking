@@ -1,5 +1,6 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { providersApi } from "@/api/salons";
+import { searchParamsFor, type FilterValues, type UserLocation } from "@/utils/filters";
 
 export interface ProviderSearchParams {
   q?: string;
@@ -44,23 +45,15 @@ export function useSearchProviders(params: ProviderSearchParams) {
 
 const PAGE_SIZE = 24;
 
-export function useInfiniteProviders(params: ProviderSearchParams) {
+/** Discover list: text/category search + all filters (rating, open now, distance…), paged. */
+export function useInfiniteProviders(params: { q?: string; category?: string; filters: FilterValues; location: UserLocation | null }) {
   return useInfiniteQuery({
     queryKey: ["providers", "search", "infinite", params],
     queryFn: ({ pageParam = 0 }) =>
       providersApi.search({
         q: params.q || undefined,
         category: params.category && params.category !== "All" ? params.category : undefined,
-        sort: params.sort || undefined,
-        available_date: params.date || undefined,
-        min_price: params.minPrice || undefined,
-        max_price: params.maxPrice || undefined,
-        nationality: params.nationality || undefined,
-        min_experience: params.minExperience || undefined,
-        lat_min: params.bounds?.latMin,
-        lat_max: params.bounds?.latMax,
-        lng_min: params.bounds?.lngMin,
-        lng_max: params.bounds?.lngMax,
+        ...searchParamsFor(params.filters, new Date(), params.location),
         skip: pageParam,
         limit: PAGE_SIZE,
       }),
