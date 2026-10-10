@@ -72,7 +72,7 @@ export function ProviderProfilePage() {
 
   const { data: provider, isLoading } = usePublicProvider(id);
   const { data: professionals = [] } = useProviderProfessionalsPublic(id);
-  const { data: services = [] } = useQuery({
+  const { data: services = [], isLoading: servicesLoading } = useQuery({
     queryKey: ["services", "provider", id],
     queryFn: () => servicesApi.listByProvider(id),
     enabled: !!id,
@@ -221,7 +221,13 @@ export function ProviderProfilePage() {
         </button>
       </div>
 
-      {/* Services */}
+      {/* Services (skeleton keeps the layout stable while they load) */}
+      {servicesLoading && (
+        <div className="bg-ds-bg-primary mt-ds-3 border-t border-ds-border px-ds-4 py-ds-4 flex flex-col gap-ds-3" aria-hidden>
+          <div className="h-5 w-1/3 bg-ds-bg-tertiary rounded-ds-md animate-pulse" />
+          {[0, 1, 2].map((i) => <div key={i} className="h-12 bg-ds-bg-tertiary rounded-ds-md animate-pulse" />)}
+        </div>
+      )}
       {services.length > 0 && (
         <div className="bg-ds-bg-primary mt-ds-3 border-t border-ds-border">
           <div className="px-ds-4 pt-ds-4 pb-ds-2">

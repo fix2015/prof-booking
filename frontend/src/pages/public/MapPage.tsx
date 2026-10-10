@@ -164,7 +164,7 @@ export function MapPage() {
               </button>
             </div>
           ) : (
-            <div className="px-ds-4 pb-ds-4 max-h-[40vh] overflow-y-auto">
+            <div className="px-ds-4 pb-ds-4 h-[40vh] overflow-y-auto">
               <p className="ds-body-small text-ds-text-secondary mb-ds-3">
                 {t("map.providers_nearby", { count: geoProviders.length })}
               </p>
