@@ -5,6 +5,10 @@ export const providersApi = {
   listPublic: (search?: string) =>
     apiClient.get<Provider[]>("/providers/public", { params: search ? { search } : undefined }).then((r) => r.data),
 
+  /** Public providers by id (favourites), in the given order; inactive/unknown ids are skipped. */
+  listByIds: (ids: number[]) =>
+    apiClient.get<Provider[]>("/providers/public", { params: { ids: ids.join(",") } }).then((r) => r.data),
+
   getPublic: (id: number) =>
     apiClient.get<Provider>(`/providers/public/${id}`).then((r) => r.data),
 

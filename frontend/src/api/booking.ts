@@ -20,6 +20,7 @@ export interface BookingLookupResult {
   provider_name: string;
   provider_address?: string;
   provider_phone?: string;
+  service_id?: number | null;
   service_name?: string;
   professional_id?: number;
   professional_name?: string;

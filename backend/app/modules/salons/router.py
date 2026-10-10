@@ -160,9 +160,19 @@ def get_public_providers(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, le=100),
     search: Optional[str] = Query(None, description="Search by name or category"),
+    ids: Optional[str] = Query(None, description="Comma-separated provider ids (e.g. a client's favourites)"),
     db: Session = Depends(get_db),
 ):
     """Public endpoint — lists all active service providers for client booking."""
+    if ids is not None:
+        from fastapi import HTTPException
+        from app.modules.salons.models import Provider
+        try:
+            wanted = [int(x) for x in ids.split(",") if x.strip()][:100]
+        except ValueError:
+            raise HTTPException(status_code=422, detail="ids must be comma-separated integers")
+        found = {p.id: p for p in db.query(Provider).filter(Provider.id.in_(wanted), Provider.is_active == True).all()}  # noqa: E712
+        return attach_ratings(db, [found[i] for i in wanted if i in found])
     return attach_ratings(db, list_providers(db, skip=skip, limit=limit, search=search))
 
 

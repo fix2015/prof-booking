@@ -13,24 +13,9 @@ import { MobileAvatar } from "@/components/mobile/MobileAvatar";
 import { t } from "@/i18n";
 import type { Review } from "@/types";
 import { ReviewModeration } from "@/components/shared/ReviewModeration";
+import { useFavourites } from "@/hooks/useFavourites";
 import { useReviewModeration } from "@/hooks/useReviewModeration";
 
-const SAVED_KEY = "pb_saved";
-
-function getSaved(): number[] {
-  try {
-    return JSON.parse(localStorage.getItem(SAVED_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function toggleSaved(id: number): number[] {
-  const current = getSaved();
-  const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-  localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-  return next;
-}
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
@@ -99,7 +84,7 @@ export function ProviderProfilePage() {
     enabled: !!id,
   });
 
-  const [saved, setSaved] = useState<number[]>(getSaved);
+  const { favourites: saved, toggleFavourite } = useFavourites();
   const [showAllServices, setShowAllServices] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
@@ -138,7 +123,7 @@ export function ProviderProfilePage() {
 
   const HeartButton = (
     <button
-      onClick={() => provider && setSaved(toggleSaved(provider.id))}
+      onClick={() => provider && toggleFavourite(provider.id)}
       className="w-8 h-8 flex items-center justify-center"
       aria-label={isSaved ? "Unsave" : "Save"}
     >

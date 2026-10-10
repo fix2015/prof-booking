@@ -49,6 +49,7 @@ class BookingLookupResponse(BaseModel):
     provider_name: str
     provider_address: Optional[str]
     provider_phone: Optional[str]
+    service_id: Optional[int] = None  # for "Book again"
     service_name: Optional[str]
     professional_id: Optional[int]
     professional_name: Optional[str]

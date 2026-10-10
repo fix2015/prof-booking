@@ -37,3 +37,12 @@ export function parseSlotPrefill(params: URLSearchParams): SlotPrefill | null {
   const pro = Number(params.get("professional_id"));
   return { date, time, professionalId: Number.isInteger(pro) && pro > 0 ? pro : undefined };
 }
+
+/** "Book again" URL from a past booking: same provider, service and professional. */
+export function rebookUrl(b: { provider_id: number; service_id?: number | null; professional_id?: number | null }): string {
+  const params = new URLSearchParams();
+  if (b.service_id) params.set("service_id", String(b.service_id));
+  if (b.professional_id) params.set("professional_id", String(b.professional_id));
+  const qs = params.toString();
+  return `/book/${b.provider_id}${qs ? `?${qs}` : ""}`;
+}

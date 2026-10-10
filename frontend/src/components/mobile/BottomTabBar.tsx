@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { t, type TranslationKey } from "@/i18n";
 
 interface Tab {
   path: string;
-  label: string;
+  label: TranslationKey;
   icon: (active: boolean) => JSX.Element;
 }
 
@@ -34,10 +35,10 @@ const ProfileIcon = ({ active }: { active: boolean }) => (
 );
 
 const TABS: Tab[] = [
-  { path: "/", label: "Search", icon: (a) => <SearchIcon active={a} /> },
-  { path: "/map", label: "Map", icon: (a) => <MapIcon active={a} /> },
-  { path: "/saved", label: "Saved", icon: (a) => <SavedIcon active={a} /> },
-  { path: "/me", label: "Profile", icon: (a) => <ProfileIcon active={a} /> },
+  { path: "/", label: "nav.tab.search", icon: (a) => <SearchIcon active={a} /> },
+  { path: "/map", label: "nav.tab.map", icon: (a) => <MapIcon active={a} /> },
+  { path: "/saved", label: "nav.tab.favourites", icon: (a) => <SavedIcon active={a} /> },
+  { path: "/me", label: "nav.tab.profile", icon: (a) => <ProfileIcon active={a} /> },
 ];
 
 export function BottomTabBar() {
@@ -45,19 +46,20 @@ export function BottomTabBar() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[768px] h-[56px] bg-ds-bg-primary border-t border-ds-border flex items-center z-20">
+    <nav aria-label={t("nav.tab.aria")} className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[768px] h-[56px] bg-ds-bg-primary border-t border-ds-border flex items-center z-20">
       {TABS.map((tab) => {
         const active = location.pathname === tab.path;
         return (
           <button
             key={tab.path}
             onClick={() => navigate(tab.path)}
+            aria-current={active ? "page" : undefined}
             className={`flex-1 flex flex-col items-center justify-center gap-[2px] h-full ${
               active ? "text-ds-interactive" : "text-ds-text-secondary"
             }`}
           >
             {tab.icon(active)}
-            <span className={active ? "ds-tab-label-active" : "ds-tab-label"}>{tab.label}</span>
+            <span className={active ? "ds-tab-label-active" : "ds-tab-label"}>{t(tab.label)}</span>
           </button>
         );
       })}

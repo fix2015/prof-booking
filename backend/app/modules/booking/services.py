@@ -177,6 +177,7 @@ def _session_to_lookup_response(session: SessionModel) -> BookingLookupResponse:
         provider_name=session.provider.name if session.provider else "",
         provider_address=session.provider.address if session.provider else None,
         provider_phone=session.provider.phone if session.provider else None,
+        service_id=session.service_id,
         service_name=session.service.name if session.service else None,
         professional_id=session.professional_id,
         professional_name=session.professional.name if session.professional else None,

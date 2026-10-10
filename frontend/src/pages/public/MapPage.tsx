@@ -5,24 +5,9 @@ import { useSearchProviders } from "@/hooks/useSalon";
 import { AppHeader } from "@/components/mobile/AppHeader";
 import { ProviderCard } from "@/components/mobile/ProviderCard";
 import { t } from "@/i18n";
+import { useFavourites } from "@/hooks/useFavourites";
 import { Provider } from "@/types";
 
-const SAVED_KEY = "pb_saved";
-
-function getSaved(): number[] {
-  try {
-    return JSON.parse(localStorage.getItem(SAVED_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function toggleSaved(id: number): number[] {
-  const current = getSaved();
-  const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-  localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-  return next;
-}
 
 const DEFAULT_CENTER = { lat: 51.5074, lng: -0.1278 };
 const MAP_CONTAINER = { width: "100%", height: "100%" };
@@ -36,7 +21,7 @@ interface Bounds {
 
 export function MapPage() {
   const navigate = useNavigate();
-  const [saved, setSaved] = useState<number[]>(getSaved);
+  const { favourites: saved, toggleFavourite } = useFavourites();
   const [selected, setSelected] = useState<Provider | null>(null);
   const [bounds, setBounds] = useState<Bounds | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,7 +153,7 @@ export function MapPage() {
                 provider={selected}
                 variant="compact"
                 saved={saved.includes(selected.id)}
-                onToggleSave={(id) => setSaved(toggleSaved(id))}
+                onToggleSave={(id) => toggleFavourite(id)}
                 onClick={(id) => navigate(`/providers/${id}`)}
               />
               <button
@@ -190,7 +175,7 @@ export function MapPage() {
                     provider={p}
                     variant="compact"
                     saved={saved.includes(p.id)}
-                    onToggleSave={(id) => setSaved(toggleSaved(id))}
+                    onToggleSave={(id) => toggleFavourite(id)}
                     onClick={(id) => navigate(`/providers/${id}`)}
                   />
                 ))}

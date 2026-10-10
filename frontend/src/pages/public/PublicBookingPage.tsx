@@ -48,9 +48,11 @@ export function PublicBookingPage() {
   const preselectedServiceId = searchParams.get("service_id");
   // One-tap "next available" slot from Discover: date/time/professional to apply once a service is chosen.
   const [prefill, setPrefill] = useState<SlotPrefill | null>(() => parseSlotPrefill(searchParams));
+  // "Book again": same professional as last time (date/time still chosen by the client)
+  const rebookProfessionalId = prefill ? undefined : Number(searchParams.get("professional_id")) || undefined;
 
   const { data: provider } = usePublicProvider(id);
-  const { data: professionals = [] } = useProviderProfessionalsPublic(id);
+  const { data: professionals = [], isFetched: professionalsFetched } = useProviderProfessionalsPublic(id);
   const { data: services = [] } = useQuery({
     queryKey: ["services", "provider", id],
     queryFn: () => servicesApi.listByProvider(id),
@@ -78,6 +80,9 @@ export function PublicBookingPage() {
       setSelectedProfessional(professionals.find((p) => p.id === prefill.professionalId) ?? null);
       setSelectedDate(prefill.date);
       setStep(4);
+    } else if (rebookProfessionalId && professionals.some((p) => p.id === rebookProfessionalId)) {
+      setSelectedProfessional(professionals.find((p) => p.id === rebookProfessionalId) ?? null);
+      setStep(3);
     } else {
       setStep(2);
     }
@@ -87,9 +92,10 @@ export function PublicBookingPage() {
   useEffect(() => {
     if (!preselectedServiceId || selectedService) return;
     const found = services.find((s) => s.id === Number(preselectedServiceId));
-    if (found) chooseService(found); // skip to professional selection (or the pre-filled slot)
+    // Wait for the professionals list when "Book again" pre-selects one
+    if (found && (!rebookProfessionalId || professionalsFetched)) chooseService(found);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [services]);
+  }, [services, professionalsFetched]);
   const calDays = getDaysInMonth(calMonth.year, calMonth.month);
 
   // First and last day of visible month for available-dates query

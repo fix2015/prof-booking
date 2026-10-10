@@ -16,24 +16,9 @@ import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { t } from "@/i18n";
 import { useNextAvailable } from "@/hooks/useBooking";
 import { bookingPrefillUrl } from "@/utils/slots";
+import { useFavourites } from "@/hooks/useFavourites";
 import type { AvailableSlot, Provider } from "@/types";
 
-const SAVED_KEY = "pb_saved";
-
-function getSaved(): number[] {
-  try {
-    return JSON.parse(localStorage.getItem(SAVED_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function toggleSaved(id: number): number[] {
-  const current = getSaved();
-  const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-  localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-  return next;
-}
 
 export function SalonSelectorPage() {
   const navigate = useNavigate();
@@ -42,7 +27,7 @@ export function SalonSelectorPage() {
   const logout = useLogout();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [saved, setSaved] = useState<number[]>(getSaved);
+  const { favourites: saved, toggleFavourite } = useFavourites();
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>({
     sort: "nearest",
@@ -100,7 +85,7 @@ export function SalonSelectorPage() {
   }, [handleObserver]);
 
   function handleToggleSave(id: number) {
-    setSaved(toggleSaved(id));
+    toggleFavourite(id);
   }
 
   const hasActiveFilters =

@@ -6,6 +6,8 @@ import type { BookingLookupResult } from "@/api/booking";
 import type { BookingConfirmation } from "@/types";
 import { cancelBookingReminders } from "@/lib/reminders";
 import { StatusBadge } from "./StatusBadge";
+import { t } from "@/i18n";
+import { rebookUrl } from "@/utils/slots";
 
 type AnyBooking = BookingLookupResult | BookingConfirmation;
 
@@ -14,6 +16,8 @@ function getBookingStatus(b: AnyBooking): string {
 }
 
 const CANCELLABLE = new Set(["confirmed", "pending"]);
+// Past bookings (and upcoming ones) can be booked again with the same service and professional
+const REBOOKABLE = new Set(["completed", "cancelled", "no_show", "confirmed", "pending"]);
 
 export function BookingCard({ b }: { b: AnyBooking }) {
   const navigate = useNavigate();
@@ -55,7 +59,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
     <div className="bg-ds-bg-primary border border-ds-border rounded-ds-xl mx-ds-4 p-ds-3 flex flex-col gap-[8px]">
       {/* Service + status */}
       <div className="flex items-start justify-between gap-ds-2">
-        <p className="ds-body-strong text-ds-text-primary flex-1 min-w-0 truncate">{b.service_name ?? "Appointment"}</p>
+        <p className="ds-body-strong text-ds-text-primary flex-1 min-w-0 truncate">{b.service_name ?? t("bookings.appointment")}</p>
         <StatusBadge status={status} />
       </div>
 
@@ -146,13 +150,17 @@ export function BookingCard({ b }: { b: AnyBooking }) {
           {b.price != null && (
             <span className="ds-body-strong text-ds-text-primary">£{b.price}</span>
           )}
-          {status === "confirmed" && providerId && (
+          {REBOOKABLE.has(status) && providerId && (
             <button
               type="button"
-              onClick={() => navigate(`/book/${providerId}`)}
-              className="ds-caption text-ds-interactive font-semibold"
+              onClick={() => navigate(rebookUrl({
+                provider_id: providerId,
+                service_id: "service_id" in b ? b.service_id : undefined,
+                professional_id: professionalId,
+              }))}
+              className="h-ds-8 px-ds-3 rounded-ds-full bg-ds-interactive ds-label-small text-ds-text-inverse"
             >
-              Book again →
+              {t("bookings.book_again")}
             </button>
           )}
         </div>
@@ -167,11 +175,11 @@ export function BookingCard({ b }: { b: AnyBooking }) {
               onClick={() => setConfirmingCancel(true)}
               className="ds-caption text-[var(--ds-feedback-error)] font-medium"
             >
-              Cancel booking
+              {t("bookings.cancel")}
             </button>
           ) : (
             <div className="flex flex-col gap-[6px]">
-              <p className="ds-caption text-ds-text-secondary">Cancel this appointment?</p>
+              <p className="ds-caption text-ds-text-secondary">{t("bookings.cancel.confirm")}</p>
               <div className="flex gap-ds-2">
                 <button
                   type="button"
@@ -179,7 +187,7 @@ export function BookingCard({ b }: { b: AnyBooking }) {
                   disabled={cancelMutation.isPending}
                   className="h-[32px] px-ds-3 bg-[var(--ds-feedback-error)] rounded-ds-full ds-caption text-ds-text-inverse font-semibold disabled:opacity-50"
                 >
-                  {cancelMutation.isPending ? "Cancelling…" : "Yes, cancel"}
+                  {cancelMutation.isPending ? t("bookings.cancel.cancelling") : t("bookings.cancel.submit")}
                 </button>
                 <button
                   type="button"
@@ -187,11 +195,11 @@ export function BookingCard({ b }: { b: AnyBooking }) {
                   disabled={cancelMutation.isPending}
                   className="h-[32px] px-ds-3 border border-ds-border rounded-ds-full ds-caption text-ds-text-secondary"
                 >
-                  Keep
+                  {t("bookings.cancel.back")}
                 </button>
               </div>
               {cancelMutation.isError && (
-                <p className="ds-caption text-[var(--ds-feedback-error)]">Failed to cancel. Please try again.</p>
+                <p className="ds-caption text-[var(--ds-feedback-error)]">{t("common.error")}</p>
               )}
             </div>
           )}
