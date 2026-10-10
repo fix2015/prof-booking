@@ -58,7 +58,7 @@ export function BookingManagementPage() {
       {/* Header */}
       <header className="sticky top-0 z-20 bg-ds-bg-primary/80 backdrop-blur border-b border-ds-border px-ds-4 py-ds-3 flex items-center gap-ds-3">
         <Link to="/discover">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button aria-label={t("common.back")} variant="ghost" size="icon" className="h-8 w-8">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>

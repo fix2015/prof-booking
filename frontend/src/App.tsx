@@ -1,50 +1,59 @@
+import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuthContext } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "@/components/ui/toaster";
 import { CookieConsent } from "@/components/shared/CookieConsent";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { StandaloneLayout } from "@/components/layout/StandaloneLayout";
+import { RouteFallback } from "@/components/shared/RouteFallback";
 
 // Public pages (no auth required)
-import { LoginPage } from "@/pages/public/LoginPage";
 import { MobileLayout } from "@/pages/public/MobileLayout";
+
+/** Route-level code splitting: every page except Discover (the landing screen) loads on demand. */
+function lazyPage<K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) {
+  return lazy(() => load().then((m) => ({ default: m[name] })));
+}
+
+const LoginPage = lazyPage(() => import("@/pages/public/LoginPage"), "LoginPage");
+const MapPage = lazyPage(() => import("@/pages/public/MapPage"), "MapPage");
+const SavedPage = lazyPage(() => import("@/pages/public/SavedPage"), "SavedPage");
+const UserProfilePage = lazyPage(() => import("@/pages/public/UserProfilePage"), "UserProfilePage");
+const ProviderProfilePage = lazyPage(() => import("@/pages/public/ProviderProfilePage"), "ProviderProfilePage");
+const MasterProfilePage = lazyPage(() => import("@/pages/public/MasterProfilePage"), "MasterProfilePage");
+const PublicBookingPage = lazyPage(() => import("@/pages/public/PublicBookingPage"), "PublicBookingPage");
+const HelpPage = lazyPage(() => import("@/pages/public/HelpPage"), "HelpPage");
+const TermsPage = lazyPage(() => import("@/pages/public/TermsPage"), "TermsPage");
+const PrivacyPage = lazyPage(() => import("@/pages/public/PrivacyPage"), "PrivacyPage");
+const ClientProfileEditPage = lazyPage(() => import("@/pages/public/ClientProfileEditPage"), "ClientProfileEditPage");
+const ClientReviewsPage = lazyPage(() => import("@/pages/public/ClientReviewsPage"), "ClientReviewsPage");
+const ClientBookingsPage = lazyPage(() => import("@/pages/public/ClientBookingsPage"), "ClientBookingsPage");
+const MasterDiscoveryPage = lazyPage(() => import("@/pages/public/MasterDiscoveryPage"), "MasterDiscoveryPage");
+const FindProvidersPage = lazyPage(() => import("@/pages/public/FindProvidersPage"), "FindProvidersPage");
+const FindProfessionalsPage = lazyPage(() => import("@/pages/public/FindProfessionalsPage"), "FindProfessionalsPage");
+const MasterDashboardPage = lazyPage(() => import("@/pages/private/MasterDashboardPage"), "MasterDashboardPage");
+const OwnerDashboardPage = lazyPage(() => import("@/pages/private/OwnerDashboardPage"), "OwnerDashboardPage");
+const TodayPage = lazyPage(() => import("@/pages/private/TodayPage"), "TodayPage");
+const AdminPanelPage = lazyPage(() => import("@/pages/private/AdminPanelPage"), "AdminPanelPage");
+const CalendarPage = lazyPage(() => import("@/pages/private/CalendarPage"), "CalendarPage");
+const SessionsPage = lazyPage(() => import("@/pages/private/SessionsPage"), "SessionsPage");
+const ServicesPage = lazyPage(() => import("@/pages/private/ServicesPage"), "ServicesPage");
+const MastersPage = lazyPage(() => import("@/pages/private/MastersPage"), "MastersPage");
+const ReportsPage = lazyPage(() => import("@/pages/private/ReportsPage"), "ReportsPage");
+const NotificationsPage = lazyPage(() => import("@/pages/private/NotificationsPage"), "NotificationsPage");
+const ReviewsPage = lazyPage(() => import("@/pages/private/ReviewsPage"), "ReviewsPage");
+const OwnerAnalyticsPage = lazyPage(() => import("@/pages/private/OwnerAnalyticsPage"), "OwnerAnalyticsPage");
+const MasterAnalyticsPage = lazyPage(() => import("@/pages/private/MasterAnalyticsPage"), "MasterAnalyticsPage");
+const InvoicesPage = lazyPage(() => import("@/pages/private/InvoicesPage"), "InvoicesPage");
+const MasterProfileEditPage = lazyPage(() => import("@/pages/private/MasterProfileEditPage"), "MasterProfileEditPage");
+const SalonProfileEditPage = lazyPage(() => import("@/pages/private/SalonProfileEditPage"), "SalonProfileEditPage");
+const ProfessionalSplitPage = lazyPage(() => import("@/pages/private/ProfessionalSplitPage"), "ProfessionalSplitPage");
+const ClientsPage = lazyPage(() => import("@/pages/private/ClientsPage"), "ClientsPage");
+const ClientDetailPage = lazyPage(() => import("@/pages/private/ClientDetailPage"), "ClientDetailPage");
 import { SalonSelectorPage } from "@/pages/public/SalonSelectorPage";
-import { MapPage } from "@/pages/public/MapPage";
-import { SavedPage } from "@/pages/public/SavedPage";
-import { UserProfilePage } from "@/pages/public/UserProfilePage";
-import { ProviderProfilePage } from "@/pages/public/ProviderProfilePage";
-import { MasterProfilePage } from "@/pages/public/MasterProfilePage";
-import { PublicBookingPage } from "@/pages/public/PublicBookingPage";
-import { HelpPage } from "@/pages/public/HelpPage";
-import { TermsPage } from "@/pages/public/TermsPage";
-import { PrivacyPage } from "@/pages/public/PrivacyPage";
-import { ClientProfileEditPage } from "@/pages/public/ClientProfileEditPage";
-import { ClientReviewsPage } from "@/pages/public/ClientReviewsPage";
-import { ClientBookingsPage } from "@/pages/public/ClientBookingsPage";
-import { MasterDiscoveryPage } from "@/pages/public/MasterDiscoveryPage";
-import { FindProvidersPage } from "@/pages/public/FindProvidersPage";
-import { FindProfessionalsPage } from "@/pages/public/FindProfessionalsPage";
 
 // Private pages (auth required)
-import { MasterDashboardPage } from "@/pages/private/MasterDashboardPage";
-import { OwnerDashboardPage } from "@/pages/private/OwnerDashboardPage";
-import { TodayPage } from "@/pages/private/TodayPage";
-import { AdminPanelPage } from "@/pages/private/AdminPanelPage";
-import { CalendarPage } from "@/pages/private/CalendarPage";
-import { SessionsPage } from "@/pages/private/SessionsPage";
-import { ServicesPage } from "@/pages/private/ServicesPage";
-import { MastersPage } from "@/pages/private/MastersPage";
-import { ReportsPage } from "@/pages/private/ReportsPage";
-import { NotificationsPage } from "@/pages/private/NotificationsPage";
-import { ReviewsPage } from "@/pages/private/ReviewsPage";
-import { OwnerAnalyticsPage } from "@/pages/private/OwnerAnalyticsPage";
-import { MasterAnalyticsPage } from "@/pages/private/MasterAnalyticsPage";
-import { InvoicesPage } from "@/pages/private/InvoicesPage";
-import { MasterProfileEditPage } from "@/pages/private/MasterProfileEditPage";
-import { SalonProfileEditPage } from "@/pages/private/SalonProfileEditPage";
-import { ProfessionalSplitPage } from "@/pages/private/ProfessionalSplitPage";
-import { ClientsPage } from "@/pages/private/ClientsPage";
-import { ClientDetailPage } from "@/pages/private/ClientDetailPage";
 
 function ProRegisterRedirect() {
   const [searchParams] = useSearchParams();
@@ -63,7 +72,9 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route element={<StandaloneLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+      </Route>
       <Route path="/register" element={<Navigate to="/login?tab=business" replace />} />
       <Route path="/register/professional" element={<ProRegisterRedirect />} />
       <Route path="/register/master" element={<ProRegisterRedirect />} />
@@ -78,25 +89,27 @@ function AppRoutes() {
       </Route>
 
       {/* Detail + booking routes (no tab bar) */}
-      <Route path="/help" element={<HelpPage />} />
-      <Route path="/terms" element={<TermsPage />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
-      <Route path="/profile/client" element={<ClientProfileEditPage />} />
-      <Route path="/reviews/client" element={<ClientReviewsPage />} />
-      <Route path="/bookings/client" element={<ClientBookingsPage />} />
-      <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
-      <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
-      <Route path="/book/:providerId" element={<PublicBookingPage />} />
-      <Route path="/book" element={<PublicBookingPage />} />
+      <Route element={<StandaloneLayout />}>
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/profile/client" element={<ClientProfileEditPage />} />
+        <Route path="/reviews/client" element={<ClientReviewsPage />} />
+        <Route path="/bookings/client" element={<ClientBookingsPage />} />
+        <Route path="/providers/:providerId" element={<ProviderProfilePage />} />
+        <Route path="/professionals/:professionalId" element={<MasterProfilePage />} />
+        <Route path="/book/:providerId" element={<PublicBookingPage />} />
+        <Route path="/book" element={<PublicBookingPage />} />
 
-      {/* Backward-compat */}
-      <Route path="/providers" element={<Navigate to="/" replace />} />
-      <Route path="/salons" element={<Navigate to="/" replace />} />
-      <Route path="/professionals/:professionalId/split" element={<ProfessionalSplitPage />} />
-      <Route path="/masters/:masterId" element={<MasterProfilePage />} />
-      <Route path="/discover" element={<MasterDiscoveryPage />} />
-      <Route path="/find-providers" element={<FindProvidersPage />} />
-      <Route path="/find-professionals" element={<FindProfessionalsPage />} />
+        {/* Backward-compat */}
+        <Route path="/providers" element={<Navigate to="/" replace />} />
+        <Route path="/salons" element={<Navigate to="/" replace />} />
+        <Route path="/professionals/:professionalId/split" element={<ProfessionalSplitPage />} />
+        <Route path="/masters/:masterId" element={<MasterProfilePage />} />
+        <Route path="/discover" element={<MasterDiscoveryPage />} />
+        <Route path="/find-providers" element={<FindProvidersPage />} />
+        <Route path="/find-professionals" element={<FindProfessionalsPage />} />
+      </Route>
 
       {/* Authenticated app routes */}
       <Route element={<AppLayout />}>
@@ -133,7 +146,9 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <Suspense fallback={<RouteFallback fullScreen />}>
+            <AppRoutes />
+          </Suspense>
           <Toaster />
           <CookieConsent />
         </BrowserRouter>

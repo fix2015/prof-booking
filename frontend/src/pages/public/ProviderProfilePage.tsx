@@ -21,7 +21,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <div className="flex gap-[4px]">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" onClick={() => onChange(n)} className="p-[2px]">
+        <button aria-label={t("reviews.rate_n", { n })} key={n} type="button" onClick={() => onChange(n)} className="p-[2px]">
           <svg width="28" height="28" viewBox="0 0 14 14" fill="none">
             <path
               d="M7 1l1.5 3.2L12 4.8l-2.5 2.4.6 3.4L7 9.1 3.9 10.6l.6-3.4L2 4.8l3.5-.6L7 1Z"
@@ -125,7 +125,8 @@ export function ProviderProfilePage() {
     <button
       onClick={() => provider && toggleFavourite(provider.id)}
       className="w-8 h-8 flex items-center justify-center"
-      aria-label={isSaved ? "Unsave" : "Save"}
+      aria-label={isSaved ? t("providers.unsave") : t("providers.save")}
+      aria-pressed={isSaved}
     >
       <svg width="20" height="20" viewBox="0 0 20 20" fill={isSaved ? "var(--ds-feedback-saved)" : "none"}>
         <path
@@ -317,7 +318,7 @@ export function ProviderProfilePage() {
           >
             <div className="flex items-center justify-between">
               <p className="ds-h4 text-ds-text-primary">{t("reviews.write_review")}</p>
-              <button onClick={() => setShowReviewForm(false)} className="text-ds-text-muted p-[4px]">✕</button>
+              <button aria-label={t("common.close")} onClick={() => setShowReviewForm(false)} className="text-ds-text-muted p-[4px]">✕</button>
             </div>
 
             {reviewDone ? (

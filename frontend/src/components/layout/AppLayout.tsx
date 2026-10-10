@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { RouteFallback } from "@/components/shared/RouteFallback";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { FullPageSpinner } from "@/components/ui/spinner";
@@ -37,7 +38,9 @@ export function AppLayout() {
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-auto p-3 md:p-5 lg:p-6">
+          <Suspense fallback={<RouteFallback />}>
           <Outlet />
+        </Suspense>
         </main>
       </div>
     </div>

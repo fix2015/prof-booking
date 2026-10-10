@@ -277,7 +277,7 @@ function ReviewModal({
             <p className="ds-h4 text-ds-text-primary">{t("reviews.write_title")}</p>
             <p className="ds-caption text-ds-text-secondary">{professionalName}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-ds-text-secondary">
+          <button aria-label={t("common.close")} onClick={onClose} className="w-8 h-8 flex items-center justify-center text-ds-text-secondary">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
@@ -290,7 +290,7 @@ function ReviewModal({
             <p className="ds-label text-ds-text-secondary mb-ds-2">{t("reviews.rating_label")}</p>
             <div className="flex gap-ds-2">
               {[1, 2, 3, 4, 5].map((s) => (
-                <button
+                <button aria-label={t("reviews.rate_n", { n: s })}
                   key={s}
                   type="button"
                   onMouseEnter={() => setHoverRating(s)}
@@ -335,7 +335,7 @@ function ReviewModal({
               {images.map((url, i) => (
                 <div key={i} className="relative">
                   <img src={url} alt="" className="h-[72px] w-[72px] object-cover rounded-ds-xl border border-ds-border" />
-                  <button
+                  <button aria-label={t("common.remove")}
                     onClick={() => setImages((prev) => prev.filter((_, j) => j !== i))}
                     className="absolute -top-1 -right-1 w-5 h-5 bg-ds-bg-primary border border-ds-border rounded-ds-full flex items-center justify-center"
                   >

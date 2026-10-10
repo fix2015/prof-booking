@@ -239,10 +239,10 @@ export function ServicesPage() {
                     </div>
                   </div>
                   <div className="flex gap-[4px] shrink-0">
-                    <Button size="icon" variant="ghost" onClick={() => openEdit(service)}>
+                    <Button aria-label={t("common.edit")} size="icon" variant="ghost" onClick={() => openEdit(service)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => deleteMutation.mutate(service.id)}>
+                    <Button aria-label={t("common.delete")} size="icon" variant="ghost" onClick={() => deleteMutation.mutate(service.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>

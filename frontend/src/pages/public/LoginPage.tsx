@@ -322,7 +322,7 @@ export function LoginPage() {
                       return p ? (
                         <span key={id} className="flex items-center gap-[4px] bg-ds-bg-secondary text-ds-text-primary ds-caption px-[8px] py-[4px] rounded-ds-full">
                           {p.name}
-                          <button type="button" onClick={() => removeProvider(id)} className="text-ds-text-secondary hover:text-ds-text-primary">
+                          <button aria-label={t("common.remove")} type="button" onClick={() => removeProvider(id)} className="text-ds-text-secondary hover:text-ds-text-primary">
                             <X className="h-3 w-3" />
                           </button>
                         </span>

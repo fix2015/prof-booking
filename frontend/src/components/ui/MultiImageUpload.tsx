@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { t } from "@/i18n";
 import { Plus, X, Loader2 } from "lucide-react";
 import { uploadsApi } from "@/api/uploads";
 import { toast } from "@/hooks/useToast";
@@ -48,7 +49,7 @@ export function MultiImageUpload({ photos, onAdd, onRemove }: MultiImageUploadPr
               alt="portfolio"
               className="w-full h-full object-cover"
             />
-            <button
+            <button aria-label={t("common.remove")}
               type="button"
               onClick={() => onRemove(photo.id)}
               className="absolute top-ds-1 right-ds-1 bg-black/60 text-ds-text-inverse rounded-ds-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"

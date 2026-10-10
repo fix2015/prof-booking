@@ -1,4 +1,5 @@
 import { Bell, Menu } from "lucide-react";
+import { t } from "@/i18n";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   return (
     <header className="flex h-14 md:h-16 items-center justify-between border-b bg-card px-3 md:px-6 shrink-0">
       <div className="flex items-center gap-2 md:gap-3 min-w-0">
-        <Button
+        <Button aria-label={t("nav.open_menu")}
           variant="ghost"
           size="icon"
           className="lg:hidden shrink-0"
@@ -42,7 +43,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
         <LanguageSwitcher />
 
         <Link to="/notifications">
-          <Button variant="ghost" size="icon">
+          <Button aria-label={t("nav.notifications")} variant="ghost" size="icon">
             <Bell className="h-5 w-5 text-muted-foreground" />
           </Button>
         </Link>

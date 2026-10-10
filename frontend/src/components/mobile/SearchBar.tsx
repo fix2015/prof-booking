@@ -29,7 +29,7 @@ export function SearchBar({ value, onChange, placeholder = "Search providers, se
           type="button"
           onClick={() => onChange("")}
           className="text-ds-text-secondary"
-          aria-label="Clear search"
+          aria-label={t("common.clear_search")}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

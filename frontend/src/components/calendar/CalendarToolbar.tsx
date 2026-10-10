@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { t } from "@/i18n";
 import { cn } from "@/utils/cn";
 
 export type CalendarView = "week" | "5day" | "day";
@@ -33,13 +34,13 @@ export function CalendarToolbar({
         <span className="text-sm font-semibold text-gray-900 flex-1 min-w-0 truncate">
           {dateLabel}
         </span>
-        <button
+        <button aria-label={t("common.previous")}
           onClick={onPrev}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
         >
           <ChevronLeft className="h-4 w-4 text-gray-500" />
         </button>
-        <button
+        <button aria-label={t("common.next")}
           onClick={onNext}
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
         >

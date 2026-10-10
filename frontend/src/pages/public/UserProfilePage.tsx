@@ -125,7 +125,7 @@ export function UserProfilePage() {
   const clientUpcomingCount = isClient ? clientBookings.filter((b) => new Date(b.starts_at) >= new Date()).length : null;
 
   const SettingsButton = (
-    <button className="size-[32px] rounded-full bg-ds-bg-secondary flex items-center justify-center text-ds-text-primary">
+    <button aria-label={t("common.settings")} className="size-[32px] rounded-full bg-ds-bg-secondary flex items-center justify-center text-ds-text-primary">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
         <circle cx="10" cy="10" r="2" stroke="currentColor" strokeWidth="1.5" />
         <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

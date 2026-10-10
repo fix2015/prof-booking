@@ -9,6 +9,7 @@ export default defineConfig({
     VitePWA({
       disable: !!process.env.CAPACITOR, // no service worker inside the Capacitor native shell
       registerType: "autoUpdate",
+      injectRegister: "script-defer", // registerSW.js must not block first paint
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
         name: "ProBook — Book Professionals, Effortlessly",

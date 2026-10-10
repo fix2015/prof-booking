@@ -284,7 +284,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <span className="inline-flex items-center gap-[6px] rounded-ds-full bg-ds-bg-tertiary px-ds-3 py-[2px] ds-caption text-ds-text-secondary">
       {label}
-      <button onClick={onRemove} className="hover:text-ds-text-primary ml-[2px]">
+      <button aria-label={t("common.remove")} onClick={onRemove} className="hover:text-ds-text-primary ml-[2px]">
         <X className="h-3 w-3" />
       </button>
     </span>

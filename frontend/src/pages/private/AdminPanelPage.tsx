@@ -232,7 +232,7 @@ export function AdminPanelPage() {
                               {p.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                               {p.is_active ? "Freeze" : "Activate"}
                             </Button>
-                            <Button
+                            <Button aria-label={t("common.delete")}
                               size="sm"
                               variant="destructive"
                               className="h-7 ds-caption"
@@ -296,7 +296,7 @@ export function AdminPanelPage() {
                               {u.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                               {u.is_active ? "Freeze" : "Activate"}
                             </Button>
-                            <Button
+                            <Button aria-label={t("common.delete")}
                               size="sm"
                               variant="destructive"
                               className="h-7 ds-caption"
@@ -409,7 +409,7 @@ export function AdminPanelPage() {
                               {r.is_published ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                               {r.is_published ? "Hide" : "Show"}
                             </Button>
-                            <Button
+                            <Button aria-label={t("common.delete")}
                               size="sm"
                               variant="destructive"
                               className="h-7 ds-caption"
@@ -477,7 +477,7 @@ export function AdminPanelPage() {
                               {s.is_active ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                               {s.is_active ? "Disable" : "Enable"}
                             </Button>
-                            <Button
+                            <Button aria-label={t("common.delete")}
                               size="sm"
                               variant="destructive"
                               className="h-7 ds-caption"

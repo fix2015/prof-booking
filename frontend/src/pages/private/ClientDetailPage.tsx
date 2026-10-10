@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "@/i18n";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -46,10 +47,10 @@ function NoteCard({
         <span className="ds-body-strong text-ds-text-primary">{note.title}</span>
         {canEdit && (
           <div className="flex gap-ds-1 shrink-0">
-            <button onClick={() => onEdit(note)} className="p-[4px] hover:text-ds-interactive transition-colors">
+            <button aria-label={t("common.edit")} onClick={() => onEdit(note)} className="p-[4px] hover:text-ds-interactive transition-colors">
               <Pencil className="w-3.5 h-3.5" />
             </button>
-            <button onClick={() => onDelete(note)} className="p-[4px] hover:text-[var(--ds-feedback-error)] transition-colors">
+            <button aria-label={t("common.delete")} onClick={() => onDelete(note)} className="p-[4px] hover:text-[var(--ds-feedback-error)] transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -83,7 +84,7 @@ function PhotoCard({
         </div>
       )}
       {canEdit && (
-        <button
+        <button aria-label={t("common.delete")}
           onClick={() => onDelete(photo)}
           className="absolute top-[4px] right-[4px] opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--ds-feedback-error)] text-ds-text-inverse rounded-ds-full p-[2px]"
         >
@@ -355,7 +356,7 @@ export function ClientDetailPage() {
                   {profileTags.map((tag) => (
                     <Badge key={tag} variant="secondary" className="gap-[4px]">
                       {tag}
-                      <button onClick={() => setProfileTags((t) => t.filter((x) => x !== tag))}>
+                      <button aria-label={t("common.remove")} onClick={() => setProfileTags((t) => t.filter((x) => x !== tag))}>
                         <X className="w-2.5 h-2.5" />
                       </button>
                     </Badge>
@@ -368,7 +369,7 @@ export function ClientDetailPage() {
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                     placeholder="Add tag…"
                   />
-                  <Button variant="outline" size="sm" onClick={addTag} disabled={!profileForm.tagInput.trim()}>
+                  <Button aria-label={t("common.add")} variant="outline" size="sm" onClick={addTag} disabled={!profileForm.tagInput.trim()}>
                     <Tag className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -410,7 +411,7 @@ export function ClientDetailPage() {
                       </div>
                     )}
                   </div>
-                  <Button variant="outline" size="sm" onClick={openProfileEdit} className="shrink-0">
+                  <Button aria-label={t("common.edit")} variant="outline" size="sm" onClick={openProfileEdit} className="shrink-0">
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -618,7 +619,7 @@ export function ClientDetailPage() {
                 <p className="ds-body-strong text-ds-text-primary">Delete Client</p>
                 <p className="ds-caption text-ds-text-muted">Permanently removes this client and all their notes/photos.</p>
               </div>
-              <Button
+              <Button aria-label={t("common.delete")}
                 variant="destructive"
                 size="sm"
                 onClick={() => {

@@ -15,6 +15,7 @@ import type { Service, Professional, AvailableSlot, BookingConfirmation } from "
 import { BookingConfirmed } from "@/components/booking/BookingConfirmed";
 import { scheduleBookingReminders, type ReminderResult } from "@/lib/reminders";
 import { parseSlotPrefill, relativeDay, type SlotPrefill } from "@/utils/slots";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -132,6 +133,7 @@ export function PublicBookingPage() {
   }, [prefill, step, slots, slotsFetching, slotsFetched]);
 
   const createBooking = useCreateBooking();
+  const keyboardOpen = useKeyboardInset() > 0;
   const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
   const [reminders, setReminders] = useState<ReminderResult | null>(null);
   const { guestProfile, setGuestProfile, addGuestBooking } = useGuestSession();
@@ -226,7 +228,10 @@ export function PublicBookingPage() {
                 i + 1 <= step ? "bg-ds-interactive" : "bg-ds-border"
               }`}
             />
-            <span className={`ds-tab-label ${i + 1 === step ? "text-ds-interactive" : "text-ds-text-disabled"}`}>
+            <span
+              className={`ds-tab-label ${i + 1 === step ? "text-ds-interactive" : "text-ds-text-secondary"}`}
+              aria-current={i + 1 === step ? "step" : undefined}
+            >
               {label}
             </span>
           </div>
@@ -343,14 +348,14 @@ export function PublicBookingPage() {
           <div className="flex flex-col gap-ds-3">
             <p className="ds-h4 text-ds-text-primary mb-ds-1">{t("booking.select_date_heading")}</p>
             <div className="flex items-center justify-between">
-              <button
+              <button aria-label={t("booking.prev_month")}
                 onClick={() => setCalMonth((m) => { const d = new Date(m.year, m.month - 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
                 className="w-8 h-8 flex items-center justify-center text-ds-text-secondary"
               >‹</button>
               <span className="ds-body-strong text-ds-text-primary">
                 {new Date(calMonth.year, calMonth.month).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </span>
-              <button
+              <button aria-label={t("booking.next_month")}
                 onClick={() => setCalMonth((m) => { const d = new Date(m.year, m.month + 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
                 className="w-8 h-8 flex items-center justify-center text-ds-text-secondary"
               >›</button>
@@ -449,20 +454,27 @@ export function PublicBookingPage() {
                 const required = key === "phone" || key === "name";
                 const fieldLabels = {
                   phone: t("booking.field.phone"),
-                  name: `${t("booking.field.full_name")} *`,
+                  name: t("booking.field.full_name"),
                   email: t("booking.field.email"),
                   notes: t("booking.field.notes"),
                 };
                 const fieldPlaceholders = { phone: "+44 7911 123456", name: "Jane Smith", email: "jane@example.com", notes: "Any special requests..." };
                 const fieldTypes = { phone: "tel", name: "text", email: "email", notes: "text" };
+                const fieldAutoComplete = { phone: "tel", name: "name", email: "email", notes: "off" };
+                const fieldInputMode = { phone: "tel", name: "text", email: "email", notes: "text" } as const;
                 const isPhoneError = key === "phone" && form.phone.trim().length > 0 && !phoneValid;
                 return (
                   <div key={key}>
-                    <label className="block mb-ds-1 text-[13px] font-semibold leading-[18px] text-ds-text-secondary">
+                    <label htmlFor={`booking-${key}`} className="block mb-ds-1 ds-label text-ds-text-secondary">
                       {fieldLabels[key]}
                     </label>
                     <input
+                      id={`booking-${key}`}
                       type={fieldTypes[key]}
+                      autoComplete={fieldAutoComplete[key]}
+                      inputMode={fieldInputMode[key]}
+                      enterKeyHint={key === "notes" ? "done" : "next"}
+                      aria-invalid={isPhoneError || undefined}
                       placeholder={fieldPlaceholders[key]}
                       value={form[key]}
                       onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
@@ -484,7 +496,11 @@ export function PublicBookingPage() {
 
       {/* Bottom CTA — only on the confirm step */}
       {step === 5 && (
-        <div className="px-ds-4 py-ds-4 bg-ds-bg-primary border-t border-ds-border">
+        <div
+          className="sticky z-10 px-ds-4 py-ds-4 bg-ds-bg-primary border-t border-ds-border transition-[bottom] duration-150"
+          // Stays visible above the iOS keyboard (the layout viewport doesn't shrink there)
+          style={{ bottom: "var(--keyboard-inset, 0px)", paddingBottom: keyboardOpen ? undefined : "max(16px, env(safe-area-inset-bottom))" }}
+        >
           <button
             onClick={handleConfirm}
             disabled={!canProceed || createBooking.isPending || !!provider?.is_demo}
@@ -494,12 +510,14 @@ export function PublicBookingPage() {
           >
             {provider?.is_demo ? t("sample.booking_disabled") : createBooking.isPending ? t("booking.in_progress") : t("booking.confirm_cta")}
           </button>
-          <p className="text-[11px] leading-[16px] text-center text-gray-400 mt-ds-2">
-            By booking, you agree to our{" "}
-            <Link to="/terms" className="underline text-gray-500">Terms</Link>
-            {" "}&{" "}
-            <Link to="/privacy" className="underline text-gray-500">Privacy Policy</Link>.
-          </p>
+          {!keyboardOpen && (
+            <p className="ds-badge text-center text-ds-text-secondary mt-ds-2">
+              {t("booking.agree_prefix")}{" "}
+              <Link to="/terms" className="underline text-ds-text-primary">{t("booking.agree_terms")}</Link>
+              {" & "}
+              <Link to="/privacy" className="underline text-ds-text-primary">{t("booking.agree_privacy")}</Link>.
+            </p>
+          )}
           {createBooking.isError && (
             <p className="ds-caption text-ds-feedback-saved text-center mt-ds-2">{t("booking.failed")}</p>
           )}

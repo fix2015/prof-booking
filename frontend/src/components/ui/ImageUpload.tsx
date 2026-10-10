@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { t } from "@/i18n";
 import { Upload, X } from "lucide-react";
 import { uploadsApi } from "@/api/uploads";
 import { Spinner } from "./spinner";
@@ -81,7 +82,7 @@ export function ImageUpload({
           </div>
         )}
         {preview && !uploading && (
-          <button
+          <button aria-label={t("common.remove")}
             type="button"
             className="absolute top-ds-1 right-ds-1 bg-black/60 text-ds-text-inverse rounded-ds-full p-0.5 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
             onClick={(e) => {
